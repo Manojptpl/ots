@@ -1,0 +1,253 @@
+﻿@model OTS.Models.MastersModel
+
+<style type="text/css">
+    .required {
+        color: red;
+    }
+
+    .myclass {
+        text-transform: capitalize;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function ()
+    {
+        $('ul.list-unstyled  li a[href$="' + "/Create_Customer" + '"]').addClass('active');
+
+        $("#Customer_Code").bind('keyup', function (e) {
+            if (e.which >= 97 && e.which <= 122) {
+                var newKey = e.which - 32;
+                // I have tried setting those
+                e.keyCode = newKey;
+                e.charCode = newKey;
+            }
+            $("#Customer_Code").val(($("#Customer_Code").val()).toUpperCase());
+        });
+    });
+    function CreateCustomer() {
+        var status = 0;
+        if ($('#Status').is(":checked")) {
+            status = 1;
+        }
+        else {
+            status = 0;
+        }
+        var cust_code = $('#Customer_Code').val();
+        var str = $('#Customer_Name').val();
+        str = str.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var cust_name = str;
+        var str1 = $('#Address').val();
+        str1 = str1.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var address = str1;
+        var str2 = $('#City').val();
+        str2 = str2.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var city = str2;
+        var str3 = $('#State').val();
+        str3 = str3.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var state = str3;
+        var str4 = $('#Country').val();
+        str4 = str4.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var country = str4;
+        var zip_code = $('#Zip_Code').val();
+
+        if (cust_code != "" && cust_name != "" && address != "") {
+            $.ajax({
+                type: 'POST',
+                url: '/Master/CreateCustomer/',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(
+                    {
+                        'Customer_Code': cust_code, 'Customer_Name': cust_name, 'Address': address, 'City': city, 'State': state, 'Country': country, 'Zip_Code': zip_code, 'Status': status
+                    }
+                ),
+                dataType: 'json',
+                success: function (data) {
+                    var a = data.SuccessMsg;
+                    var b = data.ErrorMsg;
+                    if (data != null && a != null) {
+                        alert(a);
+                        ClearText();
+                    }
+                    else {
+                        alertify.alert(b).setHeader('<em> Message </em> ');
+                    }
+                },
+                error: function (data) {
+
+                }
+            });
+        }
+        else if (cust_name == "") {
+            alert("Customer Name Can't be blank.");
+            setTimeout(function () { $('#Customer_Name').focus(); });
+        }
+        else if (cust_code == "") {
+            alert("Customer Code Can't be blank.");
+            setTimeout(function () { $('#Customer_Code').focus(); });
+        }
+        else {
+            alert("Address Can't be blank.");
+            setTimeout(function () { $('#Address').focus(); });
+        }
+    }
+
+    function ClearText() {
+        $('#Customer_Code').val("").attr('disabled', false).css("background-color", "");
+        $('#Customer_Name').val("");
+        $('#Address').val("");
+        $('#City').val("");
+        $('#State').val("");
+        $('#Country').val("");
+        $('#Zip_Code').val("");
+        $('.myCheckbox').prop('checked', false);
+        $('#divupdate').hide();
+        $('#divempty').hide();
+        $('#divsave').show();
+        $('#Customer_Id').val("");
+    }
+
+    function CancelOnClick() {
+        window.location.href = "/Home/Dashboard";
+    }
+
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+        return true;
+    }
+
+    function BindCustomerData() {
+        var customer_id = $('#Customer_Id').val();
+        if (customer_id != "") {
+            $.ajax({
+                url: "/Master/BindCustomer/",
+                type: "POST",
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ 'Customer_Id': customer_id }),
+                dataType: "json",
+                success: function (data) {
+                    var err = data.ErrorMsg;
+                    if (data != null) {
+                        $('#Customer_Code').val(data[0].Customer_Code).attr('disabled', true).css("background-color", "lightgray");
+                        $('#Customer_Name').val(data[0].Customer_Name);
+                        $('#Address').val(data[0].Address);
+                        $('#City').val(data[0].City);
+                        $('#State').val(data[0].State);
+                        $('#Country').val(data[0].Country);
+                        $('#Zip_Code').val(data[0].Zip_Code);
+                        $('#divupdate').show();
+                        $('#divedit').hide();
+                        $('#divsave').hide();
+                        $('#divempty').show();
+                        $('.modal-backdrop').remove();
+                        $('#myModal').modal('hide');
+                    }
+                    else {
+                        if (err == "session out") {
+                            window.location.href = "/home/index/"
+                        }
+                        else {
+                            alertify.alert("Error Edit Customer").setHeader("<em>Message<em>");
+                        }
+
+                    }
+                },
+                error: function (data) {
+
+                }
+            });
+        }
+    }
+
+</script>
+
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">Create Customer</h4></div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>Customer Name:<span class="required">*</span></label>
+                        <input type="text" class="form-control" id="Customer_Name" maxlength="50" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>Customer Code:<span class="required">*</span></label>
+                        <input type="text" class="form-control" id="Customer_Code" maxlength="20" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>City:</label>
+                        <input type="text" class="form-control" id="City" maxlength="25" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>State:</label>
+                        <input type="text" class="form-control" id="State" maxlength="25" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>Country:</label>
+                        <input type="text" class="form-control" id="Country" maxlength="25" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>Zip Code:</label>
+                        <input type="text" class="form-control" id="Zip_Code" maxlength="6" onkeypress="return isNumberKey(event)" autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>Address:<span class="required">*</span></label>
+                        <textarea type="text" rows="2" class="form-control" id="Address" maxlength="100" autocomplete="off"></textarea>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <input type="checkbox" class="myCheckbox" id="Status" value="" checked="checked" />Active
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="form-group">
+
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary" id="btn_Submit" onclick="CreateCustomer()">Submit</button>
+                        <button type="button" class="btn btn-primary" onclick="ClearText()">Reset</button>
+                        <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

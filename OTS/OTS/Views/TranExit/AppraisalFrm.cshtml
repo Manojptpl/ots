@@ -1,0 +1,482 @@
+﻿
+@model IEnumerable<OTS.Models.TranExitFormModel>
+
+<style type="text/css">
+    .required {
+        color: red;
+    }
+
+    .myclass {
+        text-transform: capitalize;
+    }
+    #content {
+        height:900px;
+    }
+</style>
+<style type="text/css">
+    #tabs {
+        overflow: hidden;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+        #tabs li {
+            float: left;
+            margin: 0 .5em 0 0;
+        }
+
+        #tabs a {
+            position: relative;
+            background: #ddd;
+            background-image: linear-gradient(to bottom, #fff, #ddd);
+            padding: .7em 3.5em;
+            float: left;
+            text-decoration: none;
+            color: #444;
+            text-shadow: 0 1px 0 rgba(255,255,255,.8);
+            border-radius: 5px 0 0 0;
+            box-shadow: 0 2px 2px rgba(0,0,0,.4);
+        }
+
+            #tabs a:hover,
+            #tabs a:hover::after,
+            #tabs a:focus,
+            #tabs a:focus::after {
+                background: #fff;
+            }
+
+            #tabs a:focus {
+                outline: 0;
+            }
+
+            #tabs a::after {
+                content: '';
+                position: absolute;
+                z-index: 1;
+                top: 0;
+                right: -.5em;
+                bottom: 0;
+                width: 1em;
+                background: #ddd;
+                background-image: linear-gradient(to bottom, #fff, #ddd);
+                box-shadow: 2px 2px 2px rgba(0,0,0,.4);
+                transform: skew(10deg);
+                border-radius: 0 5px 0 0;
+            }
+
+        #tabs #current a,
+        #tabs #current a::after {
+            background: #fff;
+            z-index: 3;
+        }
+
+    #content {
+        background: #fff;
+        padding: 2em;
+        height: 220px;
+        position: relative;
+        z-index: 2;
+        border-radius: 0 5px 5px 5px;
+        box-shadow: 0 -2px 3px -2px rgba(0, 0, 0, .5);
+    }
+</style>
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#content").find("[id^='tab']").hide(); // Hide all content
+    $("#tabs li:first").attr("id","current"); // Activate the first tab
+    $("#content #tab1").fadeIn(); // Show first tab's content
+
+    $('#tabs a').click(function(e) {
+        e.preventDefault();
+        if ($(this).closest("li").attr("id") == "current"){ //detection for current tab
+         return;
+        }
+        else{
+          $("#content").find("[id^='tab']").hide(); // Hide all content
+          $("#tabs li").attr("id",""); //Reset id's
+          $(this).parent().attr("id","current"); // Activate this
+          $('#' + $(this).attr('name')).fadeIn(); // Show content for the current tab
+        }
+    });
+    $("#btnOverAllRating").click(function () {        
+        $("#content").addClass("content");
+    });
+});
+</script>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">Annual Appraisal Form</h4></div>
+        <div class="panel-body">
+            @*@foreach (var item in Model)
+                {
+
+                }*@
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Name:<span class="required">*</span></label>
+                        <input type="text" class="form-control" id="txt_EmpName" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Manager Name:<span class="required">*</span></label>
+                        <input type="text" class="form-control" id="txt_ManagerName" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Position Title:</label>
+                        <input type="text" class="form-control" id="txt_PositionTitle" readonly="readonly" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Date of Review:</label>
+                        <div class="cal-icon">
+                            <input class="form-control" placeholder="dd-mmm-yyyy" type="text" id="txt_ReviewDate" readonly="readonly" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>From Date:</label>
+                        <div class="cal-icon">
+                            <input class="form-control mycal" placeholder="dd-mmm-yyyy" type="text" id="txt_FromDate" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>To Date:</label>
+                        <div class="cal-icon">
+                            <input class="form-control mycal" placeholder="dd-mmm-yyyy" type="text" id="txt_ToDate" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Department:</label>
+                        <input type="text" class="form-control" id="txt_Department" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Key Responsibility:</label>
+                        <input type="text" class="form-control" id="txt_KeyResponsibility" value="Quarter Variable Average Rating" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Final Rating:</label>
+                        <input type="text" class="form-control" id="txt_FinalRating" readonly="readonly" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <ul id="tabs">
+        <li><a href="#" name="tab1">Performance Factors</a></li>
+        <li><a href="#" name="tab2" id="btnOverAllRating">Overall Performance Rating</a></li>
+        @*<li><a href="#" name="tab3">Organization Aspects</a></li>
+        <li><a href="#" name="tab4">Supervisor</a></li>
+        <li><a href="#" name="tab5">Another job/Expectation</a></li>*@
+
+    </ul>
+    <div id="content" style="height: 1250px;">        
+        <div id="tab1">
+            <div class="panel">
+                <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width:10px">1</th>
+                                <th style="width:550px; height:40px;"><span class="badge badge-primary">PERFORMANCE FACTORS</span> </th>
+                                <th scope="col" style="text-align:center"><span class="badge badge-primary">Self Rating </span></th>
+                                <th scope="col" style="text-align:center"><span class="badge badge-primary">Explanation </span></th>
+                                <th scope="col" style="text-align:center"><span class="badge badge-primary">Manager Rating </span></th>
+                                <th scope="col" style="text-align:center"><span class="badge badge-primary">Explanation </span></th>                                
+                            </tr>
+                        </thead>
+                    </table>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td><span class="badge badge-primary">PROFICIENCY IN CURRENT ROLE:</span> <br />
+                                    <ul>
+                                        <li>Demonstrates knowledge of position and/or team role.</li>
+                                        <li>Understands how position and responsibilities fit within the organization and contribute to department results.</li>
+                                    </ul>                                    
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>
+                                
+                            </tr>  
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td>
+                                    <span class="badge badge-primary">QUALITY OF WORK:</span><br />
+                                    <ul>
+                                        <li>Maintains standards consistently. Is consistent in achieving accuracy, neatness,thoroughness, overall effectiveness and attentiveness to detail.</li>                                                                                
+                                    </ul>                                      
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>
+                                
+                            </tr> 
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td>
+                                    <span class="badge badge-primary">PLANNING AND ORGANIZATION OF WORK:</span><br />
+                                    <ul>
+                                        <li>Establishes priorities. Anticipates and prepares for changing workload or working conditions.</li>
+                                        <li>Coordinates and uses available resources to get work done to assure important deadlines are met.</li>
+                                    </ul>                                    
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>                            </tr>
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td>
+                                    <span class="badge badge-primary">INITIATIVE:</span><br />
+                                    <ul>
+                                        <li>Shows ability to work independently in context of the job.</li>
+                                        <li>Demonstrates willingness to assume additional responsibility.</li>
+                                        <li>Suggests ways to enhance work processes or operations.</li>
+                                    </ul>                                    
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td>
+                                    <span class="badge badge-primary">INTERPERSONAL RELATIONS:</span><br />
+                                    <ul>
+                                        <li>Maintains positive working relationships.</li>
+                                        <li>Is flexible and willing to cooperate with others.</li>
+                                        <li>Demonstrates ability to listen and understand.</li>
+                                    </ul>                                    
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td>
+                                    <span class="badge badge-primary">VERBAL & LISTENING SKILLS:</span><br />
+                                    <ul>
+                                        <li>Expresses self well verbally, using language appropriate for the intended audience.</li>
+                                        <li>Listens actively and acknowledges understanding.</li>                                        
+                                    </ul>                                                                     
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>
+                            </tr>  
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td>
+                                    <span class="badge badge-primary">WRITING SKILLS:</span><br />
+                                    <ul>
+                                        <li>Presents ideas clearly in written format, using appropriate language, grammar and style.</li>
+                                    </ul>                                    
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>
+                            </tr>  
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td>
+                                    <span class="badge badge-primary">TEAM PARTICIPATION:</span><br />
+                                    <ul>
+                                        <li>Proactively builds partnerships and seeks involvement with other constituencies/employees.</li>
+                                        <li>Works cooperatively and effectively with team members.</li>
+                                        <li>Demonstrates clear understanding of team goals and contributes to their achievement.</li>
+                                    </ul>                                       
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>
+                            </tr>  
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td>
+                                    <span class="badge badge-primary">DISCRETION AND CONFIDENTIALITY:</span><br />
+                                    <ul>
+                                        <li>Knows what FIT information or materials are sensitive and why.</li>
+                                        <li>Demonstrates ability to maintain sensitive information in confidence, sharing only with appropriate contacts.</li>                                        
+                                    </ul>                                                                         
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>
+                            </tr>  
+                            <tr>
+                                <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                <td>
+                                    <span class="badge badge-primary">PUNCTUALITY AND ATTENDANCE:</span><br />
+                                    <ul>
+                                        <li>Arrives and is ready to begin working at scheduled time.</li>
+                                        <li>Maintains acceptable record of attendance.</li>
+                                    </ul>
+                                    @*<span class="badge badge-primary">•</span>Arrives and is ready to begin working at scheduled time.<br />
+                                    <span class="badge badge-primary">•</span>Maintains acceptable record of attendance.<br />*@
+                                </td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px; padding:0px;"></textarea></td>
+                                <td style="width:51px"><input type="text" class="form-control" id="txt_TYPE_OF_WORK" /></td>
+                                <td style="width:170px"><textarea class="form-control" id="txt_TYPE_OF_WORK" style="height:40px;padding:0px;"></textarea></td>
+                            </tr>                 
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label>Section II Total Rating:<span class="required">*</span></label>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                @*<label>Manager Name:<span class="required">*</span></label>
+                    <input type="text" class="form-control" id="txt_ManagerName" readonly="readonly" />*@
+                                <input type="text" class="form-control" id="txt_SectionSecondRating" style="margin-left:-10px;"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tab2">
+            <div class="panel">
+                <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                <div class="panel-body">                    
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width:37px">2</th>
+                                <th colspan="6" rowspan="2"></th>
+                                <th style="width:461px; text-align:center"><span class="badge badge-primary">Total Rating </span></th>                                
+                            </tr>
+                        </thead>
+                    </table>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td><span class="badge badge-primary">Section I: Key Responsibilities</span></td>
+                                <td><input type="text" class="form-control" id="txt_RECRUITMENT_PROCESS"/></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td><span class="badge badge-primary">Section II: Performance Factors</span></td>
+                                <td><input type="text" class="form-control" id="txt_EMPLOYEE_ORIENTATION"/></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td><span class="badge badge-primary">SUBTOTAL:</span></td>
+                                <td><input type="text" class="form-control" id="txt_TRAINING_OPPORTUNITIES"/></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td><span class="badge badge-primary">OVERALL RATING:</span></td>
+                                <td><input type="text" class="form-control" id="txt_CAREER_DEVELOPMENT"/></td>
+                            </tr>                            
+                        </tbody>
+                    </table>                    
+                </div>
+            </div>
+        </div>               
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="form-group">
+
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group form-group-toggle" data-toggle="buttons">
+                <button type="button" class="btn btn-primary" id="btn_Submit">Submit</button>
+                <button type="button" class="btn btn-primary" onclick="ClearText()">Reset</button>
+                <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+                <input type="hidden" id="hdn_Exit_id" value="@ViewBag.Exit_idType" />
+            </div>
+        </div>
+    </div>
+
+</div>
+<a id="back2Top" title="Back to top" href="#">&#10148;</a>
+<style type="text/css" lang="en">
+    #back2Top {
+        width: 40px;
+        line-height: 40px;
+        overflow: hidden;
+        z-index: 999;
+        display: none;
+        cursor: pointer;
+        -moz-transform: rotate(270deg);
+        -webkit-transform: rotate(270deg);
+        -o-transform: rotate(270deg);
+        -ms-transform: rotate(270deg);
+        transform: rotate(270deg);
+        position: fixed;
+        bottom: 50px;
+        right: 0;
+        background-color: #DDD;
+        color: #555;
+        text-align: center;
+        font-size: 30px;
+        text-decoration: none;
+    }
+
+        #back2Top:hover {
+            background-color: #DDF;
+            color: #000;
+        }
+</style>
+<script type="text/javascript" lang="en">
+    $(window).scroll(function () {
+        var height = $(window).scrollTop();
+        if (height > 100) {
+            $('#back2Top').fadeIn();
+        } else {
+            $('#back2Top').fadeOut();
+        }
+    });
+    $(document).ready(function () {
+        $("#back2Top").click(function (event) {
+            event.preventDefault();
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        });
+    });
+</script>
+
+
+

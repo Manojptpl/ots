@@ -1,0 +1,788 @@
+﻿<style>
+    .modal-lg {
+        width: 1053px;
+    }
+
+    table {
+        border-collapse: collapse;
+        border-radius: 1em;
+        overflow: hidden;
+    }
+</style>
+
+<script type="text/javascript" src="~/assets/js/ExpenseEdit.js"></script>
+
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title">Expense History</h4>
+    </div>
+</div>
+
+<div class="row filter-row">
+    <div class="col-sm-12">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group form-focus ">
+                    <label style="font-size: 12px;" class="control-label">Select Month</label>
+                    <select style="height: 39px;padding: 16px 11px 4px !important;" class="form-control floating myclass" id="ddl_month">
+                        <option value="0">Select </option>
+                        <option value="1">Jan</option>
+                        <option value="2">Feb</option>
+                        <option value="3">Mar</option>
+                        <option value="4">Apr</option>
+                        <option value="5">May</option>
+                        <option value="6">Jun</option>
+                        <option value="7">Jul</option>
+                        <option value="8">Aug</option>
+                        <option value="9">Sep</option>
+                        <option value="10">Oct</option>
+                        <option value="11">Nov</option>
+                        <option value="12">Dec</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group form-focus">
+                    <label style="font-size: 12px;" class="control-label">Select Year</label>
+                    <select style="height: 39px;padding: 16px 11px 4px !important;" class="form-control floating myclass" id="ddl_year">
+                        <option value="0">Select</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <input type="button" class="btn btn-success btn-block" style="border-radius:35px;height: 39px;font-size:12px;" value="Search" id="btn_Search" />
+            </div>
+            <div class="col-sm-3 btn_Submit">
+                <input type="button" class="btn btn-success btn-block" style="border-radius:35px;height: 39px;font-size:12px;" value="Submit For Approval" id="btn_Submit" />
+            </div>
+            <div class="col-sm-2">
+                <input type="button" class="btn btn-success btn-block" style="border-radius:35px;height: 39px;font-size:12px;" value="Export To CSV" id="btn_Export" />
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-bordered custom-table text-left" id="tbl_status" style="font-size:11px;">
+                <thead>
+                    <tr>
+                        <th>Expense Status</th>
+                        <th>Submission Date</th>
+                        <th>Approval Date</th>
+                        <th>HR Approval</th>
+                        <th>Approve Remark Manager</th>
+                        <th>Reject Remark Manager</th>
+                        <th>Approve Remark HR</th>
+                        <th>Reject Remark HR</th>
+                    </tr>
+                </thead>
+                <tbody id="tblRemarkBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-striped custom-table text-left" style="font-size:11px;" id="tblExpenseReport">
+                <thead>
+                    <tr>
+                        <th>Sr. No.</th>
+                        <th>Expense Date</th>
+                        <th>Project Name</th>
+                        <th>Expense Type</th>
+                        <th>Expense Amount</th>
+                        <th>Description</th>
+                        <th>attachment</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tblHistoryBody"></tbody>
+                <tfoot>
+                    <tr>
+                        <td><b>Total</b></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td style="text-align:right"><label class="grdtotal" value="" name="" /></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="edit_expense" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" id="btn_edit_close" class="close">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="modal-header"><h4 class="modal-title">Edit Expense</h4></div>
+            <div class="modal-body">
+                <form>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Date:<span class="text-danger">*</span></label>
+                                <div class="cal-icon">
+                                    <input type="text" id="txt_ExpenseDate" class="form-control" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Project:<span class="text-danger">*</span></label>
+                                @Html.DropDownList("ddl_Project", (IEnumerable<SelectListItem>)ViewBag.projectlist, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Expense Type:<span class="text-danger">*</span></label>
+                                @Html.DropDownList("ddl_ExpenseType", (IEnumerable<SelectListItem>)ViewBag.expenseType, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-sm-3 Conveyanceselfield" style="display:none;">
+                            <div class="form-group">
+                                <label>Travel Mode:<span class="text-danger">*</span></label>
+                                @Html.DropDownList("ddl_TravelMode", (IEnumerable<SelectListItem>)ViewBag.ByModule, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-sm-3 Conveyanceselfield" style="display:none;">
+                            <div class="form-group">
+                                <label>From:<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" id="txt_From">
+                            </div>
+                        </div>
+                        <div class="col-sm-3 Conveyanceselfield" style="display:none;">
+                            <div class="form-group">
+                                <label>To:<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" id="txt_To">
+                            </div>
+                        </div>
+                        <div class="col-sm-3 Modefield" style="display:none;">
+                            <div class="form-group">
+                                <label>KM:<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" id="txt_KM" maxlength="5" onkeypress="return numericOnly(this);" onchange="return CalculateAmount();">
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Amount:<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" id="txt_Amount" maxlength="10" onkeypress="return numericOnly(this);" ondrop="return false;">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Description:<span class="text-danger">*</span></label>
+                                <textarea id="txt_Description" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label class="col-form-label">File</label>
+                                <input type="file" name="img[]" class="file-upload-default form-control" id="Files" multiple="">
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div id="progressbar-5">
+                                        <div class="progress-label">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row" id="div_file">
+                                <div class="col-sm-12">
+                                    <table class="table table-striped custom-table" id="ListofFiles">
+                                        <thead>
+                                            <tr style="background-color:white;">
+                                                <th>Files</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <br />
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label style="visibility:hidden;">Button<span class="text-danger">*</span></label>
+                                <button type="button" id="UploadBtn" style="margin-left:-53px;margin-top:17%;" class="btn btn-primary">Upload</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <input type="hidden" id="hdn_ExpenseID" />
+                        <input type="hidden" id="Role" value="@ViewBag.emptype" />
+                        <button type="button" id="btn_Update" class="btn btn-primary">Update </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<div id="view_expense" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="modal-header"><h4 class="modal-title">Expense Details View</h4></div>
+            <div class="modal-body">
+                <form>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Date:<span class="text-danger">*</span></label>
+                                <div class="cal-icon">
+                                    <input type="text" id="txt_VExpenseDate" class="form-control" readonly />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Project:<span class="text-danger">*</span></label>
+                                <input type="text" id="txt_VProject" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Expense Type:<span class="text-danger">*</span></label>
+                                <input type="text" id="txt_VExpenseType" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="col-sm-3 VConveyanceselfield" style="display:none;">
+                            <div class="form-group">
+                                <label>Travel Mode:<span class="text-danger">*</span></label>
+                                <input type="text" id="txt_VTravelMode" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="col-sm-3 VConveyanceselfield" style="display:none;">
+                            <div class="form-group">
+                                <label>From:<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" id="txt_VFrom" readonly>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 VConveyanceselfield" style="display:none;">
+                            <div class="form-group">
+                                <label>To:<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" id="txt_VTo" readonly>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 VModefield" style="display:none;">
+                            <div class="form-group">
+                                <label>KM:<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" id="txt_VKM" readonly>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Amount:<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" id="txt_VAmount" readonly>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Description:<span class="text-danger">*</span></label>
+                                <textarea id="txt_VDescription" class="form-control" readonly></textarea>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="row" id="Vdiv_file">
+                                <div class="col-sm-12">
+                                    <table class="table table-striped custom-table" id="VListofFiles" style="background-color:lightgray;">
+                                        <thead>
+                                            <tr>
+                                                <th>File Name</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <br />
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id='myModal' class='modal custom-modal fade' role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h5 class="modal-title">Expense Files</h5>
+            </div>
+            <div class="modal-body">
+                <div class="card-box">
+                    <div class="row text-center">
+                        <table class="table table-striped custom-table" id="tblExpFiles">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:center;">Expense File</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblBodyFiles"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" style="display:none;">
+    <div id="wait" class="col-sm-12" style="top:30%;left:30%;"><img src="~/assets/img/giphy.gif" /><br></div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('ul.list-unstyled  li a[href$="' + "/Expense_History" + '"]').addClass('active');
+
+        var minOffset = -2, maxOffset = 0;
+
+        var thisYear = new Date().getFullYear();
+        var select = $('#ddl_year');
+
+        for (var i = minOffset; i <= maxOffset; i++) {
+            var year = thisYear + i;
+            $('<option>', { value: year, text: year }).appendTo(select);
+        }
+
+        var currentTime = new Date();
+        var month = parseInt(parseInt(currentTime.getMonth()) + parseInt(1));
+        var year = thisYear;
+
+        $('.table-responsive').hide();
+
+        $('.btn_Submit').hide();
+
+        $('#btn_Export').hide();
+
+        $(document).ajaxStart(function () {
+            $('.overlay').css("display", "block");
+        });
+
+        $(document).ajaxComplete(function () {
+            $('.overlay').css("display", "none");
+        });
+
+        ExpenseReport(month, year);
+
+        $(document).on('click', '.lnkActionEdit', function () {
+            if ($(this).attr('data_id'))
+            {
+                $.ajax({
+                    type: "GET",
+                    url: "/Expense/GetExpenseDetails",
+                    data: { "Expense_Id": $(this).attr('data_id') },
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (data) {
+                        var result = JSON.parse(data.expense);
+                        var result1 = JSON.parse(data.files);
+                        var markup = ""
+                        var Expense_id = "";                      
+                        if (result.length > 0)
+                        {
+                            $.each(result, function (txt, val)
+                            {
+                                Expense_id = val.ID;
+                                $('#txt_ExpenseDate').val(val.EXPENSE_DATE).prop('disabled', true);
+                                $('#ddl_ExpenseType').val(val.EXPENSE_TYPE_ID);
+                                $('#ddl_TravelMode').val(val.TRAVEL_MODE_ID);
+                                $('#ddl_Project').val(val.PROJECT_ID);
+                                $('#txt_From').val(val.TRAVEL_FROM);
+                                $('#txt_To').val(val.TRAVEL_TO);
+                                $('#txt_KM').val(val.TRAVEL_DISTANCE);
+                                $('#txt_Amount').val(val.EXPENSE_AMOUNT);
+                                $('#txt_Description').val(val.DESCRIPTION);
+                            });
+                            // Binding the file name
+                            if (result1.length > 0) {
+                                $.each(result1, function (txt, val) {
+                                    markup += "<tr>";
+                                    markup += "<td>" + val.filename + "</td>";
+                                    markup += "<td><a href='javascript:void(0);' data_id='" + val.id + "' data_file='" + val.filename + "' id='btn_delete'><span class='glyphicon glyphicon-remove red'></span></a></td>";
+                                    markup += "</tr>"; 
+                                    
+                                });
+                                $("#ListofFiles tbody").append(markup);
+
+                                if ($('#ddl_ExpenseType').val() == 1)
+                                {
+                                    $("div.Conveyanceselfield").show();
+                                }
+                                else
+                                {
+                                    $("div.Conveyanceselfield").hide();
+                                    $('#ddl_TravelMode').val("0");
+                                    $('#txt_From').val("");
+                                    $('#txt_To').val("");
+                                    $('#txt_KM').val("");
+                                    $('#txt_Amount').prop('disabled', false).css("background-color", "white");
+                                }
+                                if ($('#ddl_TravelMode').val() == 1 || $('#ddl_TravelMode').val() == 2)
+                                {
+                                    $("div.Modefield").show();
+                                    $('#txt_Amount').prop('disabled', true);
+                                }
+                                $('#ListofFiles').show();
+                                $('#div_file').show();
+                            }
+                            $('#hdn_ExpenseID').val(Expense_id);
+
+                            $('#btn_update').show();
+
+                            $('#edit_expense').modal();
+                        }
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '.lnkActionView', function () {
+            if ($(this).attr('data_id')) {
+                $.ajax({
+                    type: "GET",
+                    url: "/Expense/GetExpenseDetails",
+                    data: { "Expense_Id": $(this).attr('data_id') },
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (data) {
+                        var result = JSON.parse(data.expense);
+                        var result1 = JSON.parse(data.files);
+                        var markup = "";
+                        var Expense_Type_Id = "";
+                        var Travel_Mode_Id = "";
+                        if (result.length > 0) {
+                            $.each(result, function (txt, val) {
+                                Expense_Type_Id = val.EXPENSE_TYPE_ID;
+                                Travel_Mode_Id = val.TRAVEL_MODE_ID;
+                                $('#txt_VExpenseDate').val(val.EXPENSE_DATE).prop('disabled', true);
+                                $('#txt_VExpenseType').val(val.EXPENSE_TYPE_NAME);
+                                $('#txt_VTravelMode').val(val.TRAVEL_MODE);
+                                $('#txt_VProject').val(val.PROJECT_NAME);
+                                $('#txt_VFrom').val(val.TRAVEL_FROM);
+                                $('#txt_VTo').val(val.TRAVEL_TO);
+                                $('#txt_VKM').val(val.TRAVEL_DISTANCE);
+                                $('#txt_VAmount').val(val.EXPENSE_AMOUNT);
+                                $('#txt_VDescription').val(val.DESCRIPTION);
+                            });
+                            $("#VListofFiles tbody").empty();
+                            // Binding the file name
+                            if (result1.length > 0) {
+
+                                $.each(result1, function (txt, val) {
+                                    markup += "<tr>";
+                                    markup += "<td>" + val.filename + "</td>";
+                                    markup += "</tr>";
+
+                                });
+                                $("#VListofFiles tbody").append(markup);
+
+                                $('#VListofFiles').show();
+                                $('#Vdiv_file').show();
+                            }
+                            else
+                            {
+                                $('#VListofFiles').hide();
+                                $('#Vdiv_file').hide();
+                            }
+
+                            if (Expense_Type_Id == 1) {
+                                $("div.VConveyanceselfield").show();
+                            }
+                            else {
+                                $("div.VConveyanceselfield").hide();
+                                $('#txt_VTravelMode').val("0");
+                                $('#txt_VFrom').val("");
+                                $('#txt_VTo').val("");
+                                $('#txt_VKM').val("");
+                                // $('#txt_VAmount').prop('disabled', false).css("background-color", "white");
+                            }
+                            if (Travel_Mode_Id == 1 || Travel_Mode_Id == 2) {
+                                $("div.VModefield").show();
+                                //$('#txt_VAmount').prop('disabled', true);
+                            }
+                            else {
+                                $("div.VModefield").hide();
+                            }
+
+                            $('#view_expense').modal();
+                        }
+                    }
+                });
+            }
+        })
+
+        $(document).on('click', ".lnkActionDel", function (e) {
+            var $buttonClicked = $(this);
+            var id = $buttonClicked.attr("data_id");
+            var c = confirm("Once Deleted you can't recover the data.\nDo you want to continue?")
+            if (c == true) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/Expense/DelExpenseRecord',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(
+                        {
+                            'Expense_id': id
+                        }),
+                    dataType: 'json',
+                    success: function (data) {
+                        var succ = data.SuccessMsg;
+                        var err = data.ErrorMsg;
+                        if (succ != null && err == null) {
+                            alert("Entry Sucessfully Deleted.");
+                            ExpenseReport($('#ddl_month option:selected').val(), $('#ddl_year option:selected').val());
+                        }
+                        else {
+                            alert(err);
+                        }
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', ".upload_file", function (e) {
+            var file_id = $(this).attr("data_id");
+            if (file_id != "") {
+                $.ajax({
+                    url: '/Expense/GetExpenseFiles',
+                    type: 'GET',
+                    contenttype: "application/json; charset=utf-8",
+                    data: { 'File_Id': file_id },
+                    datatype: 'Json',
+                    success: function (data) {
+                        var result = JSON.parse(data);
+                        if (result.length > 0) {
+                            $('#tblBodyFiles').empty();
+                            var html = "";
+                            $.each(result, function (txt, val) {
+                                html += "<tr data_id='" + val.id + "'>";
+                                html += "<td>" + val.filename + "</td > ";
+                                html += "</tr>";
+                            });
+                            $('#tblBodyFiles').append(html);
+
+                            $('#myModal').modal('show');
+                        }
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                    }
+                });
+            }
+        });
+
+        $('#btn_Search').click(function () {
+            var Month = $('#ddl_month option:selected').val();
+            var Year = $('#ddl_year option:selected').val();
+
+            if (Month == "0") {
+                alert("Please Select Month.");
+                setTimeout(function () { $('#ddl_month').focus(); }, 1);
+                return false;
+            }
+            else if (Year == "0") {
+                alert("Please Select Year.");
+                setTimeout(function () { $('#ddl_year').focus(); }, 1);
+                return false;
+            }
+            ExpenseReport(Month, Year);
+        });
+
+        $('#btn_edit_close').on('click', function () {
+
+        });
+
+        $('#btn_Submit').on('click', function () {
+            var Month = $('#ddl_month option:selected').val();
+            var Year = $('#ddl_year option:selected').val();
+
+            if (Month == "0") {
+                alert("Please Select Month.");
+                setTimeout(function () { $('#ddl_month').focus(); }, 1);
+                return false;
+            }
+            else if (Year == "0") {
+                alert("Please Select Year.");
+                setTimeout(function () { $('#ddl_year').focus(); }, 1);
+                return false;
+            }
+            if (Month != 0 && Year != 0)
+            {
+                var r = confirm("Period for the new entries will be locked for this month once you submit the Expense.\nDo you want to continue?")
+                if (r == true) {
+                    $('#btn_Submit').prop('disabled', true);
+                    $('#btn_Export').prop('disabled', true);
+                    $('#btn_Search').prop('disabled', true);
+                    $.ajax({
+                        type: 'POST',
+                        url: '/Expense/ExpenseForApproval',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(
+                            {
+                                'MONTH': Month, 'YEAR': Year
+                            }),
+                        dataType: 'json',
+                        success: function (data) {
+                            var succ = data.SuccessMsg;
+                            var err = data.ErrorMsg;
+                            if (succ != null && err == null) {
+                                alert(succ);
+                                $('#btn_Submit').prop('disabled', true).hide();
+                                $('#btn_Export').prop('disabled', false);
+                                $('#btn_Search').prop('disabled', false);
+                                ExpenseReport(Month, Year);
+                            }
+                            else
+                            {
+                                alert(err);
+                            }
+                        },
+                        error: function (data) {
+                            alert(data.responseText);
+                        }
+                    });
+                }
+            }
+        });
+    })
+
+    function ExpenseReport(Month, Year) {
+        $.ajax({
+            type: "POST",
+            url: "/Expense/GetExpense_History",
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ 'Month': Month, 'Year': Year }),
+            dataType: 'json',
+            success: function (data) {
+                var result = JSON.parse(data.history);
+                var result1 = JSON.parse(data.remarks);
+                if (result.length > 0) {
+                    $("#tblExpenseReport").dataTable().fnDestroy();
+                    $('#tblHistoryBody').empty();
+                    var html = "";
+                    var st, user_submission, mg_approval, hr_approval;
+                    $.each(result, function (txt, val) {
+                        st = val.EXPENSE_STATUS;
+                        user_submission = val.USER_SUBMISSION;
+                        mg_approval = val.MNG_APPROVAL;
+                        hr_approval = val.HR_APPROVAL;
+
+                        html += "<tr id='info'>";
+                        html += "<td data_id='" + val.ID + "'> " + val.SR_NO + "</td > ";
+                        html += "<td>" + val.EXPENSE_DATE + "</td>";
+                        html += "<td>" + val.PROJECT_NAME + "</td>";
+                        html += "<td>" + val.EXPENSE_TYPE_NAME + "</td>";
+                        html += "<td style='text-align:right' id='tot'>" + val.EXPENSE_AMOUNT + "</td>";
+                        html += "<td style='width:135px;'>" + val.DESCRIPTION + "</td>";
+                        if (val.FileName == 'attachment') {
+                            html += "<td><a class='upload_file' title='Attachement' href='javascript:void(0);' data_id='" + val.ID + "'><i class='fa fa-paperclip m-r-5' style='font-size: 15px;'></i></a></td>";
+                        }
+                        else {
+                            html += "<td></td>";
+                        }
+                        html += "<td>";
+                        if (st == 'Open' || st == "Rejected" || st == "Rejected Hr") {
+                            html += "<a href='javascript:void(0);' class='lnkActionEdit' title='Edit' data_id='" + val.ID + "' > <i class='fa fa-pencil m-r-5'></i ></a>  ";
+                            html += "<a href='javascript:void(0);' class='lnkActionView' title='View' data_id='" + val.ID + "' ><i class='fa fa-eye m-r-5'></i></a>"
+                            html += "<a href='javascript:void(0);' class='lnkActionDel' title='Delete' data_id='" + val.ID + "'><i class='fa fa-trash m-r-5'></i></a>";
+                        }
+                        else {
+                            html += "<a href='javascript:void(0);' class='lnkActionView' title='View' data_id='" + val.ID + "'><i class='fa fa-eye m-r-5'></i></a>"
+                        }
+                        html += "</td>";
+                        html += "</tr>";
+                    });
+                    $('#tblHistoryBody').append(html);
+                    $("#tblExpenseReport").DataTable(
+                        {
+                            "columnDefs": [
+                                { "targets": [7], "orderable": false }
+                            ],
+                            "language": {
+                                "search": "",
+                                "searchPlaceholder": "Search"
+                            }
+                        });
+                    if (st != "Open" && st != undefined && st != "Rejected" && st != "Rejected Hr")
+                    {
+                        $('.btn_Submit').hide();
+                    }
+                    else if (st == "Rejected" || st == "Rejected Hr" || st == "Open")
+                    {
+                        $('.btn_Submit').show();
+                    }
+
+                    $('#tblExpenseReport').each(function () {
+                        var amt_sum = 0;
+                        $(this).find('tr#info td#tot').each(function () {
+                            var combat = $(this).text();
+                            if (!isNaN(combat) && combat.length !== 0) {
+                                amt_sum = parseFloat(amt_sum) + parseFloat(combat);
+                            }
+                        });
+                        $('.grdtotal').text(amt_sum.toFixed(2)).digits();
+                    });
+
+                    if (result1) {
+                        $('#tblRemarkBody').empty();
+                        var html = "";
+                        $.each(result1, function (txt, val) {
+                            html += "<tr>";
+                            html += "<td style='color:#ff0000'>" + st + "</td > ";
+                            html += "<td style='color:#ff0000'>" + user_submission + "</td>";
+                            html += "<td style='color:#ff0000'>" + mg_approval + "</td>";
+                            html += "<td style='color:#ff0000'>" + hr_approval + "</td>";
+                            html += "<td style='color:#ff0000'>" + val.Approve_Remark_Manager + "</td > ";
+                            html += "<td style='color:#ff0000'>" + val.Approve_Remark_Hr + "</td>";
+                            html += "<td style='color:#ff0000'>" + val.Reject_Remark_Manager + "</td>";
+                            html += "<td style='color:#ff0000'>" + val.Reject_Remark_Hr + "</td>";
+                            html += "</tr>";
+                        });
+                        $('#tblRemarkBody').append(html);
+                    }
+                    $('.table-responsive').show();
+                    //$('#tbl_status').show();
+                    //$('#btn_Submit').show();
+                    $('#btn_Export').show();
+                }
+                else {
+                    $('.table-responsive').hide();
+                    //$('#tbl_status').hide();
+                    $('.btn_Submit').hide();
+                    $('#btn_Export').hide();
+                    alert("No Data Found..");
+                }
+                $('#ddl_month').val(Month);
+                $('#ddl_year').val(Year);
+            },
+            error: function (data) {
+                alert(data.responseText);
+            }
+        });
+    }
+
+    // function for digit convert and replce .00
+    $.fn.digits = function () {
+        return this.each(function () {
+            $(this).text($(this).text().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,"));
+        })
+    }
+</script>

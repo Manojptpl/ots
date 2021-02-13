@@ -1,0 +1,722 @@
+﻿
+@{ Html.RenderPartial("_SettingsMenu"); }
+<style type="text/css">
+    button.myClose {
+        background: linear-gradient(to right, #ff9b44 0%, #fc6075 100%);
+        border-radius: 50%;
+        height: 37px;
+        left: -15px;
+        opacity: 1;
+        position: relative;
+        top: 15px;
+        width: 37px;
+        text-shadow: inherit;
+        color: #fff;
+        z-index: 99;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('a[href$="' + "/hierarchy" + '"]').closest("li").addClass('active');
+        var i = 0, j = 0, k = 0;
+        currentRow = null;
+        $('#btn_save').hide();
+
+        $(document).ajaxStart(function () {
+            $('.overlay').css("display", "block");
+        });
+
+        $(document).ajaxComplete(function () {
+            $('.overlay').css("display", "none");
+        });
+
+        GetHierarchy();
+
+        $('#tblhierarchyList').hide();
+
+        $('#btn_updateHierarchy').hide();
+
+        $('#div_employee').hide();
+
+        $('#btn_addHierarchy').click(function ()
+        {
+            var hierarchy_name = $('#txt_hierarchyname').val();
+
+            var hierarchy_level = $('#ddl_level option:selected').val(); 
+            
+            var hierarchy_valueId = $('#ddl_value option:selected').val();
+
+            var hierarchy_value = $('#ddl_value option:selected').text(); 
+            
+            var status = $('#ddl_status option:selected').text();
+
+            var status_id = $('#ddl_status option:selected').val();
+
+            if (hierarchy_name == "")
+            {
+                alert("Hierarchy name can't be blank.");
+                setTimeout(function () { $('#txt_hierarchyname').focus(); });
+                return false;
+            }
+            else if (hierarchy_level == "0") {
+                alert("Hierarchy Level can't be blank.");
+                setTimeout(function () { $('#ddl_level').focus(); });
+                return false;
+            }
+            else if (hierarchy_valueId == "0"){
+                alert("Hierarchy value can't be blank.");
+                setTimeout(function () { $('#ddl_value').focus(); });
+                return false;
+            }
+            else if ($("#ddl_value").val() == "MM" || $("#ddl_value").val() == "HR" || $("#ddl_value").val() == "FH")
+            {
+                if ($("#ddl_employee option:selected").val() == "0") {
+                    alert("Please Select  Employee !");
+                    $("#ddl_employee").focus();
+                    return false;
+                }
+            }
+            else if ($("#txt_startdate").val() == "")
+            {
+                alert("Start Date Can't be blank !");
+                $("#txt_startdate").focus();
+                return false;
+            }
+            else if ($("#txt_enddate").val() == "") {
+                alert("End Date Can't be blank !");
+                $("#txt_enddate").focus();
+                return false;
+            }
+            else
+            {               
+               var html = '';
+               var sr_no = "";
+                if (currentRow)
+                {
+                   sr_no=$('#Edithdn_hierarchyCount').val();
+                }
+                else
+                {                   
+                   sr_no = $('#hdn_hierarchyCount').val();
+                }
+
+                html += "<tr id='row" + i + "'>";
+                html += "<td>" + sr_no + "</td>";
+                html += "<td style='display: none;'>" + hierarchy_name + "</td>";
+                html += "<td data_id='" + hierarchy_level + "'>" + $('#ddl_level option:selected').text() + "</td>";
+                html += "<td data_id='" + hierarchy_valueId + "'>" + hierarchy_value + "</td>";
+
+                if ($("#ddl_value").val() == 'MM' || $("#ddl_value").val() == 'HR' || $("#ddl_value").val() == 'FH')
+                {
+                    html += "<td data_id='" + $("#ddl_employee").val() + "'>" + $("#ddl_employee option:selected").text() + "</td>";
+                }
+                else
+                {
+                    html += "<td data_id=''></td>";
+                }
+                html += "<td>" + $("#txt_startdate").val()+"</td>";
+                html += "<td>" + $("#txt_enddate").val() + "</td>";
+                html += "<td data_id='" + status_id + "'>" + status + "</td>";
+                //html += "<td>" + end_date + "</td>";
+                if ($('#hdn_hierarchyId').val() > 0)
+                {
+                    html += "<td><a href='javascript:void(0);' class='font-18 btnEdit' data_id='" + $('#hdn_hierarchyId').val()+"' title='Edit'><i class='fa fa-pencil m-r-5'></i></a> ";
+                }
+                else
+                {
+                    html += "<td><a href='javascript:void(0);' class='font-18 btnEdit'  data_id='0' title='Edit'><i class='fa fa-pencil m-r-5'></i></a> <a href='javascript:void(0)' class='text-danger font-18 btnDelete' title='Remove' ><i class='fa fa-trash-o' aria-hidden='true'></i></a>";
+                }
+                $('#hdn_hierarchyId').val(0);
+                html += "</tr>";
+
+                if (currentRow)
+                {
+                    var table = $("#tblhierarchyList tbody").find('tr')
+                    var Boolean = false;
+                    table.each(function () {
+                        if ($(this).find('td')) {
+                            if ($('#hdtblcurrenthierarchyvalue').val() != $("#ddl_value").val()) {
+                                if ($(this).find("td").eq(3).attr('data_id') == $("#ddl_value").val()) {
+                                    Boolean = true;
+                                }
+                            }
+                            
+                        }
+
+                    });
+                    if (Boolean == true) {
+                        alert("Please Select Unique  Value !");
+                        $('#ddl_value').focus("");
+                        setTimeout(function () { $('#ddl_value').focus(); });
+                        return false;
+                    }
+
+                    $("#tblhierarchyList tbody").find($(currentRow)).replaceWith(html);
+                    currentRow = null;
+                    alert("Successfully updated row.")
+                    $("#btn_addHierarchy").html('Add');  
+                    $('#ddl_level').val("0");
+                    $('#ddl_value').val("");
+                    $("#ddl_employee").val("0");
+                    $("#div_employee").hide();
+                    $("#div_value").show(); 
+                    $('#ddl_status').val("Active"); 
+                    $("#txt_startdate").val("");
+                    $("#txt_enddate").val("");
+                    
+                }
+                else
+                {
+                    var table = $("#tblhierarchyList tbody").find('tr')
+                    var Boolean = false;
+                    table.each(function () {
+                        if ($(this).find('td')) {
+
+                            if ($(this).find("td").eq(3).attr('data_id') == $("#ddl_value").val()) {
+                                Boolean = true;
+                            } 
+                        }
+
+                    });
+                    if (Boolean == true)
+                    {
+                        alert("Please Select Unique  Value !");
+                        $('#ddl_value').focus("");
+                        setTimeout(function () { $('#ddl_value').focus(); });
+                        return false;
+                    }
+
+                    $("#tblhierarchyList").find("tbody").append(html);
+                   
+                    $("#hdlavelcondition").val(parseInt($("#hdlavelcondition").val()) + 1);
+                    alert("Successfully added row.");
+                    $('#tblhierarchyList').show();                    
+                    var increment_count = parseInt(parseInt(sr_no) + 1);
+                    $('#hdn_hierarchyCount').val(increment_count);
+                    $('#txt_hierarchyname').prop('readonly', true);
+                    $('#ddl_level').val("0");
+                    $('#ddl_value').val("0"); 
+                    $("#ddl_employee").val("0");
+                    $('#btn_save').show();
+                    $("#div_employee").hide();
+                    $("#div_value").show();  
+                    $('#ddl_status').val("Active");
+                    $("#txt_startdate").val("");
+                    $("#txt_enddate").val("");
+                    i = i + 1;
+                }    
+            }
+        }); 
+
+        $(document).on("click", ".btnDelete", function (event) {
+            event.preventDefault();
+            var row = $(this).closest('tr');
+            if (_functiondelete() == true) {
+                setTimeout(function () { // Simulating ajax
+                    var siblings = row.siblings();
+                    row.remove();
+                    siblings.each(function (index) {
+                        index = index + 1;
+                        $(this).children().first().text(index);
+                    });
+                }, 100);
+            }
+        });
+
+        $(document).on('click', '.btnEdit', function (e) {
+          
+            currentRow = $(this).parents('tr');
+            $('#hdn_hierarchyId').val($(this).closest('tr td a').attr('data_id'));
+            $('#Edithdn_hierarchyCount').val($(this).closest('tr').find('td').eq(0).html());
+            $('#hdtblcurrenthierarchyvalue').val($(this).closest('tr').find('td').eq(3).attr('data_id'));
+            $("#ddl_value").val($(this).closest('tr').find('td').eq(3).attr('data_id'));
+
+            if ($(this).closest('tr').find('td').eq(3).attr('data_id') == 'MM' || $(this).closest('tr').find('td').eq(3).attr('data_id') == 'HR' || $(this).closest('tr').find('td').eq(3).attr('data_id') == 'FH') {
+               // $("#div_value").hide(); 
+                $("#div_employee").show();  
+                $("#ddl_employee").val($(this).closest('tr').find('td').eq(4).attr('data_id'));
+              
+            } else
+            {
+                $("#div_employee").hide();  
+               // $("#div_value").show();  
+                $("#ddl_employee").val("0"); 
+                
+            }
+            $("#ddl_level").val($(this).closest('tr').find('td').eq(2).attr('data_id'));
+            $("#txt_startdate").val($(this).closest('tr').find('td').eq(5).html());
+            $("#txt_enddate").val($(this).closest('tr').find('td').eq(6).html());
+            $("#ddl_status").val($(this).closest('tr').find('td').eq(7).attr('data_id'));
+            $("#btn_addHierarchy").text('Update');
+
+        });
+
+        $(document).on('click', '#btn_edit', function (e) {
+            var hierarchy_name = $(this).closest('tr td a').attr('data_id');
+            GetHierarchyByName(hierarchy_name);
+        });
+
+        $('#btn_add').click(function () { 
+            currentRow = null; 
+            $("#btn_addHierarchy").html('Add');
+            $('#ddl_level').val("0");
+            $('#ddl_value').val("0");
+            $("#ddl_employee").val("0");
+            $("#div_employee").hide();
+            $("#div_value").show();
+            $('#ddl_status').val("Active");
+            $("#txt_startdate").val("");
+            $("#txt_enddate").val("");
+            $("#btn_save").hide(); 
+            $("#btn_addHierarchy").text("Add"); 
+            $("#hdlavelcondition").val(1); 
+
+            $('#hdn_hierarchyCount').val("1");
+            $('#Edithdn_hierarchyCount').val("0");
+            $('#tblhierarchyList tbody').empty();
+            $('#tblhierarchyList').hide();
+            $('#add_hierarchy').modal('hide');
+            $('#add_hierarchy').modal('show');
+        });
+
+        $('#btn_Close').click(function () {
+            //GetHierarchy();
+            $('#txt_hierarchyname').val("").prop('readonly', false);
+            $('#ddl_level').val("0");
+            $('#ddl_value').val("");
+            $('#hdn_hierarchyCount').val("1");
+            $('#Edithdn_hierarchyCount').val("0");
+            $('#tblhierarchyList tbody').empty();
+            $('#tblhierarchyList').hide();
+            $('#add_hierarchy').modal('hide');
+
+
+            $("#btn_addHierarchy").html('Add');
+            $('#ddl_level').val("0");
+            $('#ddl_value').val("");
+            $("#ddl_employee").val("0");
+            $("#div_employee").hide();
+            $("#div_value").show();
+            $('#ddl_status').val("Active");
+            $("#txt_startdate").val("");
+            $("#txt_enddate").val("");
+            $("#btn_save").hide();
+            $("#btn_addHierarchy").text("Add");
+            $("#hdlavelcondition").val(1);
+            location.href = location.href;
+        });
+
+        $('#btn_save').on('click', function (e) {
+            var count = 1, boolean = true; 
+            var table = $("#tblhierarchyList tbody").find('tr'); 
+            table.each(function () {
+                if ($(this).find('td')) {
+                    if ($(this).find("td").eq(2).attr('data_id') != 'NA') {
+                        if ($(this).find("td").eq(2).attr('data_id') != count){
+                            alert("You Have To Maintain  Sequence In Level !"); 
+                            boolean= false;
+                        } else {
+                            count = count + 1;
+                        } 
+                    }
+
+                }
+            });
+            if (boolean == true)
+            {
+                var data = JSON.stringify(GetTableData());
+                if (Object.keys(data).length > 2) {
+                    $.ajax({
+                        url: '/settings/save_hierarchy',
+                        type: 'POST',
+                        contentType: "application/json;charset=utf-8",
+                        data: JSON.stringify({ 'TableData': data }),
+                        dataType: 'json',
+                        success: function (data) {
+                            var succ = data.SuccessMsg;
+                            var err = data.ErrorMsg;
+                            if (data != null && succ != null)
+                            {
+                                alert(succ);
+                                $('#txt_hierarchyname').val("").prop('readonly', false);
+                                $('#ddl_level').val("0");
+                                $('#ddl_value').val("");
+                                $("#tblhierarchyList tbody").empty();
+                                $('#btn_save').hide();
+                                GetHierarchy();
+                                $('#tblhierarchyList').hide();
+                                $('#add_hierarchy').modal('hide');
+                            }
+                            else
+                            {
+                                alert(err);
+                            }
+                        },
+                        error: function (data) {
+                            alert("Network Related Error");
+                        }
+                    });
+                }
+            }
+        });
+
+        $('.myClose').click(function () {
+            window.location.href = "/settings/approval_rules";
+        });
+
+        $("#txt_startdate").on("change", function () { 
+                $('#txt_enddate').val(""); 
+        });
+
+        $("#txt_enddate").on("change", function () {
+            var start_dt = myDateFormatter($('#txt_startdate').val());
+            var end_dt = myDateFormatter($('#txt_enddate').val());
+            if (start_dt > end_dt) {
+                alert("End Date can't less then start date.");
+                $('#txt_enddate').val("");
+                setTimeout(function () { $('#txt_enddate').focus(); })
+            }
+        });
+
+    });
+
+    function GetHierarchy()
+    {
+        
+        $.ajax({
+            type: 'GET',
+            url: '/settings/GetHierarchy',
+            contentType: 'application/json;charset=utf-8',
+            data: {},
+            dataType: 'json',
+            success: function (data) {
+                var Hierarchy = JSON.parse(data.Hierarchy);
+                var Employee = JSON.parse(data.Employee);
+                $("#tbl_hierarchy").dataTable().fnDestroy();
+                if (Hierarchy.length > 0)
+                {
+                    $('#tblbody').empty();
+                    var html = '';
+                    $.each(Hierarchy, function (txt,val) {
+                        html += "<tr>";
+                        html += "<td>" + val.SR_NO + "</td>";
+                        html += "<td>" + val.HIERARCHY_NAME + "</td>";
+                        html += "<td><a href='javascript:void(0);' title='Edit' id='btn_edit' data_id='" + val.HIERARCHY_NAME+ "'><i class='fa fa-pencil m-r-5'></i></a>";
+                        html += "</td>";
+                        html += "</tr>";
+                    });
+                    $('#tblbody').append(html);
+
+                    $("#tbl_hierarchy").DataTable(
+                        {
+                            "columnDefs": [
+                                { "targets": [2], "orderable": false }
+                            ],
+                            "language": {
+                                "search": "",
+                                "searchPlaceholder": "Search"
+                            }
+                        });
+                }
+                if (Employee.length > 0)
+                {
+                    $("#ddl_employee").html("");
+                    $("#ddl_employee").append($('<option></option>').val("0").html("Select"));
+                    //Append each row to dropdown
+                    $.each(Employee, function (txt, val)
+                    {
+                        $("#ddl_employee").append($('<option></option>').val(val.EMP_ID).html(val.TEMP_NAME));
+                    });
+                }
+            },
+            error: function (data) {
+                //location.href = location.href;
+            }
+        });
+    }
+
+    function GetHierarchyByName(hierarchy_name)
+    {
+        if (hierarchy_name != "") {
+            $.ajax({
+                type: 'GET',
+                url: '/settings/GetHierarchyByName',
+                contentType: 'application/json;charset=utf-8',
+                data: { 'hierarchy_name': hierarchy_name },
+                dataType: 'json',
+                success: function (data) {
+                    var Result = JSON.parse(data);
+                    if (Result.length > 0) {
+                        $("#tblhierarchyList tbody").empty();
+                        var html = '';
+                        $.each(Result, function (txt, VAL) {
+                            html += "<tr id=''>";
+                            html += "<td>" + VAL.SR_NO + "</td>";
+                            html += "<td style='display: none;'>" + VAL.HIERARCHY_NAME + "</td>";
+                            html += "<td data_id=" + VAL.HIERARCHY_LEVEL_ATTR + ">" + VAL.HIERARCHY_LEVEL + "</td>";
+                            html += "<td  data_id=" + VAL.HIERARCHY_VALUE_ATTR + ">" + VAL.HIERARCHY_VALUE + "</td>";
+                            html += "<td  data_id=" + VAL.EMP_ID + ">" + VAL.EMP_NAME + "</td>";
+                            html += "<td>" + VAL.START_DATE + "</td>";
+                            html += "<td>" + VAL.END_DATE + "</td>";
+                            html += "<td data_id=" + VAL.STATUS + ">" + VAL.STATUS + "</td>";
+                            html += "<td><a href='javascript:void(0);' class='font-18 btnEdit' data_id='" + VAL.HIERARCHY_ID + "' title='Edit' id='btn_edit'><i class='fa fa-pencil m-r-5'></i></a></td>";
+                            html += "</tr>";
+                            var sr = parseInt(parseInt(VAL.SR_NO) + 1);
+                            $('#hdn_hierarchyCount').val(sr);
+                        });
+
+                        $('#tblhierarchyList tbody').append(html);
+                        $('#txt_hierarchyname').val(hierarchy_name).prop('readonly', true);
+                        $('#tblhierarchyList').show();
+                        $('#btn_save').show();
+                        $('#add_hierarchy').modal('show');
+                    }
+                },
+                error: function (data) {
+                    alert(data.responseText);
+                }
+            });
+        }  
+    }
+
+    function GetTableData()
+    {
+        var data = [];
+        $('#tblhierarchyList tbody tr').each(function () {
+            
+            var hierarchy_id = $(this).find('td a').attr('data_id');
+            var rowid = $(this).attr('id');
+            var hierarchy_name = $(this).find("td").eq(1).html();
+            var hierarchy_level = $(this).find("td").eq(2).attr('data_id');
+            var hierarchy_value = $(this).find("td").eq(3).attr('data_id');
+            var startdate = $(this).find("td").eq(5).html();
+            var enddate = $(this).find("td").eq(6).html();            
+            var employee_id = $(this).find("td").eq(4).attr('data_id') == "" ? 0 : $(this).find("td").eq(4).attr('data_id');
+            var status = $(this).find("td").eq(7).html();
+            if (rowid != "")
+            {         
+                var alldata = {
+                    'hierarchy_id': hierarchy_id,
+                    'hierarchy_name': hierarchy_name,
+                    'hierarchy_level': hierarchy_level,
+                    'hierarchy_value': hierarchy_value,
+                    'startdate': startdate,
+                    'enddate': enddate,
+                    'employee_id': employee_id,
+                    'status': status
+                }
+                data.push(alldata);
+            }
+        });
+        return data;
+    }
+
+    function ValueOnChange(t)
+    {
+        if ($("#ddl_level").val() == 0)
+        {
+            alert("Please Select Hierarchy Level.");
+            setTimeout(function () { $("#ddl_level").focus(); });
+            $("#ddl_value").val("0");
+            return false;
+        }
+
+        var value = $(t).val();       
+        if (value == "MM" || value == "HR" || value == "FH")
+        {
+            $("#div_employee").show();
+        }
+        else
+        {
+            $("#ddl_employee").val('0');
+            $("#div_employee").hide();
+        }
+    }
+
+    function LevelOnChange()
+    {
+        $("#ddl_value").val("0");
+        $('#div_value').show();
+        $('#div_employee').hide();
+    }
+
+    function ClearText()
+    {
+        $('#txt_hierarchyname').val("");
+        $('#ddl_level').val("0");
+        $('#ddl_value').val("0");
+        $('#ddl_employee').val("0");
+        $('#ddl_status').val('Active');
+
+    }
+
+    function _functiondelete() {
+        if (confirm("Are you sure you want to delete record ?")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+</script>
+
+<div class="row">
+    <div class="col-sm-6">
+        <h4 class="page-title">Hierarchy</h4>
+    </div>
+    <div class="col-sm-4 text-right m-b-30">
+        <a href="javascript:void(0);" class="btn btn-primary rounded" id="btn_add"><i class="fa fa-plus"></i> Add New</a>
+    </div>
+    <div class="col-sm-2 text-right m-b-30">
+        <button type="button" class="close myClose" style="display:none" id="btn_HierarchyClose">&times;</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div>
+            <div class="row" id="hierarchy">
+                <div class="col-md-12">
+                    <table class="table table-striped custom-table m-b-0 " id="tbl_hierarchy">
+                        <thead>
+                            <tr>
+                                <th>Sr. No.</th>
+                                <th>Hierarchy Name</th>
+                                <th width="60px" class="text-left">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="add_hierarchy" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" id="btn_Close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Hierarchy</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label>Hierarchy Name <span class="text-danger">*</span></label>
+                                    <input class="form-control" id="txt_hierarchyname" type="text" placeholder="Hierarchy Name">
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label>Level<span class="text-danger">*</span></label>
+                                    <select class="form-control" id="ddl_level" onchange="LevelOnChange();">
+                                        <option value="0">Select</option>
+                                        <option value="1">Level 1</option>
+                                        <option value="2">Level 2</option>
+                                        <option value="3">Level 3</option>
+                                        @*<option value="NA">Not Applicable</option>*@
+                                        @*<option value="SU">Single User</option>
+                                        <option value="Auto">Auto Approval</option>*@
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-sm-4" id="div_value">
+                                <div class="form-group">
+                                    <label>Value<span class="text-danger">*</span></label>
+                                    <select class="form-control" id="ddl_value" onchange="ValueOnChange(this);">
+                                        <option value="0">Select</option>
+                                        <option value="IS">Immediate Supervisor</option>
+                                        <option value="SH">Section Head</option>
+                                        <option value="DH">Department Head</option>
+                                        <option value="MM">Management</option>
+                                        <option value="HR">Human Resource</option>
+                                        <option value="FH">Finance Head</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-sm-4" id="div_employee">
+                                <div class="form-group">
+                                    <label>Employee<span class="text-danger">*</span></label>
+                                    @Html.DropDownList("ddl_employee",(IEnumerable<SelectListItem>)ViewBag.employee, new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label>Start date<span class="text-danger">*</span></label>
+                                    <div class="cal-icon "><input id="txt_startdate" placeholder="dd-mmm-yyyy" class="form-control mycal" type="text"></div> 
+                                </div>
+                            </div>
+
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label>End date<span class="text-danger">*</span></label>
+                                    <div class="cal-icon "><input id="txt_enddate" placeholder="dd-mmm-yyyy" class="form-control mycal" type="text"></div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label>Status<span class="text-danger">*</span></label>
+                                    @*<div class="cal-icon "><input id="txt_startdate" class="form-control mycal" type="text"></div>*@
+                                    <select id="ddl_status" class="form-control">
+                                        <option selected value="Active">Active</option>
+                                        <option value="In-active">In-active</option>
+                                        @*<option value="Draft">Draft</option>*@
+                                    </select>
+                                </div>
+                            </div>
+                             <div class="col-sm-1">
+                                <div class="form-group">
+                                    <label></label>
+                                </div>
+
+                                 <input type="hidden" id="hdlavelcondition" value="1" />
+                                 <input type="hidden" id="hdtblcurrenthierarchyvalue"  />
+                                 <button type="button" class="btn btn-primary" style="margin-top:-10px;width:98px;" id="btn_addHierarchy">Add</button>
+                                 <button type="button" class="btn btn-primary" style="margin-top:-10px;" id="btn_updateHierarchy">Update</button>
+                                 <input type="hidden" id="hdn_hierarchyId" />
+                            </div>
+                        </div>                     
+                    </div>
+                    <br />
+                    <div class="row" id="tbl_hierarchyList">
+                        <input type="hidden" id="hdn_hierarchyCount" value="1" />
+                        <input type="hidden" id="Edithdn_hierarchyCount" value="0" />
+                        <div class="col-md-12">
+                            <table class="table table-striped custom-table m-b-0 " id="tblhierarchyList">
+                                <thead>
+                                    <tr>
+                                        <th>Sr. No.</th>
+                                        <th style="display:none;">Hierarchy Name</th>
+                                        <th>Hierarchy Level</th>
+                                        <th>Hierarchy Value</th>
+                                        <th>Employee Name</th>
+                                        <th>Start date</th>
+                                        <th>End date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row text-center">
+                        <button class="btn btn-primary" id="btn_save" type="button">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" style="display:none;">
+    <div id="wait" class="col-sm-12" style="top:30%;left:30%;"><img src="~/assets/img/giphy.gif" /><br></div>
+</div>

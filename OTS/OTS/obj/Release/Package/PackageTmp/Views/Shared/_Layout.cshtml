@@ -1,0 +1,329 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    @*<link rel="shortcut icon" type="~/image/x-icon" href="/ThemeImg/@Session["favicon"].ToString()" />*@
+    <link rel="shortcut icon" type="~/image/x-icon" href="@Url.Content("~/assets/img/faviconprudence.png")" />
+    <title>Online Time Sheet</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="~/assets/css/bootstrap.min.css" />
+    @*<link rel="stylesheet" type="text/css" href="~/assets/css/bootstrap-datetimepicker.min.css" />*@
+    <link rel="stylesheet" type="text/css" href="~/assets/datetimepicker/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/assets/css/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="~/assets/css/dataTables.bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/assets/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/assets/css/dataTables.bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/assets/css/buttons.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/assets/css/select2.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/assets/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="~/assets/plugins/morris/morris.css" />
+    <link rel="stylesheet" type="text/css" href="~/assets/SweetAlert/sweetalert.css" />
+
+    <!--[if lt IE 9]>
+        <script src="/assets/js/html5shiv.min.js"></script>
+        <script src="/assets/js/respond.min.js"></script>
+    <![endif]-->
+
+
+    <script type="text/javascript" src="~/assets/js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/moment.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/jquery-ui.js"></script>
+    <script type="text/javascript" src="~/assets/js/bootstrap.min.js"></script>
+
+    @*<script type="text/javascript" src="~/assets/js/bootstrap-datetimepicker.min.js"></script> 
+    <script type="text/javascript" src="~/assets/js/locales/bootstrap-datetimepicker.fr.js"></script>
+    <script type="text/javascript" src="~/assets/locales/moment-with-locales.js"></script>*@
+
+    <script src="~/assets/datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="~/assets/datetimepicker/js/bootstrap-datetimepicker.fr.js"></script>
+    <script src="~/assets/datetimepicker/js/moment-with-locales.min.js"></script>
+    
+    
+    <script type="text/javascript" src="~/assets/js/year-select.js"></script>
+    <script type="text/javascript" src="~/assets/js/CommanJS.js"></script>
+    <script type="text/javascript" src="~/assets/js/json-to-table.js"></script>
+
+    <style type="text/css">
+        .table.custom-table > thead > tr > th {
+            padding: 9px 27px;
+            vertical-align: middle;
+        }
+
+        div.dataTables_wrapper div.dataTables_filter input {
+            border-radius: 50px !important;
+            width: 306px;
+        }
+
+        .input_search {
+            height: 39px !important;
+            padding: 10px 12px 0px !important;
+        }
+
+        .myclass {
+            margin-top: 11px !important;
+            border-radius: 32px !important;
+        }
+
+        .table-responsive {
+            overflow-x: inherit;
+            /*overflow-y: inherit;*/
+        }
+
+        .table.custom-table > thead > tr > th {
+            padding: 9px 6px !important;
+        }
+
+        div.dt-buttons {
+            margin-left: 42px !important;
+        }
+
+        .myicon {
+            border-radius: 50%;
+            height: 50px;
+            left: -15px;
+            opacity: 1;
+            position: relative;
+            top: 15px;
+            font-size: 40px;
+            width: 50px;
+            text-shadow: inherit;
+            color: #fff;
+            z-index: 99;
+            text-align: center;
+            background: linear-gradient(to right, #ff9b44 0%, #fc6075 100%);
+        }
+
+            .myicon:hover {
+                border-radius: 50%;
+                font-size: 40px;
+                height: 50px;
+                left: -15px;
+                opacity: 1;
+                position: relative;
+                top: 15px;
+                width: 50px;
+                text-shadow: inherit;
+                color: #fff;
+                z-index: 99;
+                text-align: center;
+                background: linear-gradient(to right, #ff9b44 0%, #fc6075 100%);
+            }
+
+        .Noofdays {
+            width: 12%;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        function popup(url) {
+            window.open(url, "#1", "dialogHeight:600px;dialogHeight:400px;dialogWidth:700px;dialogTop:300px;dialogLeft:400px;edge:Raised;center:Yes;help:No;Resiable:No;Status:No;");
+        }
+
+    </script>
+
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="header">
+            <div class="header-left">
+                <a href="@Url.Content("~/home/dashboard")" class="logo">
+                    <img src="~/assets/img/Logo-Prudence.png" style="height:44px;width:100px;" />
+                </a>
+            </div>
+            <div class="page-title-box pull-left">
+                <h3><b>Prudence Technology Pvt. Ltd.</b></h3>
+            </div>
+            <a id="mobile_btn" class="mobile_btn pull-left" href="#sidebar"><i class="fa fa-bars" aria-hidden="true"></i></a>
+            <ul class="nav navbar-nav navbar-right user-menu pull-right">
+                <li class="dropdown hidden-xs">
+                    @*<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-bell-o"></i> <span class="badge bg-purple pull-right">3</span></a>*@
+                    <div class="dropdown-menu notifications">
+                        <div class="topnav-dropdown-header">
+                            <span>Notifications</span>
+                        </div>
+                        <div class="drop-scroll">
+                            <ul class="media-list">
+                                <li class="media notification-message">
+                                    <a href="javascript:;">
+                                        <div class="media-left">
+                                            <span class="avatar">
+                                                <img alt="John Doe" src="~/assets/img/user.jpg" class="img-responsive img-circle" />
+                                            </span>
+                                        </div>
+                                        <div class="media-body">
+                                            <p class="m-0 noti-details"><span class="noti-title">John Doe</span> added new task <span class="noti-title">Patient appointment booking</span></p>
+                                            <p class="m-0"><span class="notification-time">4 mins ago</span></p>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="media notification-message">
+                                    <a href="javascript:;">
+                                        <div class="media-left">
+                                            <span class="avatar">V</span>
+                                        </div>
+                                        <div class="media-body">
+                                            <p class="m-0 noti-details"><span class="noti-title">Tarah Shropshire</span> changed the task name <span class="noti-title">Appointment booking with payment gateway</span></p>
+                                            <p class="m-0"><span class="notification-time">6 mins ago</span></p>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="media notification-message">
+                                    <a href="javascript:;">
+                                        <div class="media-left">
+                                            <span class="avatar">L</span>
+                                        </div>
+                                        <div class="media-body">
+                                            <p class="m-0 noti-details"><span class="noti-title">Misty Tison</span> added <span class="noti-title">Domenic Houston</span> and <span class="noti-title">Claire Mapes</span> to project <span class="noti-title">Doctor available module</span></p>
+                                            <p class="m-0"><span class="notification-time">8 mins ago</span></p>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="media notification-message">
+                                    <a href="javascript:;">
+                                        <div class="media-left">
+                                            <span class="avatar">G</span>
+                                        </div>
+                                        <div class="media-body">
+                                            <p class="m-0 noti-details"><span class="noti-title">Rolland Webber</span> completed task <span class="noti-title">Patient and Doctor video conferencing</span></p>
+                                            <p class="m-0"><span class="notification-time">12 mins ago</span></p>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li class="media notification-message">
+                                    <a href="javascript:;">
+                                        <div class="media-left">
+                                            <span class="avatar">V</span>
+                                        </div>
+                                        <div class="media-body">
+                                            <p class="m-0 noti-details"><span class="noti-title">Bernardo Galaviz</span> added new task <span class="noti-title">Private chat module</span></p>
+                                            <p class="m-0"><span class="notification-time">2 days ago</span></p>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="topnav-dropdown-footer">
+                            <a href="/home/activities">View all Notifications</a>
+                        </div>
+                    </div>
+                </li>
+
+                <li class="dropdown">
+                    <a href="@Url.Content("/home/profile")" class="dropdown-toggle user-link" data-toggle="dropdown" title="@Session["Role_NAME"].ToString()">
+                        <span class="user-img">
+                            <img class="img-circle" src="~/ProfileImg/@Session["Profile_image"]" width="40">
+                            <span class="status online"></span>
+                        </span>
+                        <span>@Session["Emp_Name"].ToString()</span>
+                        <i class="caret"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="@Url.Content("/home/profile")">Profile</a></li>
+                        <li><a href="@Url.Content("/home/changepassword")">Change Password</a></li>
+                        <li><a href="@Url.Content("/home/logout")">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+        </div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-inner slimscroll">
+                <div id="sidebar-menu" class="sidebar-menu" style="margin-top:15px;">
+                    <ul>
+                        @Html.Raw(HttpUtility.HtmlDecode(Session["Menus"].ToString()))
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-wrapper">
+            <div class="content container-fluid">
+                @RenderBody()
+            </div>
+        </div>
+        <div class="modal-footer"><span>© 2018 Prudence Technology Pvt. Ltd. All rights reserved.</span></div>
+    </div>
+    <div class="sidebar-overlay" data-reff="#sidebar"></div>
+
+    <script type="text/javascript" src="@Url.Content("/assets/js/jquery.dataTables.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/js/dataTables.bootstrap.min.js")"></script>
+    <!--Datatable export Button js-->
+    <script type="text/javascript" src="@Url.Content("/assets/js/dataTables.buttons.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/js/jszip.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/js/pdfmake.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/js/vfs_fonts.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/js/buttons.html5.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/js/buttons.print.min.js")"></script>
+    <!--End-->
+    <script type="text/javascript" src="@Url.Content("/assets/js/jquery.slimscroll.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/js/select2.min.js")"></script>
+
+    <script type="text/javascript" src="@Url.Content("/assets/js/app.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/plugins/morris/morris.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/plugins/raphael/raphael-min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/SweetAlert/sweetalert.js")"></script>
+    <script type="text/javascript" src="@Url.Content("/assets/SweetAlert/sweetalert.min.js")"></script>
+
+    <script type="text/javascript">
+        $.ajaxSetup({
+            statusCode: {
+                403: function () {
+                    window.location.reload();
+                }
+            }
+        });
+
+    </script>
+    <script type="text/javascript">
+        var data = [
+            { y: '2014', a: 50, b: 90 },
+            { y: '2015', a: 65, b: 75 },
+            { y: '2016', a: 50, b: 50 },
+            { y: '2017', a: 75, b: 60 },
+            { y: '2018', a: 80, b: 65 },
+            { y: '2019', a: 90, b: 70 },
+            { y: '2020', a: 100, b: 75 },
+            { y: '2021', a: 115, b: 75 },
+            { y: '2022', a: 120, b: 85 },
+            { y: '2023', a: 145, b: 85 },
+            { y: '2024', a: 160, b: 95 }
+        ],
+            config = {
+                data: data,
+                xkey: 'y',
+                ykeys: ['a', 'b'],
+                labels: ['Total Income', 'Total Outcome'],
+                fillOpacity: 0.6,
+                hideHover: 'auto',
+                behaveLikeLine: true,
+                resize: true,
+                pointFillColors: ['#ffffff'],
+                pointStrokeColors: ['black'],
+                gridLineColor: '#eef0f2',
+                lineColors: ['gray', 'orange']
+            };
+        config.element = 'area-chart';
+        Morris.Area(config);
+        config.element = 'line-chart';
+        Morris.Line(config);
+        config.element = 'bar-chart';
+        Morris.Bar(config);
+        config.element = 'stacked';
+        config.stacked = true;
+        Morris.Bar(config);
+        Morris.Donut({
+            element: 'pie-chart',
+            data: [
+                { label: "Employees", value: 30 },
+                { label: "Clients", value: 15 },
+                { label: "Projects", value: 45 },
+                { label: "Tasks", value: 10 }
+            ]
+        });
+    </script>
+</body>
+</html>

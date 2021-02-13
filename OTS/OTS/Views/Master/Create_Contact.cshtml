@@ -1,0 +1,196 @@
+﻿@model OTS.Models.MastersModel
+
+<style type="text/css">
+    .required {
+        color: red;
+    }
+
+    .container {
+        width: 1300px;
+    }
+
+    .modal-content {
+        border-radius: 5px;
+        border: none;
+        width: 20%;
+        margin-top: 20%;
+        margin-left: 10%;
+    }
+
+        .modal-content .modal-header {
+            border-bottom: none;
+            padding-top: 2px;
+            padding-right: 4px;
+            padding-bottom: 10px;
+            padding-left: 309px;
+        }
+
+    .myclass {
+        text-transform: capitalize;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/Create_Contact" + '"]').addClass('active');
+    });
+
+    function CreateContact() {
+        var str = $('#First_Name').val();
+        str = str.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var first_name = str;
+
+        var str1 = $('#Middle_Name').val();
+        str1 = str1.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var middle_name = str1;
+
+        var str2 = $('#Last_Name').val();
+        str2 = str2.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var last_name = str2;
+        var email = $('#Email').val();
+        var designation = $('#Designation').val();
+        var cust_id = $('#Customer_Id').val();
+        var status = 0;
+        if ($('#Status').is(":checked")) {
+            status = 1;
+        }
+        else {
+            status = 0;
+        }
+        if (first_name != "" && last_name != "" && email != "") {
+            $.ajax({
+                type: 'POST',
+                url: '/Master/CreateContact',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(
+                    {
+                        'First_Name': first_name, 'Middle_Name': middle_name, 'Last_Name': last_name, 'Email': email, 'Designation': designation, 'Customer_Id': cust_id, 'Status': status
+                    }),
+                dataType: 'JSON',
+                success: function (data) {
+                    var a = data.SuccessMsg;
+                    var b = data.ErrorMsg;
+                    if (data != null && a != null) {
+                        alert(a);
+                        ClearData();
+                    }
+                    else {
+                        alert(b);
+                    }
+                },
+                error: function (data) {
+
+                }
+            });
+        }
+        else if (first_name == "") {
+            alert("First Name can't be blank.");
+            setTimeout(function () { $('#First_Name').focus(); });
+        }
+        else if (last_name == "") {
+            alert("Last Name Can't be blank.");
+            setTimeout(function () { $('#Last_Name').focus(); });
+        }
+        else {
+            alert("Email Code Can't be blank.");
+            setTimeout(function () { $('#Email').focus(); });
+        }
+    }
+
+    function ClearData() {
+        $('#Contact_Id').val("");
+        $('#First_Name').val("");
+        $('#Middle_Name').val("");
+        $('#Last_Name').val("");
+        $('#Email').val("");
+        $('#Designation').val("");
+        $('#Customer_Id').val("");
+    }
+
+    function CancelOnClick() {
+        window.location.href = "/Home/Dashboard";
+    }
+</script>
+
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;">Create Contact</div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>First Name:<span class="required">*</span></label>
+                            <input type="text" class="form-control" id="First_Name" maxlength="30" tabindex="1" autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Middle Name:</label>
+                            <input type="text" class="form-control" id="Middle_Name" maxlength="30" tabindex="2" autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Last Name:<span class="required">*</span></label>
+                            <input type="text" class="form-control" id="Last_Name" maxlength="30" tabindex="3" autocomplete="off" />
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Email:<span class="required">*</span></label>
+                            <input type="text" class="form-control" id="Email" maxlength="35" tabindex="4" autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Designation:</label>
+                            <input type="text" class="form-control" id="Designation" maxlength="35" tabindex="5" autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Customer:</label>
+                            @Html.DropDownList("Customer_Id", (IEnumerable<SelectListItem>)ViewBag.cust, "Select", new { @class = "form-control", @tabindex = "9" })
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Status:</label>
+                            <input type="checkbox" class="myCheckbox" id="Status" value="" checked="checked" />Active
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnsubmit" onclick="CreateContact()">Submit</button>
+                            <button type="button" class="btn btn-primary" onclick="ClearData()">Reset</button>
+                            <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

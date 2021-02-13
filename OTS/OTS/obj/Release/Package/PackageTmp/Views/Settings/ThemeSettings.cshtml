@@ -1,0 +1,43 @@
+﻿@{ Html.RenderPartial("_SettingsMenu");}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('a[href$="' + "/themesettings" + '"]').closest("li").addClass('active');
+    });
+</script>
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title">Theme Settings</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-8">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Company Name</label>
+                <div class="col-lg-9">
+                    <input name="website_name" class="form-control" value="Prudence Technology Pvt. Ltd." type="text" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Logo</label>
+                <div class="col-lg-5">
+                    <input class="form-control" type="file">
+                    <span class="help-block">Recommended image size is 140px x 40px</span>
+                </div>
+                <div class="col-lg-4">
+                    <div class="img-thumbnail pull-right"><img src="~/assets/img/Logo-Prudence.png" class="img-responsive" alt="" width="140" height="40"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Favicon</label>
+                <div class="col-lg-5">
+                    <input class="form-control" type="file">
+                    <span class="help-block">Recommended image size is 16px x 16px</span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="text-left m-t-20">
+    <button class="btn btn-primary" type="button">Save &amp; update</button>
+</div>

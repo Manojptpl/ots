@@ -1,0 +1,55 @@
+﻿@model OTS.Models.UserPermissions
+
+    <h6 class="panel-title m-b-20">Assigned permissions</h6>
+    <input type="hidden" value="@Model.EMPLOYEE_ID" id="EmployeeId" />
+    <input type="hidden" value="@Model.ROLE_ID" id="RoleId" />
+    <div class="table-responsive">
+        <table class="table table-striped custom-table" id="tblPermissions">
+            <thead>
+                <tr>
+                    <th>Module Permission</th>
+                    @{int startRowCount = 0; }
+                    @foreach (System.Data.DataColumn column in ((System.Data.DataTable)Model.DATATABLE_VALUE).Columns)
+                    {
+                        startRowCount += 1;
+                        if (startRowCount > (int)Model.NO_FIXED_COLUMN)
+                        {
+                            <th class="text-center">
+                                @column.ColumnName
+                            </th>
+                        }
+                    }
+                </tr>
+            </thead>
+
+            <tbody id="tbodyAssignedPermission">
+                @if (Model != null)
+                {
+                    foreach (System.Data.DataRow row in ((System.Data.DataTable)Model.DATATABLE_VALUE).Rows)
+                    {
+                        <tr class=@row["MODULE_ID"]>
+                            <td class="text-left">@row["PAGE_NAME"].ToString() (@row["MODULE_NAME"].ToString())</td>
+
+                            @for (int rcount = (int)Model.NO_FIXED_COLUMN; rcount < ((System.Data.DataTable)Model.DATATABLE_VALUE).Columns.Count; rcount++)
+                            {
+                                <td class="text-center">
+                                    <input type="hidden" id="hdnRolePermission_@(row[rcount].ToString().Split('~')[0])" class="hdnRolePermission" value="@(row[rcount].ToString().Split('~')[0])">
+                                    @if (row[rcount].ToString().Split('~')[1] == "Active")
+                                    {
+                                        <input type="checkbox" class="chk_Permission" @(row[rcount].ToString().Split('~')[2] == "Active" ? "checked" : "")>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+
+                    @*<tr>
+                        <td>
+                            <input type="button" id="btnSave" class="btn btn-success btn-block" value="Save/Update" />
+                        </td>
+                    </tr>*@
+                }
+            </tbody>
+
+        </table>
+    </div>

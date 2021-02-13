@@ -1,0 +1,182 @@
+﻿@model OTS.Models.MastersModel
+
+    <style type="text/css">
+        .required {
+            color: red;
+        }
+
+        .myclass {
+            text-transform: capitalize;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('ul.list-unstyled  li a[href$="' + "/Create_Department" + '"]').addClass('active');
+
+            
+            $("#Department_Code").bind('keyup', function (e) {
+                if (e.which >= 97 && e.which <= 122) {
+                    var newKey = e.which - 32;
+                    // I have tried setting those
+                    e.keyCode = newKey;
+                    e.charCode = newKey;
+                }
+                $("#Department_Code").val(($("#Department_Code").val()).toUpperCase());
+            });
+
+            $("#Division_Id").bind('keyup', function (e) {
+                if (e.which >= 97 && e.which <= 122) {
+                    var newKey = e.which - 32;
+                    // I have tried setting those
+                    e.keyCode = newKey;
+                    e.charCode = newKey;
+                }
+                $("#Division_Id").val(($("#Division_Id").val()).toUpperCase());
+            });
+
+            $('#bt_Submit').on('click', function () {
+                var dept_code = $('#Department_Code').val();
+                var str = $('#Department_Name').val();
+                var dept_name = "";
+                if (str != "") {
+                    str = str.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                        return letter.toUpperCase();
+                    });
+                    dept_name = str;
+                }
+                else {
+                    dept_name = $('#Department_Name').val();
+                }
+                var div_code = $('#Division_Id').val();
+                var str1 = $('#Division_Name').val();
+                var div_name = "";
+                if (str1 != "") {
+                    str1 = str1.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                        return letter.toUpperCase();
+                    });
+                    div_name = str1;
+                }
+                else {
+                    div_name = $('#Division_Name').val();
+                }
+                var status = 0;
+                if ($('#Status').is(":checked")) {
+                    status = 1;
+                }
+                else {
+                    status = 0;
+                }
+
+                if (dept_name == "") {
+                    alert("Department Name Cant't be blank.");
+                    setTimeout(function () { $('#Department_Name').focus(); });
+                    return false;
+                }
+
+                if (dept_code == "") {
+                    alert("Department Code Cant't be blank.");
+                    setTimeout(function () { $('#Department_Code').focus(); });
+                    return false;
+                }
+                if (div_code == "") {
+                    alert("Division Code Cant't be blank.");
+                    setTimeout(function () { $('#Division_Id').focus(); });
+                    return false;
+                }
+
+                if (dept_code != "" && dept_name != "" && div_code != "") {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Master/CreateDepartment",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(
+                            {
+                                'Department_Code': dept_code, 'Department_Name': dept_name, 'Division_Code': div_code, 'Division_Name': div_name, 'Status': status
+                            }
+                        ),
+                        dataType: "json",
+                        success: function (data) {
+                            var a = data.SuccessMsg;
+                            var b = data.ErrorMsg;
+                            if (data != null && a != null) {
+                                alert(a);
+                                ClearData();
+                            }
+                            else {
+                                alert(b);
+                            }
+                        },
+                        error: function (data) {
+                            alert(data.responseText);
+                        }
+                    });
+                }
+            });
+        });
+
+        function ClearData()
+        {
+            $('#Department_Code').val("").prop('disabled', false).css('background-color','');
+            $('#Department_Name').val("");
+            $('#Division_Id').val("");
+            $('#Division_Name').val("");
+            $('.myCheckbox').prop('checked', true);
+        }
+
+        function CancelOnClick()
+        {
+            window.location.href = "/Home/Dashboard";
+        }
+    </script>
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">Create Department</h4></div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Department Name:<span class="required">*</span></label>
+                        <input type="text" class="form-control" id="Department_Name" maxlength="30">
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Department Code:<span class="required">*</span></label>
+                        <input type="text" class="form-control" id="Department_Code" maxlength="10">
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Division Code:<span class="required">*</span></label>
+                        <input type="text" class="form-control" id="Division_Id" maxlength="10">
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Division Name:</label>
+                        <input type="text" class="form-control" id="Division_Name" maxlength="30">
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <input type="checkbox" class="myCheckbox" id="Status" value="" checked="checked"/>Active
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                </div>
+                <div class="col-sm-3">
+                    <button type="button" class="btn btn-primary" id="bt_Submit">Submit</button>
+                    <button type="button" class="btn btn-primary" onclick="ClearData()">Reset</button>
+                    <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+

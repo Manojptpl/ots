@@ -1,0 +1,1261 @@
+﻿@using System.Data;
+@{
+    ViewBag.Title = "applyleave";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    @@media (min-width: 992px) {
+        .modal-lg-leaveBal {
+            width: 1038px;
+        }
+    }
+
+
+    .loader {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        /*width: 83%;*/
+        height: 100%;
+        z-index: 9999;
+        background: url('/assets/img/45.gif') 50% 50% no-repeat rgb(249,249,249);
+        /*background: url('/assets/img/giphy.gif') 50% 50% no-repeat;*/
+        /*background-size: 50%;
+        background-size: 15%;*/
+        top: 8%;
+        /*left: 17%;*/
+        opacity: .8;
+    }
+</style>
+<script type="text/javascript">
+    $(function () {
+        $('.mynubrange').on('keydown', function () {
+            var keycode = window.event.keyCode;
+            if ((keycode == 46 || keycode == 8)) {
+                return true;
+            } else {
+                event.preventDefault();
+            }
+        });
+    });
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/leavehistory" + '"]').addClass('active');
+        var currentTime = new Date();
+        var year = currentTime.getFullYear();
+        $("#ddl_year").val(year); 
+        var role_id = $('#hdn_roleId').val();
+        var manager_id = $('#hdn_managerId').val();
+
+        if (role_id == 2) {
+            //   $("#div_leavebalance").css("visibility", "visible");
+            $("#div_leavebalance").css("display", "block");
+           // $("#ddlemployee").prop("disabled", false);
+
+        } else {
+            //  $("#div_leavebalance").css("visibility", "hidden");
+            $("#div_leavebalance").css("display", "none");
+           // $("#ddlemployee").prop("disabled", true);
+        }
+        $('#txtleavebalance').val('');
+        $("input[name='optradio']").prop('checked', false);
+
+        var table1 = $(".tbl_leavebalance").DataTable({
+            //"columnDefs": [
+            //    { "targets": [5], "orderable": false }
+            //],
+            "bLengthChange": false,
+            "searching": false,
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Search"
+            }
+        });
+
+
+        if (@ViewBag.event_permission.Export == 1)
+                  {
+                      var buttons = new $.fn.dataTable.Buttons(table1, {
+                          buttons: [
+                      {
+                            extend: 'excelHtml5',
+                            text: '<i class="fa fa-file-excel-o fa-lg"></i>  ',
+                            title: 'Leave Balance sheet',
+                            titleAttr: 'Excel'
+                        },
+                        {
+                            extend: 'csvHtml5',
+                            text: '<i class="fa fa-file-text-o fa-lg"></i>  ',
+                            title: 'Leave Balance sheet',
+                            titleAttr: 'CSV'
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            text: '<i class="fa fa-file-pdf-o fa-lg"></i>  ',
+                            title: 'Leave Balance sheet',
+                            titleAttr: 'PDF'
+                        },
+                        {
+                            extend: 'print',
+                            text: '<i class="fa fa-print fa-lg"></i>  ',
+                            title: 'Leave Balance sheet',
+                            titleAttr: 'Print'
+                        }
+                    ]
+                }).container().appendTo($('#buttonsleavebalance'));
+             }
+        $("#btn_leave_balance_show").on("click", function () {
+                      if ($('#hdn_roleId').val() == 2) {
+                         $("input[name='leaveoptradio'][value='Self']").prop("checked", true);
+                      }
+                      LeaveBalance(table1); 
+         });
+
+
+        $("#btn_search").on("click", function () {
+
+
+          
+            if ($("#ddl_year").val() == 0) {
+                alert('Please Select Year !');
+                return false;
+            }
+
+            if ($("input[name='leaveoptradio'][value='Self']").is(":checked") == true) {
+                table1.rows().remove().draw();
+                LeaveBalance(table1);
+            } else if ($("input[name='leaveoptradio'][value='Subordinate']").is(":checked") == true) {
+                table1.rows().remove().draw();
+                $.ajax({
+                    type: 'POST',
+                    url: '/leave/leavebalanceshowmanager',
+                    data: JSON.stringify({ 'year': $("#ddl_year").val() }),
+                    contentType: 'application/json;charset=utf-8',
+                    dataType: 'json',
+                    success: function (data) {
+                        var mydata = JSON.parse(data.msg);
+                        table1.rows().remove().draw();
+                        for (var i = 0; i < mydata.length; i++) {
+                            var markup = "";
+                            markup += "<tr id='row" + i + "'>";
+                            markup += "<td> " + (parseInt(i) + 1) + "</td > ";
+                            markup += "<td> " + mydata[i].EMPLOYEE_NAME + "</td > ";
+                            markup += "<td> " + mydata[i].LEAVE_TYPE + "</td > ";
+                            markup += "<td> " + mydata[i].OPENING_BAL + "</td > ";
+                            markup += "<td> " + mydata[i].CURRENT_ENTITLEMENT + "</td>";
+                            markup += "<td> " + mydata[i].LEAVES_AVAILED + "</td > ";
+                            //markup += "<td> " + mydata[i].ADJESTMENT_DAYS + "</td > ";
+                            markup += "<td> " + mydata[i].CLOSING_BAL + "</td > ";
+                            markup += "</tr>";
+                            table1.row.add($(markup)).draw();
+                        }
+                    } 
+                });  
+            }  
+        });
+
+        //if ($("input[name='leaveoptradio']:checked").val() == "Self") {
+        //    $(".tbl_leavebalance").DataTable().columns(1).search("Hare Krishna").draw();
+        //}
+
+        $("#ddl_year").on("change", function () {
+            $("input[name='leaveoptradio'][value='Self']").prop("checked", true);
+            table1.rows().remove().draw();
+            if ($("#ddl_year").val() == 0) {
+                alert('Please Select Year !');
+                return false;
+            }
+           LeaveBalance(table1);
+        });
+      
+
+        $("input[name='leaveoptradio']").change(function () {
+                 table1.rows().remove().draw();
+                 if ($("#ddl_year").val() == 0) {
+                       alert('Please Select Year !');
+                       return false;
+                 }
+                 if( $("input[name='leaveoptradio'][value='Self']").is(":checked") == true) {
+                          LeaveBalance(table1);
+                 } else if ($("input[name='leaveoptradio'][value='Subordinate']").is(":checked") == true) {
+                        $.ajax({
+                                 type: 'POST',
+                                 url: '/leave/leavebalanceshowmanager',
+                                 data: JSON.stringify({ 'year': $("#ddl_year").val() }),
+                                 contentType: 'application/json;charset=utf-8',
+                                 dataType: 'json',
+                                 success: function (data) {
+                                 var mydata = JSON.parse(data.msg);
+                                 table1.rows().remove().draw();
+                                  for (var i = 0; i < mydata.length; i++) {
+                                      var markup = "";
+                                      markup += "<tr id='row" + i + "'>";
+                                      markup += "<td> " + (parseInt(i) + 1) + "</td > ";
+                                      markup += "<td> " + mydata[i].EMPLOYEE_NAME + "</td > ";
+                                      markup += "<td> " + mydata[i].LEAVE_TYPE + "</td > ";
+                                      markup += "<td> " + mydata[i].OPENING_BAL + "</td > ";
+                                      markup += "<td> " + mydata[i].CURRENT_ENTITLEMENT + "</td > ";
+                                      markup += "<td> " + mydata[i].LEAVES_AVAILED + "</td > ";
+                                      //markup += "<td> " + mydata[i].ADJESTMENT_DAYS + "</td > ";
+                                      markup += "<td> " + mydata[i].CLOSING_BAL + "</td > ";
+                                      markup += "</tr>";
+                                      table1.row.add($(markup)).draw();
+                                  }
+                              }
+
+                          });
+
+                      }
+                  });
+
+                  var table = $(".tbl_leavehistory").DataTable({
+                      //"columnDefs": [
+                      //    { "targets": [5], "orderable": false }
+                      //],
+                          "language": {
+                              "search": "",
+                        "searchPlaceholder": "Search"
+                          }
+                  });
+                  if (@ViewBag.event_permission.Export == 1) {
+                      var buttons = new $.fn.dataTable.Buttons(table, {
+                          buttons: [
+                              {
+                                  extend: 'excelHtml5',
+                                  text: '<i class="fa fa-file-excel-o fa-lg"></i>  ',
+                                  title: 'Leave History',
+                                  titleAttr: 'Excel'
+                              },
+                              {
+                                  extend: 'csvHtml5',
+                                  text: '<i class="fa fa-file-text-o fa-lg"></i>  ',
+                                  title: 'Leave History',
+                                  titleAttr: 'CSV'
+                              },
+                              {
+                                  extend: 'pdfHtml5',
+                                  text: '<i class="fa fa-file-pdf-o fa-lg"></i>  ',
+                                  title: 'Leave History',
+                                  titleAttr: 'PDF'
+                              },
+                              {
+                                  extend: 'print',
+                                  text: '<i class="fa fa-print fa-lg"></i>  ',
+                                  title: 'Leave History',
+                                  titleAttr: 'Print'
+                              }
+                          ]
+                      }).container().appendTo($('#buttons'));
+                  }
+
+        $("input[name='optradio']").attr('disabled', 'disabled');
+        //$("input[name='leaveoptradio']").prop('disabled', false);
+
+        $('#btnApplyLeave').on('click', function () {
+
+                      if ($("#ddlleavetypeapply").val() == "0") {
+                          alert('Please Select Leave Type !');
+                          $("#ddlleavetypeapply").focus();
+                          return false;
+                      }
+                      if ($("#ddlLeaveDays").val() == "0") {
+                          alert('Please Select Leave Day !');
+                           $("#ddlLeaveDays").focus();
+                          return false;
+                      }
+                      if ($("#txt_fromDate").val() == "") {
+                          alert("From Date Can't be Blank !");
+                          $("#txt_fromDate").focus();
+                          return false;
+                      }
+                      if ($("#txt_toDate").val() == "") {
+                          alert("To Date Can't be Blank !");
+                          $("#txt_toDate").focus();
+                          return false;
+                      }
+
+                      if (parseInt($('#hiddenapplyattachment').val()) == 1) {
+                          if ($('#applyleavefile').val().length <=1) {
+                              alert("Attachment Required dd!");
+                             $("#applyleavefile").focus();
+                              return false;
+                          }
+                      }
+                      if ($("#txt_days").val() == "" || $("#txt_days").val() == "0") {
+                          alert("Number of Days can't be zero or empty !");
+                          $("#txt_days").focus();
+                          return false;
+                      }
+                      // for balance check 11 feb
+
+                      if (parseInt($('#txtleavebalance').val()) > 0 && ($("#ddlleavetypeapply").val() == 2 || $("#ddlleavetypeapply").val() == 3)) {
+                          if (parseFloat($('#txt_days').val()) > parseFloat($('#txtleavebalance').val())) {
+                              alert("You Can't apply leaves greater then " + $('#txtleavebalance').val() + " Days .");
+                              $("#txt_toDate").focus();
+                              return false;
+                          }
+                      }
+
+                      if (parseInt($('#txt_days').val()) > parseInt($('#hiddenapplyleavebalday').val()) && ($("#ddlleavetypeapply").val() != 2 && $("#ddlleavetypeapply").val()!=3)) {
+                          alert("You Can't apply leaves greater then  " + $('#hiddenapplyleavebalday').val() + " Days .");
+                              $("#txt_toDate").focus();
+                              return false; 
+                             
+                      }
+                      
+
+            
+
+                      var data = new FormData();
+                      var files = $("#applyleavefile").get(0).files;
+                      if (files.length > 0) {
+                          if (files.length <= 3) {
+                              var filenamelist = [];
+                              for (var i = 0; i < files.length; i++) {
+                                  filenamelist.push(files[i].name);
+                                  data.append(files[i].name, files[i]);
+                                  var isize = (files[i].size / 1024);
+                                  isize = (Math.round((isize / 1024) * 100) / 100);
+                                  if (isize > 2) {
+                                      alert("File must be less than 2MB").setHeader('<em> Message </em> ');
+                                      return false;
+                                  }
+                              }
+                              for (var i = 0; i < filenamelist.length; i++) {
+                                  var extension = filenamelist[i].split('.').pop().toUpperCase();
+                                  if (extension != "DOC" && extension != "DOCX" && extension != "XLS" && extension != "XLSX" && extension != "PPT" && extension != "PPTX" && extension != "PPS" && extension != "PPSX" && extension != "PDF" && extension != "TXT" && extension != "PNG" && extension != "JPG" && extension != "BMP" && extension != "RTF" && extension != "JPEG" && extension != "ZIP") {
+                                      //alertify.alert("Invalid file format." + "(." + extension.toLowerCase() + ")").setHeader('<em> Message </em> ');
+                                      alert("Invalid file format." + "(." + extension.toLowerCase() + ")").setHeader('<em> Message </em> ');
+                            $("#applyleavefile").val('');
+                                      return false;
+                                  }
+
+                              }
+                          }
+                      }
+                      data.append("EmployeeID", $("#ddlemployee").val());
+                      data.append("LeaveTypeID", $("#ddlleavetypeapply").val());
+                      data.append("LeaveDay", $("#ddlLeaveDays").val());
+                      data.append("LeaveHalfDay", $("input:radio[name='optradio']:checked").length == 0 ? "" : $("input:radio[name='optradio']:checked").val());
+                      data.append("FromDate", $("#txt_fromDate").val());
+
+                      data.append("ToDate", $("#txt_toDate").val());
+                      data.append("NumberofDays", $("#txt_days").val());
+                      data.append("Remarks", $("#txtapplyremarks").val());
+                      data.append("sandwich", $("#hdforsandwich").val());
+                      data.append("LeaveBalance", $("#txtleavebalance").val() == "" ? 0 : $("#txtleavebalance").val());
+
+                      data.append("Leavetypename", $("#ddlleavetypeapply option:selected").text());
+                      $("#wait").css('display', 'block');
+            $.ajax({
+                type: 'POST',
+                url: '/leave/Applyleave',
+                data: data,
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                success: function (response) {
+                              var massage = [];
+                              massage = response.msg.split(',');
+                              if (massage[0] == "Success") {
+                                  alert(massage[1]);
+                                  if (massage[1]!="You have Already Appllied Leave .") {
+                                      location.reload(true);
+                                  }
+                                 
+                              } else {
+                                  alert(response.msg);
+                                  $("#wait").css('display', 'none');
+                              }
+                           
+                          },
+                error: function (data) {
+                    alert(data.responseText);
+                    $("#wait").css('display', 'none');
+                          }
+                      });
+                  });
+
+        $('#ddlleavetypeapply').on('change', function () {
+
+            $("#idattachment").hide();
+            $('#txt_fromDate').val('');
+            $('#txt_toDate').val('');
+            $('#ddlLeaveDays').val('0');
+            $('#txt_days').val("");
+            $("#txtleavebalance").val('');
+            $("input[name='optradio']").attr('disabled', 'disabled');
+            $("input[name='optradio']").prop("checked", false);
+
+                      if ($(this).val() == 0) { $('#txtleavebalance').val(''); }
+                     else if ($(this).val() == 2 || $(this).val() == 3) {
+                $.ajax({
+                     type: 'POST',
+                    url: '/leave/applyleavebalancedrodown',
+                    contentType: 'application/json;charset=utf-8',
+                    data: JSON.stringify({ 'empid': $("#ddlemployee").val(), 'leavetypeid': $(this).val() }),
+                    dataType: 'json',
+                    success: function (data) {
+                                  if (data == '') {
+                                        alert('Policy Not Created For this Leave Type !');
+                                        $('#txtleavebalance').val('');
+                                        $('#ddlleavetypeapply').val(0).focus();
+                                     } else {
+                                                  $('#txtleavebalance').val(data);
+                                      }
+                              },
+                    error: function (responce) {
+                                  alert(responce.responseText);
+                              }
+
+                          }); 
+                      } else {
+                     $('#txtleavebalance').val('');
+                      }
+
+            //else if ($(this).val() == 2) { $('#txtleavebalance').val('4'); }
+            //else if ($(this).val() == 3) { $('#txtleavebalance').val('18'); }
+            //else {
+            //    $('#txtleavebalance').val('3');
+                      //}
+                      if ($('#ddlleavetypeapply').val() != 0) {
+                          $.ajax({
+                              type: 'POST',
+                              url: '/leave/applyleavetypebalday',
+                              contentType: 'application/json;charset=utf-8',
+                              data: JSON.stringify({ 'empid': $("#ddlemployee").val(), 'leavetypeid': $(this).val() }),
+                              dataType: 'json',
+                              success: function (mydata) {
+                                  var data = [];
+                                  data = mydata.split(',');
+                                  if (data[0] == '') {
+                                      alert('Policy Not Created For this Leave Type !');
+                                      $('#ddlleavetypeapply').val("0");
+                                      $('#txt_days').val("");
+                                      $('#txtleavebalance').val('');
+                                      return false;
+                                  } else {
+                                      $('#hiddenapplyleavebalday').val(data[5]);
+                                      $('#hiddenapplyattachment').val(data[3]);
+                                      $('#hiddenis_half_day').val(data[4]);
+                                      if (data[3] == 1) {
+                                          $("#idattachment").show();
+                                      }
+                                      if (data[4] == 1) {
+                                          $("#ddlLeaveDays option:contains('Half Day')").prop('disabled', false).css('background-color', '#ffffff');
+
+                                      } else {
+                                          $("#ddlLeaveDays option:contains('Half Day')").prop('disabled', true).css('background-color', 'lightgray');
+                                      }
+                                  }
+                              },
+                              error: function (responce) {
+                                  alert(responce.responseText);
+                              }
+
+                          });
+                      }
+                  });
+
+        $('#txt_fromDate').on('change', function () {
+
+           
+            $('#txt_toDate').val('');
+            $('#txt_days').val('');
+                      if ($('#ddlleavetypeapply').val() == "0") {
+                          alert('Please Select Leave Type !');
+                $('#txt_fromDate').val('');
+                $('#ddlleavetypeapply').focus();
+                      } else if ($("#ddlLeaveDays").val() == "0") {
+                          alert('Please Select Leave Day !');
+                $('#txt_fromDate').val('');
+                $('#ddlLeaveDays').focus();
+                      } else {
+                          var start_dt = myDateFormatter($('#txt_fromDate').val());
+                          var end_dt = myDateFormatter($('#txt_toDate').val());
+                          if ($("#ddlLeaveDays").val() == "Half Day") {
+                    $('#txt_toDate').val($('#txt_fromDate').val());
+                    $('#txt_days').val("0.5");
+                          }
+                          else if ($("#ddlLeaveDays").val() != "0") {
+
+                              if ($("#ddlleavetypeapply").val() == 3) {
+                                  $.ajax({
+                                      type: 'POST',
+                                      url: '/leave/applyleavetypeforsandwich',
+                                      contentType: 'application/json;charset=utf-8',
+                                      data: JSON.stringify({
+                                          'empid': $("#ddlemployee").val(), 'leavetypeid': $("#ddlleavetypeapply").val(), 'fromdate': $("#txt_fromDate").val(), 'todate': ''
+                                      }),
+                                      dataType: 'json',
+                                      success: function (mydata) {
+                                          var data = [];
+                                          data = mydata.split(',');
+                                          if (data[0] == 'H') {
+                                              //  if (confirm("Are you sure you want to Sandwith Leave ?")) {
+                                              if (true) {
+                                                  $("#hdforsandwich").val(1);
+                                                        var sandwichdate = new Date(myDateFormatter(data[1]));
+                                                        sandwichdate.setDate(sandwichdate.getDate() + 1);
+                                                        var maxdate = myDateFormatter($('#txt_fromDate').val());
+
+                                                        var leftover = (new Date(maxdate) - new Date(sandwichdate)) / 1000;
+                                                        var days = Math.floor(leftover / 86400) + 1;
+                                                        if (days <= parseInt($("#txtleavebalance").val())) {
+                                                       $('#txt_fromDate').val($.datepicker.formatDate('dd-M-yy', new Date(sandwichdate)));
+                                                        }
+                                                  //      else {
+                                                  //          alert("You have not apply leave with sandwith day .");
+                                                  //$("#txt_fromDate").val("");
+                                                  //      }
+                                              }
+                                          }
+                                      }
+                                  });
+                              }
+
+                              if ($("#ddlleavetypeapply").val() == 2 || $("#ddlleavetypeapply").val() == 3) {
+                        $('#txt_toDate').prop('disabled', false);
+                                  var datefrom = new Date(myDateFormatter($('#txt_fromDate').val()));
+                                  var dateto = new Date(myDateFormatter($('#txt_fromDate').val()));
+                                  var Leavebal = $("#txtleavebalance").val() == "" ? 0 : parseInt($("#txtleavebalance").val());
+                                  dateto.setDate(dateto.getDate() + Leavebal - 1);
+                      //11-fab  $('#txt_toDate').datepicker("destroy");
+                     //11-fab  $('#txt_toDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+                                  if ($('#txt_toDate').val() != '') {
+                                      //var dt = new Date(selected.date.valueOf());
+                                      var maxdate = myDateFormatter($('#txt_toDate').val());
+                                      var mindate1 = myDateFormatter($('#txt_fromDate').val());
+                                      var leftover = (new Date(maxdate) - new Date(mindate1)) / 1000;
+                                      var days = Math.floor(leftover / 86400) + 1;
+                            $('#txt_days').val(days);
+                                  }
+                              } else if ($("#ddlleavetypeapply").val() == 1) {
+                        $('#txt_toDate').prop('disabled', false);
+                                  var datefrom = new Date(myDateFormatter($('#txt_fromDate').val()));
+                                  var dateto = new Date(myDateFormatter($('#txt_fromDate').val()));
+                                  // var Leavebal = $("#txtleavebalance").val() == "" ? 0 : parseInt($("#txtleavebalance").val());
+                                  dateto.setDate(dateto.getDate() + 13);
+                      //11-fab    $('#txt_toDate').datepicker("destroy");
+                        //11-fab  $('#txt_toDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+                                  if ($('#txt_toDate').val() != '') {
+                                      //var dt = new Date(selected.date.valueOf());
+                                      var maxdate = myDateFormatter($('#txt_toDate').val());
+                                      var mindate1 = myDateFormatter($('#txt_fromDate').val());
+                                      var leftover = (new Date(maxdate) - new Date(mindate1)) / 1000;
+                                      var days = Math.floor(leftover / 86400) + 1;
+                            $('#txt_days').val(days);
+                                  }
+                              }
+                    else {
+                        $('#txt_toDate').prop('disabled', false);
+                                  var datefrom = new Date(myDateFormatter($('#txt_fromDate').val()));
+                                  var dateto = new Date(myDateFormatter($('#txt_fromDate').val()));
+                                  var Leavebaldays = $("#hiddenapplyleavebalday").val() == "" ? 0 : parseInt($("#hiddenapplyleavebalday").val());
+                                  dateto.setDate(dateto.getDate() + Leavebaldays);
+                         //11-fab    $('#txt_toDate').datepicker("destroy");
+                          //11-fab    $('#txt_toDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+                                  if ($('#txt_toDate').val() != '') {
+                                      //var dt = new Date(selected.date.valueOf());
+                                      var maxdate = myDateFormatter($('#txt_toDate').val());
+                                      var mindate1 = myDateFormatter($('#txt_fromDate').val());
+                                      var leftover = (new Date(maxdate) - new Date(mindate1)) / 1000;
+                                      var days = Math.floor(leftover / 86400) + 1;
+                            $('#txt_days').val(days);
+                                  }
+                              }
+
+                              if ($("#ddlleavetypeapply").val() == 7) {
+                                  var Leavebal = $("#hiddenis_half_day").val() == "" ? 0 : parseInt($("#hiddenis_half_day").val());
+                                  dateto.setDate(dateto.getDate() + Leavebal - 1);
+                             //11-fab    $('#txt_toDate').datepicker("destroy");
+                            //11-fab    $('#txt_toDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+                              }
+
+                          }
+                      }
+                  });
+
+
+        $('#txt_toDate').on('change', function () {
+
+            
+                      if ($('#txt_fromDate').val() == '') {
+                          alert("Start Date Can't be blank !");
+                          $('#txt_toDate').val("");
+                      } else {
+
+                          var start_dt = myDateFormatter($('#txt_fromDate').val());
+                          var end_dt = myDateFormatter($('#txt_toDate').val());
+                          if (start_dt > end_dt) {
+                              alert("End Date can't less then start date.");
+                              $('#txt_toDate').val("");
+                              setTimeout(function () { $('#txt_toDate').focus(); })
+                          } else {  
+                              if ($("#ddlleavetypeapply").val() ==3) {
+                                  $.ajax({
+                                      type: 'POST',
+                                      url: '/leave/applyleavetypeforsandwich',
+                                      contentType: 'application/json;charset=utf-8',
+                                      data: JSON.stringify({
+                                          'empid': $("#ddlemployee").val(), 'leavetypeid': $("#ddlleavetypeapply").val(), 'fromdate': $("#txt_fromDate").val(), 'todate': $("#txt_toDate").val()
+                                      }),
+                                      dataType: 'json',
+                                      success: function (mydata) {
+                                          var data = [];
+                                          data = mydata.split(',');
+                                          if (data[0] == 'H') {
+
+                                              if (true) {
+                                                  $("#hdforsandwich").val(1);
+
+                                              }
+                                          }
+                                      }
+                                  });
+                              }
+                                  var leftover = (new Date(end_dt) - new Date(start_dt)) / 1000;
+                                  var days = Math.floor(leftover / 86400) + 1; 
+                                  var sandwichval = ""; 
+                                  if ($("#ddlleavetypeapply").val() != 3) {
+
+                                      $.ajax({
+                                          type: 'POST',
+                                          url: '/leave/leavebalanceshowsandwith',
+                                          contentType: 'application/json;charset=utf-8',
+                                          data: JSON.stringify({
+                                              'employee_id': $("#ddlemployee").val(), 'leave_type': $("#ddlleavetypeapply").val(), 'fromdate': $("#txt_fromDate").val(), 'todate': $("#txt_toDate").val()
+                                          }),
+                                          dataType: 'json',
+                                          success: function (mydata) {
+                                              sandwichval = mydata
+                                             
+                                              $('#txt_days').val(days - parseFloat(sandwichval));
+                                          }
+                                      });
+                                  }
+
+                                  $('#txt_days').val(days);
+                                 
+
+                               }
+                      }
+                  });
+
+
+        $("#btnApplyReset").click(function () {
+                      ClearApplyText();
+
+                  });
+        $(".close").click(function () {
+                      ClearApplyText();
+
+                  });
+
+        $("#btn_submit").click(function () {
+
+             
+                      if (parseInt($("#txt_total_leaves_for_encashment").val()) < parseInt($("#hd_total_leaves_for_encashment").val())) {
+                          alert("You are not eligible for Encashment ! ");
+                          return false;
+                      }
+
+                      var lc = {
+                          'TOTAL_LEAVES_FOR_ENCASHMENT': parseInt( $("#txt_total_leaves_for_encashment").val()),
+                          'LEAVE_ELIGIBLE_FOR_ENCASHMENT': parseInt(  $("#txt_leave_eligible_for_encashment").val()),
+                              'LEAVE_APPLY_FOR_ENCASHMENT': parseInt( $("#txt_leave_apply_for_encashment").val()),
+                                  'LEAVE_ENCASHED_AMOUNT':parseInt(  $("#txt_encashedamount_for_encashment").val())
+            }
+            $.ajax({
+                      type: 'POST',
+                url: '/leave/addLeaveEncashment',
+                data: JSON.stringify({lc}),
+                contentType:  'application/json;charset=utf-8',
+                dataType:'json',
+                success: function (response) {
+                          var massage = [];
+                          massage = response.msg.split(',');
+                          if (massage[0] == "Success") {
+                              alert('Insert Successfully  !');
+                              location.reload(true);
+                          } else {
+                              alert(response.msg);
+                          }
+                      },
+                error: function (data) {
+                          alert(data.responseText);
+                      }
+                  });
+              });
+
+        $("#btn_Leave_Encashment").click(function () {
+            $("#txt_total_leaves_for_encashment").val('');
+            $("#hd_total_leaves_for_encashment").val('0');
+            $("#txt_leave_eligible_for_encashment").val('');
+            $("#hd_leave_eligible_for_encashment").val('0');
+            $("#txt_encashedamount_for_encashment").val('');
+            $("#btn_submit").val("Loading ...").prop("disabled", true); 
+            $.ajax({
+                type:'POST',
+                url: '/leave/showLeaveEncashment',
+                contentType: 'application/json;charset=utf-8',
+                dataType: 'json',
+                success: function (response) {
+                            var data = [];
+                            $("#btn_submit").val("Submit").prop("disabled", false);
+                            data = response.msg.split(',');
+                            $("#txt_total_leaves_for_encashment").val(data[0]);
+                            $("#hd_total_leaves_for_encashment").val(data[1]);
+                            $("#txt_leave_eligible_for_encashment").val(data[1]);
+                            $("#hd_leave_eligible_for_encashment").val(data[2]);
+                            $("#txt_leave_apply_for_encashment").val(data[2]);
+                            $("#txt_encashedamount_for_encashment").val(data[3]);
+
+                }
+
+                  })
+
+        });
+          });
+
+
+</script>
+<script>
+    function ClearApplyText() {
+        $("#ddlleavetypeapply").val(0);
+        $("#txtleavebalance").val('');
+        $("#ddlLeaveDays").val(0);
+        $("#txt_fromDate").val('');
+        $("#txt_toDate").val('');
+        $("#txt_days").val('');
+        $("#txtapplyremarks").val('');
+        $("input[name='optradio']").prop('checked', false);
+        $("input[name='optradio']").prop('disabled', true);
+        var datefrom = new Date(myDateFormatter($('#txt_fromDate').val()));
+        var dateto = new Date(myDateFormatter($('#txt_fromDate').val()));
+        var Leavebal = $("#txtleavebalance").val() == "" ? 0 : parseInt($("#txtleavebalance").val());
+        dateto.setDate(dateto.getDate() + Leavebal - 1);
+        $('#txt_toDate').datepicker("destroy");
+        $('#txt_toDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+
+    }
+    function LeaveSelect() {
+        if ($("#ddlleavetypeapply").val() == 0) {
+            alert('Please select Leave Type !');
+            $("#ddlLeaveDays").val(0);
+            $("#ddlleavetypeapply").focus();
+            return false;
+        }
+        if ($("#txtleavebalance").val() != "" && parseInt($("#txtleavebalance").val()) == 0) {
+            alert('You have not Sufficient Balance!');
+            $("#ddlLeaveDays").val(0);
+            $("#ddlleavetypeapply").focus();
+            return false;
+        }
+
+        if ($("#ddlLeaveDays").val() == "Half Day") {
+            $("input[name='optradio']").attr('disabled', false);
+            $('#txt_days').val("");
+            $('#txt_fromDate').val("");
+            $('#txt_toDate').val("").prop('disabled', true);
+            $('#txt_toDate').css('background-color', '#eee');
+            $('#txt_fromDate').val("").prop('disabled', false);
+            //$('#txt_fromDate').datetimepicker('remove');
+            //$('#txt_toDate').datetimepicker('remove');
+
+            $("input[name='optradio']").attr('disabled', false);
+            //$("#rbapplyfirsthalf input:radio']").prop('checked', true);
+
+            $("input[type='radio'][value='First Half']").prop('checked', true);
+
+        } else {
+            $("input:radio").prop('checked', false);
+            $("input[name='optradio']").attr('disabled', 'disabled');
+            $('#txt_toDate').css('background-color', '#fffff');
+            $('#txt_days').val("");
+            $('#txt_fromDate').val("");
+            $('#txt_toDate').val("");
+            //$('#txt_fromDate').datetimepicker('remove');
+            //$('#txt_toDate').datetimepicker('remove');
+            $('#txt_toDate').val("").prop('disabled', false);
+            $('#txt_fromDate').val("").prop('disabled', false);
+
+        }
+    }
+    function _Apply_Leave(T) {
+        $("#ddlemployee").val(T);
+    }
+    function LeaveBalance(table1) {
+        table1.rows().remove().draw();
+        $("#btn_search").text("Loading ...").prop("disabled", true);
+        $.ajax({
+            type: 'POST',
+            url: '/leave/leavebalanceshow',
+            data: JSON.stringify({ 'year': $("#ddl_year").val() }),
+            contentType: 'application/json;charset=utf-8',
+            dataType: 'json',
+            success: function (data) {
+                var mydata = JSON.parse(data.msg);
+                table1.rows().remove().draw();
+                $("#btn_search").text("Search").prop("disabled", false);
+                if (mydata.length > 0) {
+                
+                    for (var i = 0; i < mydata.length; i++) {
+                        var markup = "";
+                        markup += "<tr id='row" + i + "'>";
+                        markup += "<td> " + (parseInt(i) + 1) + "</td > ";
+                        markup += "<td> " + mydata[i].EMPLOYEE_NAME + "</td > ";
+                        markup += "<td> " + mydata[i].LEAVE_TYPE + "</td > ";
+                        markup += "<td> " + mydata[i].OPENING_BAL + "</td > ";
+                        markup += "<td> " + mydata[i].CURRENT_ENTITLEMENT + "</td > ";
+                        markup += "<td> " + mydata[i].LEAVES_AVAILED + "</td > ";
+                        //markup += "<td> " + mydata[i].ADJESTMENT_DAYS + "</td > ";
+                        markup += "<td> " + mydata[i].CLOSING_BAL + "</td > ";
+                        markup += "</tr>";
+                        table1.row.add($(markup)).draw();
+                    }
+                } else {
+                    table1.rows().remove().draw();
+                    $("#btn_search").text("Search").prop("disabled", false);
+                }
+
+
+            }
+
+        });
+    }
+
+
+
+    function LeaveSelect1() {
+
+        if ($("#ddlLeaveDaysedit").val() == "Half Day") {
+            $("input[name='optradio']").attr('disabled', false);
+            $('#txt_daysedit').val("");
+            $('#txt_fromDateedit').val("");
+            $('#txt_toDatedit').val("").prop('disabled', true);
+            $('#txt_fromDateedit').val("").prop('disabled', true);
+            $('#txt_fromDateedit').datetimepicker('remove');
+            $('#txt_toDateedit').datetimepicker('remove');
+
+        } else {
+            $("input[name='optradio']").attr('disabled', 'disabled');
+            $('#txt_daysedit').val("2");
+            $('#txt_fromDateedit').val("07-Sep-2017");
+            $('#txt_toDateedit').val("13-Sep-2017");
+            //$('#txt_fromDate').datetimepicker('remove');
+            //$('#txt_toDate').datetimepicker('remove');
+            // $('#txt_toDate').val("").prop('disabled', false);
+            $('#txt_fromDateedit').val("").prop('disabled', false);
+            $('#txt_toDateedit').val("").prop('disabled', false);
+        }
+    }
+
+    function myDateFormatter(dateObject) {
+        var d = new Date(moment(dateObject, '"DD-MMM-YYYY').format());
+        var day = d.getDate();
+        var month = d.getMonth() + 1;
+        var year = d.getFullYear();
+        if (day < 10) {
+            day = "0" + day;
+        }
+        if (month < 10) {
+            month = "0" + month;
+        }
+        var date = year + "/" + month + "/" + day;
+
+        return date;
+    };
+</script>
+<style>
+    .radio-list {
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-2">
+        <h4 class="page-title">Leaves</h4>
+    </div>
+    <div class="col-sm-4 text-right m-b-30">
+        <a href="#" id="btn_Leave_Encashment" class="btn btn-primary rounded" data-toggle="modal" data-target="#Leave_Encashment"> Leave  Encashment </a>
+    </div>
+    <div class="col-sm-2 text-right m-b-30">
+        <a href="#" class="btn btn-primary rounded" data-toggle="modal" id="btn_leave_balance_show" data-target="#Leave_Balance"> Leave Balance</a>
+    </div>
+    <div class="col-sm-1 text-right m-b-30">
+        <a href="#" class="btn btn-primary rounded" data-toggle="modal" onclick="_Apply_Leave(@Session["emp_id"]);" data-target="#Apply_Leave"><i class="fa fa-plus"></i> Apply Leave</a>
+        <input type="hidden" id="hdn_roleId" value="@Session["role_id"]" />
+        <input type="hidden" id="hdn_managerId" value="@Session["manager_id"]" />
+    </div>
+    <div class="col-sm-3 text-right m-b-30" id="buttons">
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive">
+
+            <table id="leavecancelapply" class="table table-striped custom-table m-b-0 tbl_leavehistory">
+                <thead>
+                    <tr>
+                        <th width="45px">Sr.</th>
+                        <th>Employee</th>
+                        <th>Leave Type</th>
+                        <th>From Date</th>
+                        <th>To Date</th>
+                        <th class="Noofdays">No. Of Days</th>
+
+
+                        @*<th>Remarks</th>*@
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int sno = 0;
+                    }
+                    @foreach (var item in Model.Tables[0].Rows)
+                    {
+
+
+                        <tr>
+                            <td>@{ sno++; }@sno</td>
+                            <td><span>@item["EMPLOYEE_NAME"]</span>@*<br /><span>@item["EMPLOYEE_CODE"]</span>*@</td>
+                            <td>@item["LEAVE_TYPE_NAME"]</td>
+                            <td>@item["LEAVE_FROM_DATE"]</td>
+                            <td>@item["LEAVE_TO_DATE"]</td>
+                            <td class="text-center">@item["NUMBER_OF_DAYS"]</td>
+                            @*<td>@item["DESCRIPTION"] </td>*@
+                            <td class="text-center" width="10px">
+
+                                @if (@item["STATUS"].ToString().Trim() == "Submitted")
+                                {
+                                    <label class="badge bg-warning">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                                }
+                                else if (@item["STATUS"].ToString().Trim() == "Cancellation Submitted")
+                                {
+                                    <label class="badge bg-warning" style="white-space: pre-line">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                                }
+                                else if (@item["STATUS"].ToString().Trim() == "Approved")
+                                {
+                                    <label class="badge bg-success">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                                }
+                                else if (@item["STATUS"].ToString().Trim() == "Cancellation Approved")
+                                {
+                                    <label class="badge bg-success" style="white-space: pre-line">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                                }
+                                else if (@item["STATUS"].ToString().Trim() == "Rejected")
+                                {
+                                    <label class="badge" style="white-space: pre-line;background-color:#FC0404">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                                }
+                                else if (@item["STATUS"].ToString().Trim() == "Cancellation Rejected")
+                                {
+                                    <label class="badge" style="white-space: pre-line;background-color:#FC0404">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                                }
+                                else if (@item["STATUS"].ToString().Trim() == "Withdrawn")
+                                {
+                                    <label class="badge" style="white-space: pre-line;background-color:#FC0404">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                                }
+                                else if (@item["STATUS"].ToString().Trim() == "In Progress")
+                                {
+                                    <label class="badge" style="white-space: pre-line;background-color:#ffd800">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+
+            </table>
+
+
+
+        </div>
+    </div>
+</div>
+<div id="Leave_Balance" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg modal-lg-leaveBal">
+            <div class="modal-header modal-title">
+                @*<h4 class="modal-title">Leave Balance</h4>*@
+
+
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-sm-6"><h4>Leave Balance</h4></div>
+                    <div class="col-sm-6 "> <div class="pull-right" id="buttonsleavebalance"></div></div>
+                </div>
+                <form class="m-b-30">
+                    <div class="row">
+
+                        <div class="col-sm-2 col-xs-6">
+                            <div class="form-group form-focus select-focus focused">
+                                <label class="control-label">Select Year</label>
+                                <select style="border-radius:32px;height: 36px; padding: 13px 12px 6px;" class="form-control" id="ddl_year">
+                                    <option value="0">Select</option>
+                                    <option value="2018">2018</option>
+                                    <option value="2019">2019</option>
+                                    <option value="2020">2020</option>
+                                    <option value="2021">2021</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-2 col-xs-6">
+                            <button type="button" class="btn btn-success btn-block" style="border-radius:32px;" id="btn_search"> Search </button>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="radio" id="div_leavebalance">
+                                <label class="radio-inline">
+                                    <input type="radio" value="Self" id="Self" name="leaveoptradio">Self
+                                </label>
+                                @if (Session["manager_id"] != null)
+                                {
+                                    <label class="radio-inline">
+                                        <input type="radio" value="Subordinate" id="Subordinate" name="leaveoptradio">Subordinate
+                                    </label>
+                                }
+
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table id="tbl_leavebalance" class="table table-striped custom-table m-b-0 tbl_leavebalance ">
+                                    <thead>
+                                        <tr>
+                                            <th width="45px">
+                                                Sr.
+                                            </th>
+                                            <th width="160px">
+                                                Employee
+                                            </th>
+                                            <th>Leave Type</th>
+                                            @*<th>Start Date</th>*@
+                                            <th>Opening Balance</th>
+                                            <th>Current Entitlement</th>
+                                            <th>Leaves Availed</th>
+                                            @*<th>Adjustment Days</th>*@
+                                            <th>Closing Balance</th>
+                                            @*<th>  </th>*@
+                                        </tr>
+                                    </thead>
+
+                                    <tbody></tbody>
+                                </table>
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="Apply_Leave" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h4 class="modal-title">Apply Leave</h4>
+            </div>
+            <div class="modal-body">
+                <form class="m-b-30" enctype="multipart/form-data">
+                    <div class="row">
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Employee <span class="text-danger">*</span></label>
+                                @Html.DropDownList("ddlemployee", (IEnumerable<SelectListItem>)ViewBag.DDEMPLOYEE, new { @class = "form-control", @disabled = "disabled" })
+                                <input type="hidden" value="@Session["emp_id"]" id="hiddenempid" />
+
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Type <span class="text-danger">*</span></label>
+                                @Html.DropDownList("ddlleavetypeapply", (IEnumerable<SelectListItem>)ViewBag.LeaveType, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Balance <span class="text-danger">*</span></label>
+                                <input type="text" id="txtleavebalance" value="" readonly="readonly" class="form-control ">
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Day <span class="text-danger">*</span></label> <br />
+                                <label class="radio-inline">
+                                    <input type="radio" id="rbapplyfirsthalf" name="optradio" value="First Half">First Half
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" id="rbapplysecondhalf" value="Second Half" name="optradio">Second Half
+                                </label>
+                                @Html.DropDownList("ddlLeaveDays", (IEnumerable<SelectListItem>)ViewBag.LeaveDay, new { @class = "form-control", onchange = "LeaveSelect()" })
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">From Date <span class="text-danger">*</span></label>
+                                <br />
+                                <br />
+                                <div class="cal-icon"><input type="text" id="txt_fromDate" placeholder="dd-mmm-yyyy" autocomplete="off" class="form-control mycal" onclose="test();"></div>
+                                <br />
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">To Date <span class="text-danger">*</span></label>
+                                <br />
+                                <br />
+                                <div class="cal-icon"><input type="text" placeholder="dd-mmm-yyyy" class="form-control mycal" autocomplete="off" id="txt_toDate"></div>
+                                <br />
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Number of Days  </label>
+                                <input type="text" id="txt_days" class="form-control" disabled="disabled">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Attachment <span class="text-danger" id="idattachment" style="display:none;">*</span> </label>
+                                <input type="file" id="applyleavefile" class="form-control ">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Remarks </label>
+                                <textarea placeholder="Remarks" id="txtapplyremarks" class="form-control"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="m-t-20 text-center">
+
+                        <input type="hidden" id="hiddenapplyleavebalday" value="0" />
+                        <input type="hidden" id="hiddenapplyattachment" />
+                        <input type="hidden" id="hiddenis_half_day" />
+                        <input type="hidden" id="hdforsandwich" value="0" />
+                        <input type="button" id="btnApplyLeave" class="btn btn-primary" value="Apply Leave" />
+                        <input type="button" id="btnApplyReset" class="btn btn-primary" value="Reset" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div id="Leave_Encashment" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h4 class="modal-title">Leave Encashment </h4>
+            </div>
+            <div class="modal-body card-box">
+                <form class="m-b-30">
+                    <div class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Total Leaves For Encashment </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 text-left">
+                            <div class="form-group">
+                                <input type="text" style="width:150px;" id="txt_total_leaves_for_encashment" readonly value="" class="form-control" />
+                                <input type="hidden" id="hd_total_leaves_for_encashment" value="" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Leave Eligible For Encashment </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 text-left">
+                            <div class="form-group">
+                                <input type="text" style="width:150px;" id="txt_leave_eligible_for_encashment" readonly value="" class="form-control" />
+                                <input type="hidden" id="hd_leave_eligible_for_encashment" value="" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Leave Apply For Encashment </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 text-left">
+                            <div class="form-group">
+                                <input type="number" style="width:150px;" min="1" max="30" id="txt_leave_apply_for_encashment" readonly placeholder="30" class="form-control mynubrange" />
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Encashed  Amount</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 text-left">
+                            <div class="form-group">
+                                <input type="number" style="width:150px;" min="1" max="30" id="txt_encashedamount_for_encashment" placeholder="00" readonly   class="form-control mynubrange" />
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="m-t-20 text-center">
+                      
+                        <input type="button" id="btn_submit" class="btn btn-primary" value="Submit" />
+                        <input type="button" id="btn_cancel" onclick="javascript:$('#Leave_Encashment').modal('hide');" class="btn btn-default" value="Cancel" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row" accesskey="">
+    <div id="wait" class="loader col-sm-12" style="display:none;  ">@*<img src="~/assets/img/ajax-loader.gif"/>*@<br></div>
+</div>

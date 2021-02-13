@@ -1,0 +1,766 @@
+﻿
+<script type="text/javascript"> 
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/Create_Timesheet" + '"]').addClass('active');
+
+        var currentTime = new Date()
+        var minDate = new Date(currentTime.getFullYear(), currentTime.getMonth() - 1);
+
+  
+        $('#time_from').datetimepicker('remove');
+        $('#time_to').datetimepicker('remove');
+
+        $("#PostingDate").datepicker({ dateFormat: "dd-M-yy", maxDate: "+0m +0w", minDate: minDate, firstDay: 1 }).datepicker('setDate', 'today').attr('readonly', true);
+
+        //var dt = $("#PostingDate").val();
+        $('#time_from').datetimepicker({ weekStart: 1, clearBtn: 1, autoclose: 1, todayHighlight: 1, startView: 1, forceParse: 0, showMeridian: 1, maxView: 1, startDate: new Date($("#PostingDate").val() + " 00:00"), endDate: new Date($("#PostingDate").val() + " 23:59") });
+
+        $('#time_to').datetimepicker({ weekStart: 1, clearBtn: 1, autoclose: 1, todayHighlight: 1, startView: 1, forceParse: 0, showMeridian: 1, maxView: 1, startDate: new Date($("#PostingDate").val() + " 00:00"), endDate: new Date($("#PostingDate").val() + " 23:59") }).prop('disabled', true);
+
+        //$('#time_to').prop('disabled', true);
+        $(document).ajaxStart(function () {
+            $("#wait").css("display", "block");
+        });
+        $(document).ajaxComplete(function () {
+            $("#wait").css("display", "none");
+        });
+
+        $('#ddl_Customer').on('change', function () {
+            var Customer_id = $('#ddl_Customer option:selected').val();
+            if (Customer_id != "") {
+                $.ajax({
+                    url: '/TimeSheet/GetProjectList',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    data: { 'Customer_Id': Customer_id },
+                    dataType: 'json',
+                    success: function (data)
+                    {
+                        debugger;
+                        var result = JSON.parse(data);
+                        if (result.length > 0)
+                        {
+                            $("#ddl_Project").html("");
+                            $("#ddl_Project").append($('<option></option>').val("0").html("Select"))
+                            //Append each row to dropdown
+                            $.each(result, function (txt, val) {
+
+                                $("#ddl_Project").append($('<option></option>').val(val.PROJECT_ID).html(val.PROJECT_NAME))
+                            });
+                            setTimeout(function () { $('#ddl_Project').focus(); }, 1);
+                        }
+                    },
+                    error: function (data) {
+                        location.href = location.href;
+                    }
+                });
+            }
+        })
+
+        $('#PostingDate').on('change', function () {
+
+            $('#time_from').val("");
+            $('#time_to').val("");
+            $('#time_to').prop('disabled', true);
+            var currt = new Date;
+            var currentdate = DateFormatter(currt);
+            var posting_date = $('#PostingDate').val();
+            if (DateFormatter(posting_date) > currentdate)
+            {
+                alert("Time Sheet Entry Date Can't Greater Then Current Date.");
+                setTimeout(function () { $('#PostingDate').focus(); }, 1);
+                $('#PostingDate').val("");
+            }
+
+            $('#time_from').datetimepicker('remove');
+            $('#time_to').datetimepicker('remove');
+
+            $('#time_from').datetimepicker({ weekStart: 1, clearBtn: 1, autoclose: 1, todayHighlight: 1, startView: 1, forceParse: 0, showMeridian: 1, maxView: 1, startDate: new Date(DateFormatter(posting_date) + " 00:00"), endDate: new Date(DateFormatter(posting_date) + " 23:59") });
+
+            $('#time_to').datetimepicker({ weekStart: 1, clearBtn: 1, autoclose: 1, todayHighlight: 1, startView: 1, forceParse: 0, showMeridian: 1, maxView: 1, startDate: new Date(DateFormatter(posting_date) + " 00:00"), endDate: new Date(DateFormatter(posting_date) + " 23:59") });
+        });
+
+    })
+</script>
+
+<script type="text/javascript">
+    function BindGrid() {
+        $.ajax({
+            url: '/Timesheet/BindTimesheetGrid',
+            type: 'Get',
+            contentType: "application/json; charset=utf-8",
+            data: {},
+            dataType: 'json',
+            success: function (data) {
+                var st;
+                var len = Object.keys(data).length;
+                $('#datatableList tbody').empty();
+                //Append each row to html table
+                for (var i = 0; i < len; i++) {
+                    st = data[i].Status;
+                    $('#datatableList tbody').append("<tr><td><a href='javascript:void(0);' class='anchorDetail' data-id='" + data[i].Transaction_id + "'>Edit</a></td><td>" + data[i].ShowDate + "</td><td>" + data[i].Project + "</td><td>" + data[i].Total_Time + "</td><td><div class='comment more'>" + data[i].Details + "</div></td></tr>");
+                }
+                ShowMore();
+                if (st == "Submitted" && st == "Approved" && st == "Rejected") {
+                    $("tr td a").removeAttr('class', true);
+
+                }
+
+
+            },
+            error: function () {
+                alert("");
+            }
+        });
+    }
+    function CopyData() {
+        var dt = $('#PostingDate').val();
+        var proj = $('#ddl_Project option:selected').text();
+        var project_id = $('#ddl_Project option:selected').val();
+        var ddl_Customer = $('#ddl_Customer option:selected').text();
+        var ddl_Customer_id = $('#ddl_Customer option:selected').val();
+        var ddl_workType = $('#ddl_workType option:selected').text();
+        var ddl_workType_id = $('#ddl_workType option:selected').val();
+        var time_from = $('#time_from').val();
+        var time_to = $('#time_to').val();
+        var detail = $('#Details').val();
+        $.ajax({
+            url: '/Timesheet/SubmitMainPage',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(
+                {
+                    'Date': dt, 'ddl_workType_id': ddl_workType_id, 'Project_id': project_id, 'Time_from': time_from,
+                    'Time_to': time_to, 'Description': detail, 'ddl_Customer_id': ddl_Customer_id
+                }),
+            dataType: 'json',
+            success: function (data) {
+                var a = data.SuccessMsg;
+                var b = data.ErrorMsg;
+                if (data != null && a != null) {
+                    alert(a).setHeader('<em> Message </em> ');
+                    $("#PostingDate").datepicker('setDate', 'today');
+                    $('#time_from').val("");
+                    $('#time_to').val("");
+                    BindGrid();
+                }
+                else {
+                    alert(b).setHeader('<em> Message </em> ');
+                    $('#btnCopy').prop('disabled', false);
+                }
+            },
+            error: function () {
+                alert("");
+            }
+        });
+
+    }
+    function InsertCopyData() {
+        var dt = $('#PostingDate').val();
+        var proj = $('#ddl_Project option:selected').text();
+        var project_id = $('#ddl_Project option:selected').val();
+        var ddl_Customer = $('#ddl_Customer option:selected').text();
+        var ddl_Customer_id = $('#ddl_Customer option:selected').val();
+        var ddl_workType = $('#ddl_workType option:selected').text();
+        var ddl_workType_id = $('#ddl_workType option:selected').val();
+        var time_from = $('#time_from').val();
+        var time_to = $('#time_to').val();
+        var detail = $('#Details').val();
+        $('#btnCopy').prop('disabled', true);
+        $.ajax({
+            url: '/Timesheet/GetDuplicateRecord',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(
+                {
+                    'Date': dt, 'ddl_workType_id': ddl_workType_id, 'Project_id': project_id, 'ddl_Customer_id': ddl_Customer_id
+                }),
+            dataType: 'json',
+            success: function (data) {
+                var a = data.SuccessMsg;
+                if (data != null && a != "") {
+                    var r = confirm(a + "\nDo You Want To Continue Press Ok Otherwise Press Cancel.")
+                    if (r == true) {
+                        CopyData();
+                        $('#btnsubmit').prop('disabled', false);
+                        $('#btnCopy').prop('disabled', false);
+                    }
+                    else {
+                        $('#btnsubmit').prop('disabled', false);
+                        $('#btnCopy').prop('disabled', false);
+                        alert("Transaction Canceled.")
+                    }
+                }
+                else {
+                    CopyData();
+                    $('#btnsubmit').prop('disabled', false);
+                    $('#btnCopy').prop('disabled', false);
+                }
+            },
+            error: function () {
+                alert("");
+            }
+        });
+    }
+    function CopyEntryFound() {
+        var dt = $('#PostingDate').val();
+        var ddl_workType_id = $('#ddl_workType option:selected').val();
+        var ddl_workType = $('#ddl_workType option:selected').text();
+        $.ajax({
+            url: '/Timesheet/GetDuplicateddl_workType',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(
+                {
+                    'Date': dt, 'ddl_workType_id': ddl_workType_id
+                }),
+            dataType: 'json',
+            success: function (data) {
+                var a = data.SuccessMsg;
+                if (data != null && a != "Other Type" && a != "") {
+                    alert('You Already have an entry as Workday on same date.')
+                    $('#btnsubmit').prop('disabled', false);
+                    $('#btnCopy').prop('disabled', false);
+                }
+                else {
+                    InsertCopyData();
+                    $('#btnsubmit').prop('disabled', false);
+                    $('#btnCopy').prop('disabled', false);
+                }
+            },
+            error: function () {
+                alert("");
+                $('#btnsubmit').prop('disabled', false);
+                $('#btnCopy').prop('disabled', false);
+            }
+        });
+    }
+    function ClearText() {
+        $('#time_from').val("");
+        $('#time_to').val("");
+        $('#Details').val("");
+        $('#PostingDate').val($.datepicker.formatDate("yy-mm-dd", new Date()));
+        $("#ddl_Customer").html("");
+        $('#ddl_Customer').append($('<option></option>').html("Select"));
+        $('#ddl_workType').val("");
+        $("#ddl_Project").html("");
+        $('#ddl_Project').append($('<option></option>').html("Select"));
+        $('#btnsubmit').show();
+        $('#btnupdate').hide();
+        $('#copy').show();
+        $('#ddl_Customer').prop('disabled', false);
+        $('#ddl_Project').prop('disabled', false);
+        $('#time_from').val("").prop('disabled', false);
+        //$('#time_to').val("").prop('disabled', true);
+        $('#Details').prop('disabled', false);
+    }
+    function SubmitData() {
+        var dt = $('#PostingDate').val();
+        var proj = $('#ddl_Project option:selected').text();
+        var project_id = $('#ddl_Project option:selected').val();
+        var ddl_Customer = $('#ddl_Customer option:selected').text();
+        var ddl_Customer_id = $('#ddl_Customer option:selected').val();
+        var ddl_workType = $('#ddl_workType option:selected').text();
+        var ddl_workType_id = $('#ddl_workType option:selected').val();
+        var time_from = $('#time_from').val();
+        var time_to = $('#time_to').val();
+        var detail = $('#Details').val();
+
+        $.ajax({
+            url: '/Timesheet/SubmitMainPage',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(
+                {
+                    'Date': dt, 'ddl_workType_id': ddl_workType_id, 'Project_id': project_id, 'Time_from': time_from,
+                    'Time_to': time_to, 'Description': detail, 'ddl_Customer_id': ddl_Customer_id
+                }),
+            dataType: 'json',
+            success: function (data) {
+                var a = data.SuccessMsg;
+                var b = data.ErrorMsg;
+                if (data != null && a != null) {
+                    alert(a);
+                    ClearText();
+                    //BindGrid();
+                    RedirectOnClick();
+                }
+                else {
+                    alert(b).setHeader('<em> Message </em> ');
+                }
+            },
+            error: function () {
+                alert("");
+            }
+        });
+    }
+    function InsertData() {
+        var dt = $('#PostingDate').val();
+        var proj = $('#ddl_Project option:selected').text();
+        var project_id = $('#ddl_Project option:selected').val();
+        var ddl_Customer = $('#ddl_Customer option:selected').text();
+        var ddl_Customer_id = $('#ddl_Customer option:selected').val();
+        var ddl_workType = $('#ddl_workType option:selected').text();
+        var ddl_workType_id = $('#ddl_workType option:selected').val();
+        var time_from = $('#time_from').val();
+        var time_to = $('#time_to').val();
+        var detail = $('#Details').val();
+        $.ajax({
+            url: '/Timesheet/GetDuplicateRecord',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(
+                {
+                    'Date': dt, 'ddl_workType_id': ddl_workType_id, 'Project_id': project_id, 'ddl_Customer_id': ddl_Customer_id
+                }),
+            dataType: 'json',
+            success: function (data) {
+                var a = data.SuccessMsg;
+                if (data != null && a != "") {
+                    var r = confirm(a + "\nDo You Want To Continue Press Ok Otherwise Press Cancel.")
+                    if (r == true) {
+                        SubmitData();
+                        $('#btnsubmit').prop('disabled', false);
+                    }
+                    else {
+                        alert("Transaction Canceled.")
+                        $('#btnsubmit').prop('disabled', false);
+                    }
+                }
+                else {
+                    SubmitData();
+                    $('#btnsubmit').prop('disabled', false);
+                }
+            },
+            error: function () {
+                alert("");
+                $('#btnsubmit').prop('disabled', false);
+            }
+        });
+    }
+    function CheckDate() {
+        var post_date = $('#PostingDate').val();
+        var time_from = $('#time_from').val();
+        var timefrom_date = time_from.split(" ");
+        if (post_date != "") {
+            if (timefrom_date[0] < DateFormatter(post_date)) {
+                alert("From Date Can't less then Time Sheet Date.");
+                setTimeout(function () { $('#time_from').focus(); }, 1);
+                $('#time_from').val("");
+                $('#time_to').val("");
+                return false;
+            }
+            else if (timefrom_date[0] > DateFormatter(post_date)) {
+                alert("From Date Can't Greater then Time Sheet Date.");
+                setTimeout(function () { $('#time_from').focus(); }, 1);
+                $('#time_from').val("");
+                $('#time_to').val("");
+                return false;
+            }
+        }
+        else
+        {
+            alert("Please Check Date...");
+            setTimeout(function () { $('#PostingDate').focus(); }, 1);
+            $('#time_from').val("");
+            return false;
+        }
+        $('#time_to').prop('disabled', false);
+
+    }
+    function CheckDateTime() {
+        var time_from = $('#time_from').val();
+        var time_to = $('#time_to').val();
+        var timefrom_date = time_from.split(" ");
+        var timeto_date = time_to.split(" ");
+        var hours = (new Date(time_to) - new Date(time_from)) / 1000 / 60 / 60;
+        var ddl_workType_id = $('#ddl_workType option:selected').val();
+        if (time_from != "") {
+            if (timefrom_date[0] == timeto_date[0]) {
+                if (timeto_date[1] >= timefrom_date[1]) {
+                    var timefrom_second = timefrom_date[1].split(":");
+                    var timeto_second = timeto_date[1].split(":");
+                    var diff = (new Date(time_to) - new Date(time_from)) / 1000;
+
+                    if (ddl_workType_id != 5 && ddl_workType_id != 6 && ddl_workType_id != 7) {
+                        if ((diff / 60) < 30) {
+                            alert("Time entry should be greater then 30 min.");
+                            setTimeout(function () { $('#time_to').focus(); }, 1);
+                            $('#time_to').val("");
+                            return false;
+                        }
+                    }
+                }
+                else {
+                    alert("To Time is less then From Time.");
+                    setTimeout(function () { $('#time_to').focus(); }, 1);
+                    $('#time_to').val("");
+                    return false;
+                }
+            }
+            else if (hours > 48) {
+                alert("Time entry should not be greater then 48 hours.");
+                setTimeout(function () { $('#time_to').focus(); }, 1);
+                $('#time_to').val("");
+                return false;
+            }
+            else if (timeto_date[0] < timefrom_date[0]) {
+                alert("To Date can't Less  then From Date.");
+                setTimeout(function () { $('#time_to').focus(); }, 1);
+                $('#time_to').val("");
+                return false;
+            }
+        }
+        else {
+            alert("Please First Enter The Time From.");
+            setTimeout(function () { $('#time_from').focus(); }, 1);
+            $('#time_to').val("");
+            return false;
+        }
+    }
+    function DateFormatter(currentdate) {
+        var d = new Date(currentdate);
+        var day = d.getDate();
+        var month = d.getMonth() + 1;
+        var year = d.getFullYear();
+        if (day < 10) {
+            day = "0" + day;
+        }
+        if (month < 10) {
+            month = "0" + month;
+        }
+        var date = year + "-" + month + "-" + day;
+        return date;
+    }
+    function myDateFormatter(dateObject) {
+        var d = new Date(dateObject);
+        var day = d.getDate();
+        var month = d.getMonth() + 1;
+        var year = d.getFullYear();
+        if (day < 10) {
+            day = "0" + day;
+        }
+        if (month < 10) {
+            month = "0" + month;
+        }
+        var date = year + "/" + month + "/" + day;
+
+        return date;
+    };
+    function EntryFound() {
+        var dt = $('#PostingDate').val();
+        var ddl_workType_id = $('#ddl_workType option:selected').val();
+        var ddl_workType = $('#ddl_workType option:selected').text();
+        $.ajax({
+            url: '/TimeSheet/GetDuplicateddl_workType',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(
+                {
+                    'Date': dt, 'ddl_workType_id': ddl_workType_id
+                }),
+            dataType: 'json',
+            success: function (data) {
+               
+                var a = data.SuccessMsg;
+                if (data != null && a != "Other Type" && a != "" ) {
+                    alert('You Already have an entry as Workday on same date.')
+                    $('#btnsubmit').prop('disabled', false);
+                    $('#btnCopy').prop('disabled', false);
+                    $('#btnreset').prop('disabled', false);
+                }
+
+                else {
+                    InsertData();
+                    $('#btnsubmit').prop('disabled', false);
+                    $('#btnCopy').prop('disabled', false);
+                    $('#btnreset').prop('disabled', false);
+                }
+            },
+            error: function () {
+                alert("");
+                $('#btnsubmit').prop('disabled', false);
+            }
+        });
+    }
+    function GetDuplicateRecord() {
+       
+
+        var dt = $('#PostingDate').val();
+        var proj = $('#ddl_Project option:selected').text();
+        var project_id = $('#ddl_Project option:selected').val();
+        var ddl_Customer = $('#ddl_Customer option:selected').text();
+        var ddl_Customer_id = $('#ddl_Customer option:selected').val();
+        var ddl_workType = $('#ddl_workType option:selected').text();
+        var ddl_workType_id = $('#ddl_workType option:selected').val();
+        var time_from = $('#time_from').val();
+        var time_to = $('#time_to').val();
+        var detail = $('#Details').val();
+        var currt = new Date;
+        var currentdate = DateFormatter(currt);
+        if (dt <= currentdate) {
+            if (dt != "" && proj != "Select" && time_from != "" && time_to != "" && detail != "" && ddl_workType != "Select" && ddl_Customer != "Select") {
+                $('#btnsubmit').prop('disabled', true);
+                $('#btnCopy').prop('disabled', true);
+                $('#btnreset').prop('disabled', true);
+                $.ajax({
+                    url: '/Timesheet/Getddl_workTypeDRecord',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(
+                        {
+                            'ddl_workType_id': ddl_workType_id, 'Time_From': time_from, 'Time_To': time_to, 'Timesheet_date': dt
+                        }),
+                    dataType: 'json',
+                    success: function (data) {
+
+                        var a = data.SuccessMsg;
+                        var err = data.ErrorMsg;
+                        if (data != null && a != "" && err == undefined) {
+                            if (a == "5" || a == "6" || a == "7") {
+                                alert('You Already have an entry as (Offtime)\nIf You Want To Make Any Changes,Please Use Update Option.')
+                                $('#btnsubmit').prop('disabled', false);
+                                $('#btnCopy').prop('disabled', false);
+                                $('#btnreset').prop('disabled', false);
+                            }
+                            else {
+                                EntryFound();
+                            }
+                        }
+                        else if (a == "" && err == undefined) {
+                            InsertData();
+                            $('#btnsubmit').prop('disabled', false);
+                            $('#btnCopy').prop('disabled', false);
+                            $('#btnreset').prop('disabled', false);
+                        }
+                        else {
+                            alert(err);
+                            $('#btnsubmit').prop('disabled', false);
+                            $('#btnCopy').prop('disabled', false);
+                            $('#btnreset').prop('disabled', false);
+                        }
+                    },
+                    error: function () {
+                        alert("");
+                        $('#btnsubmit').prop('disabled', false);
+                    }
+                });
+            }
+            else if (dt == "") {
+                alert("Please Check Date.");
+                setTimeout(function () { $('#PostingDate').focus(); }, 1);
+            }
+            else if (ddl_workType == "Select") {
+
+                alert("Please Select Work Type.");
+
+                setTimeout(function () { $('#ddl_workType').focus(); }, 1);
+            }
+            else if (ddl_Customer == "Select") {
+                alert("Please Select ddl_Customer.");
+
+                setTimeout(function () { $('#ddl_Customer').focus(); }, 1);
+            }
+            else if (proj == "Select") {
+                alert("Please Choose At Least One Project.");
+                setTimeout(function () { $('#ddl_Project').focus(); }, 1);
+            }
+            else if (time_from == "") {
+                alert("Please Enter The Time From.");
+                setTimeout(function () { $('#time_from').focus(); }, 1);
+            }
+            else if (time_to == "") {
+                alert("Please Enter The Time To.");
+                setTimeout(function () { $('#time_to').focus(); }, 1);
+            }
+            else if (detail == "") {
+                alert("Please Enter The Details.");
+                setTimeout(function () { $('#Details').focus(); }, 1);
+            }
+        }
+        else {
+            alert("Time Sheet Entry Date Can't Greater Then Current Date.");
+            setTimeout(function () { $('#PostingDate').focus(); }, 1);
+        }
+    }
+    function DuplicateRecord() {
+       
+        var dt = $('#PostingDate').val();
+        var proj = $('#ddl_Project option:selected').text();
+        var project_id = $('#ddl_Project option:selected').val();
+        var ddl_Customer = $('#ddl_Customer option:selected').text();
+        var ddl_Customer_id = $('#ddl_Customer option:selected').val();
+        var ddl_workType = $('#ddl_workType option:selected').text();
+        var ddl_workType_id = $('#ddl_workType option:selected').val();
+        var time_from = $('#time_from').val();
+        var time_to = $('#time_to').val();
+        var detail = $('#Details').val();
+        var currt = new Date;
+        var currentdate = DateFormatter(currt);
+        if (dt <= currentdate) {
+            if (dt != "" && proj != "Select" && time_from != "" && time_to != "" && detail != "" && ddl_workType != "Select" && ddl_Customer != "Select") {
+                $('#btnCopy').prop('disabled', true);
+                $('#btnsubmit').prop('disabled', true);
+                $.ajax({
+                    url: '/TimeSheet/Getddl_workTypeDRecord',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(
+                        {
+                            'ddl_workType_id': ddl_workType_id, 'Time_From': time_from, 'Time_To': time_to, 'Timesheet_date': dt
+                        }),
+                    dataType: 'json',
+                    success: function (data) {
+
+                        var a = data.SuccessMsg;
+                        var err = data.ErrorMsg;
+                        if (data != null && a != "" && err == undefined && a != "") {
+                            if (a == "5" || a == "6" || a == "7") {
+                                alert('You Already have an entry as (Offtime)\nIf You Want To Make Any Changes,Please Use Update Option.');
+                                $('#btnsubmit').prop('disabled', false);
+                                $('#btnCopy').prop('disabled', true
+                                );
+                            }
+                            else {
+                                CopyEntryFound();
+                            }
+                        }
+                        else if (a == "" && err == undefined) {
+                            InsertCopyData();
+                            $('#btnsubmit').prop('disabled', false);
+                            $('#btnCopy').prop('disabled', false);
+                        }
+                        else {
+                            alert(err);
+                            $('#btnsubmit').prop('disabled', false);
+                            $('#btnCopy').prop('disabled', false);
+                        }
+                    },
+                    error: function (e) {
+                        alert("Error" + e);
+                    }
+                });
+            }
+            else if (dt == "") {
+                alert("Please Check Date.").setHeader('<em> Message </em> ');
+                setTimeout(function () { $('#PostingDate').focus(); }, 1);
+            }
+            else if (ddl_workType == "Select") {
+                alert("Please Select Work Type.");
+                setTimeout(function () { $('#ddl_workType').focus(); }, 1);
+            }
+            else if (ddl_Customer == "Select") {
+                alert("Please Select ddl_Customer.");
+                setTimeout(function () { $('#ddl_Customer').focus(); }, 1);
+            }
+            else if (proj == "Select") {
+                alert("Please Choose At Least One Project.");
+                setTimeout(function () { $('#ddl_Project').focus(); }, 1);
+            }
+            else if (time_from == "") {
+                alert("Please Enter The Time From.");
+                setTimeout(function () { $('#time_from').focus(); }, 1);
+            }
+            else if (time_to == "") {
+                alert("Please Enter The Time To.");
+                setTimeout(function () { $('#time_to').focus(); }, 1);
+            }
+            else if (detail == "") {
+                alert("Please Enter The Details.");
+                setTimeout(function () { $('#Details').focus(); }, 1);
+            }
+        }
+        else {
+            alert("Time Sheet Entry Date Can't Greater Then Current Date.");
+            setTimeout(function () { $('#PostingDate').focus(); }, 1);
+        }
+    }
+    function RedirectOnClick() {
+        window.location.href = "/home/Dashboard";
+    }
+</script>
+<html>
+<body>
+    <form id="inputform" autocomplete="off">
+        <div class="panel" id="pnl_header">
+            <div class="panel-heading" style="background-color:#00bff9;">Create</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Timesheet Date:<span class="text-danger">*</span></label>
+                                    <div class="cal-icon"><input type="text" id="PostingDate" class="form-control" /></div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="control-label">Work Type:<span class="text-danger">*</span></label>
+                                    @Html.DropDownList("ddl_workType", (IEnumerable<SelectListItem>)ViewBag.worklist, new { @class = "form-control", @tabindex = "2" })
+
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="control-label">Customer:<span class="text-danger">*</span></label>
+                                    @Html.DropDownList("ddl_Customer", (IEnumerable<SelectListItem>)ViewBag.Customerlist, new { @class = "form-control", @tabindex = "3" })
+
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="control-label" for="Project">Project:<span class="text-danger">*</span></label>
+                                    @Html.DropDownList("ddl_Project", (IEnumerable<SelectListItem>)ViewBag.projectlist, new { @class = "form-control", @tabindex = "4" })
+
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="row">
+                                        <label class="control-label col-md-3" for="Time">Time:<span class="text-danger">*</span></label>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" id="time_from" onchange="CheckDate();" tabindex="5" autocomplete="off">From
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" id="time_to" onchange="CheckDateTime();" tabindex="6" autocomplete="off">To
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="control-label col-md-3" for="Details">Description:<span class="text-danger">*</span></label>
+                                    <textarea type="text" class="form-control" id="Details" maxlength="500" tabindex="7" autocomplete="off"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:50px; text-align:center;margin-left: 170px;">
+                            <div class="form-group">
+                                <div class="col-sm-2">
+                                    <button type="button" class="btn btn-primary" id="btnsubmit" onclick="GetDuplicateRecord()" tabindex="8">Save & Close</button>
+                                </div>
+                                <div class=" col-sm-2" id="copy">
+                                    <button type="button" class="btn btn-primary" id="btnCopy" onclick="DuplicateRecord()" tabindex="9">Save & Copy</button>
+                                </div>
+                                <div class="col-sm-2" id="reset">
+                                    <button type="button" class="btn btn-primary" id="btnreset" onclick="ClearText()" tabindex="10">Reset</button>
+                                </div>
+                                <div class="col-sm-2">
+                                    <button type="button" class="btn btn-primary" onclick="RedirectOnClick()" tabindex="11">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>      
+        @Html.Hidden("User_Name", (string)ViewBag.username)
+</body>
+</html>
+
+
+

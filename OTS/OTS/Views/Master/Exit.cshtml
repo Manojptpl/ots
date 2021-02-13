@@ -1,0 +1,659 @@
+﻿@model IEnumerable<OTS.Models.MastersModel>
+   
+
+<style type="text/css">
+    .required {
+        color: red;
+    }
+
+    .myclass {
+        text-transform: capitalize;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function ()
+    {
+        $('ul.list-unstyled  li a[href$="' + "/Create_Customer" + '"]').addClass('active');       
+
+        $("#Customer_Code").bind('keyup', function (e) {
+            if (e.which >= 97 && e.which <= 122) {
+                var newKey = e.which - 32;
+                // I have tried setting those
+                e.keyCode = newKey;
+                e.charCode = newKey;
+            }
+            $("#Customer_Code").val(($("#Customer_Code").val()).toUpperCase());
+        });        
+        
+    });
+    function CreateCustomer() {
+        var status = 0;
+        if ($('#Status').is(":checked")) {
+            status = 1;
+        }
+        else {
+            status = 0;
+        }
+        var cust_code = $('#Customer_Code').val();
+        var str = $('#Customer_Name').val();
+        str = str.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var cust_name = str;
+        var str1 = $('#Address').val();
+        str1 = str1.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var address = str1;
+        var str2 = $('#City').val();
+        str2 = str2.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var city = str2;
+        var str3 = $('#State').val();
+        str3 = str3.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var state = str3;
+        var str4 = $('#Country').val();
+        str4 = str4.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+            return letter.toUpperCase();
+        });
+        var country = str4;
+        var zip_code = $('#Zip_Code').val();
+
+        if (cust_code != "" && cust_name != "" && address != "") {
+            $.ajax({
+                type: 'POST',
+                url: '/Master/CreateCustomer/',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(
+                    {
+                        'Customer_Code': cust_code, 'Customer_Name': cust_name, 'Address': address, 'City': city, 'State': state, 'Country': country, 'Zip_Code': zip_code, 'Status': status
+                    }
+                ),
+                dataType: 'json',
+                success: function (data) {
+                    var a = data.SuccessMsg;
+                    var b = data.ErrorMsg;
+                    if (data != null && a != null) {
+                        alert(a);
+                        ClearText();
+                    }
+                    else {
+                        alertify.alert(b).setHeader('<em> Message </em> ');
+                    }
+                },
+                error: function (data) {
+
+                }
+            });
+        }
+        else if (cust_name == "") {
+            alert("Customer Name Can't be blank.");
+            setTimeout(function () { $('#Customer_Name').focus(); });
+        }
+        else if (cust_code == "") {
+            alert("Customer Code Can't be blank.");
+            setTimeout(function () { $('#Customer_Code').focus(); });
+        }
+        else {
+            alert("Address Can't be blank.");
+            setTimeout(function () { $('#Address').focus(); });
+        }
+    }
+
+    function ClearText() {
+        $('#Customer_Code').val("").attr('disabled', false).css("background-color", "");
+        $('#Customer_Name').val("");
+        $('#Address').val("");
+        $('#City').val("");
+        $('#State').val("");
+        $('#Country').val("");
+        $('#Zip_Code').val("");
+        $('.myCheckbox').prop('checked', false);
+        $('#divupdate').hide();
+        $('#divempty').hide();
+        $('#divsave').show();
+        $('#Customer_Id').val("");
+    }
+
+    function CancelOnClick() {
+        window.location.href = "/Home/Dashboard";
+    }
+
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+        return true;
+    }
+
+    function BindCustomerData() {
+        var customer_id = $('#Customer_Id').val();
+        if (customer_id != "") {
+            $.ajax({
+                url: "/Master/BindCustomer/",
+                type: "POST",
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ 'Customer_Id': customer_id }),
+                dataType: "json",
+                success: function (data) {
+                    var err = data.ErrorMsg;
+                    if (data != null) {
+                        $('#Customer_Code').val(data[0].Customer_Code).attr('disabled', true).css("background-color", "lightgray");
+                        $('#Customer_Name').val(data[0].Customer_Name);
+                        $('#Address').val(data[0].Address);
+                        $('#City').val(data[0].City);
+                        $('#State').val(data[0].State);
+                        $('#Country').val(data[0].Country);
+                        $('#Zip_Code').val(data[0].Zip_Code);
+                        $('#divupdate').show();
+                        $('#divedit').hide();
+                        $('#divsave').hide();
+                        $('#divempty').show();
+                        $('.modal-backdrop').remove();
+                        $('#myModal').modal('hide');
+                    }
+                    else {
+                        if (err == "session out") {
+                            window.location.href = "/home/index/"
+                        }
+                        else {
+                            alertify.alert("Error Edit Customer").setHeader("<em>Message<em>");
+                        }
+
+                    }
+                },
+                error: function (data) {
+
+                }
+            });
+        }
+    }
+    
+</script>
+
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">Exit</h4></div>
+        <div class="panel-body">
+            @foreach (var item in Model)
+            {
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Name:<span class="required">*</span></label>   
+                        <input type="text" class="form-control" id="txt_Name" value="@item.First_Name" readonly="readonly"/>                     
+                    </div> 
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group"> 
+                        <label>Job Title:<span class="required">*</span></label>                       
+                        <input type="text" class="form-control" id="txt_JobTitle"  value="@item.JOB_NANE" readonly="readonly"/>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Designation:</label> 
+                        <input type="text" class="form-control" id="txt_Designation" value="@item.Designation" readonly="readonly"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Department:</label>
+                        <input type="text" class="form-control" id="txt_Department"  value="@item.Department_Name" readonly="readonly"/>                        
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group"> 
+                        <label>Start Date With Organization:</label> 
+                        <div class="cal-icon">
+                            <input class="form-control" placeholder="dd-mmm-yyyy" type="text" id="txt_DueDate" value="@item.strDOJ" readonly="readonly"/>
+                        </div>                                         
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Separation Date:</label>
+                        <div class="cal-icon">
+                            <input class="form-control mycal" placeholder="dd-mmm-yyyy" type="text" id="txt_Separation">
+                        </div>                         
+                    </div>
+                </div>
+            </div>       
+            }
+        </div>        
+    </div>
+</div>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+        <div class="panel-body">
+            <table class="table table-bordered" id="checkboxes">
+                <thead>
+                    <tr style="padding:0px;">
+                        <th scope="col">1</th> 
+                        <th colspan="11">Please describe the primary reason(s) you are leaving your current position. </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="padding:0px;">
+                        <td></td>
+                        <td><input type="text" class="form-control" id="txt_EmployerName" autocomplete="off" /></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+        <div class="panel-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr> 
+                        <th scope="col">2</th>                       
+                        <th colspan="8">Did dissatisfaction with any of the following factors influence your decision to leave?</th>
+                        <th scope="col">YES</th>
+                        <th scope="col">NO</th>                        
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td></td>                        
+                        <td colspan="8">Type of work</td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_ytw"/></td> 
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_ntw"/></td>                        
+                    </tr>
+                    <tr>
+                        <td></td>                        
+                        <td colspan="8">Working conditions (setting, schedule, travel, flexibility)</td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_ywc"/></td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_nwc" /></td>                        
+                    </tr>
+                    <tr> 
+                        <td></td>                       
+                        <td colspan="8">Pay</td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_yp" /></td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_np" /></td>                         
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="8">Supervisor</td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_ys" /></td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_ns" /></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="8">Location</td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_yl" /></td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_nl" /></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="8">Cost of living in area</td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_ya" /></td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_na" /></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="8">Commute</td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_yc" /></td>
+                        <td><input type="checkbox" class="checkbox checkbox-info checkbox-circle" id="chk_nc" /></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+        <div class="panel-body">            
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th rowspan="2">3</th>
+                        <th colspan="6" rowspan="2">Please rate the following aspects of the job you are vacating</th>
+                        <th scope="col" style="text-align:center"><strong>Poor &nbsp;:&nbsp;1</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Below Average &nbsp;:&nbsp;2</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Average &nbsp;:&nbsp;3</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Above Average &nbsp;:&nbsp;4</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Excellent &nbsp;:&nbsp;5</strong></th>
+                    </tr>
+                </thead>
+            </table>
+            <table class="table table-bordered">
+                
+                <tbody> 
+                                      
+                    <tr>
+                        
+                        <td style="width:25px; height:40px;" class="d-flex flex-row bg-secondary"></td>
+                        <td colspan="6" style="width:422px; height:40px;" class="d-flex flex-row bg-secondary">Type of work performed</td>
+                        <td style="width:71px; height:40px; padding:0px;" class="d-flex flex-row bg-secondary"><input type="text" class="form-control" id="txt_Always"/></td>
+                       
+                    </tr>
+                    <tr>
+                        <td style="width:25px; height:40px;"></td>
+                        <td colspan="6" style="width:422px; height:40px;">Fairness of workload</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                                         
+                    </tr>
+                    <tr>
+                        <td style="width:25px; height:40px;"></td>
+                        <td colspan="6" style="width:422px; height:40px;">Salary</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                                        
+                    </tr>
+                    <tr>
+                        <td style="width:25px; height:40px;"></td>
+                        <td colspan="6" style="width:422px; height:40px;">Working conditions</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                                          
+                    </tr>
+                    <tr>
+                        <td style="width:25px; height:40px;"></td>
+                        <td colspan="6" style="width:422px; height:40px;">Tools and equipment provided</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                                           
+                    </tr>
+                    <tr>
+                        <td style="width:25px; height:40px;"></td>
+                        <td colspan="6" style="width:422px; height:40px;">Training received</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>
+                        @*<td style="width:147px; height:40px; padding:0px;"></td>
+                        <td style="width:99px; height:40px; padding:0px;"></td>
+                        <td style="width:150px; height:40px; padding:0px;"></td>
+                        <td style="width:107px; height:40px; padding:0px;"></td>*@                          
+                    </tr>
+                    <tr>
+                        <td style="width:25px; height:40px;"></td>
+                        <td colspan="6" style="width:422px; height:40px;">Co-workers</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                                               
+                    </tr>
+                    <tr>
+                        <td style="width:25px; height:40px;"></td>
+                        <td colspan="6" style="width:422px; height:40px;">Supervision received</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                                                 
+                    </tr>
+                    <tr>
+                        <td style="width:25px; height:40px;"></td>
+                        <td colspan="6" style="width:422px; height:40px;">Level of input in decisions that affected you</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                                               
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+        <div class="panel-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th rowspan="2">4</th>
+                        <th colspan="6" rowspan="2">Please rate the following aspects of the organization overall.</th>
+                        <th scope="col" style="text-align:center"><strong>Poor &nbsp;:&nbsp;1</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Below Average &nbsp;:&nbsp;2</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Average &nbsp;:&nbsp;3</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Above Average &nbsp;:&nbsp;4</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Excellent &nbsp;:&nbsp;5</strong></th>
+                    </tr>
+                </thead>
+            </table>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Recruitment process</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                         
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">New employee orientation</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                           
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Training opportunities</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                           
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Career development opportunities</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                           
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Employee morale</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                           
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Fair treatment of employees</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                          
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Recognition for a job well done</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                           
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Support of work-life balance</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                          
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Cooperation within the agency</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                          
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Communication between management and employees</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                           
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Performance and development planning and evaluation</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                           
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Interest and investment in employees</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                          
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Commitment to customer service</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                          
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Concern with quality and excellence</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                           
+                    </tr>
+                    <tr>
+                        <td style="width:26px; height:40px;"></td>
+                        <td colspan="6" style="width:421px; height:40px;">Administrative polices/procedures</td>
+                        <td style="width:71px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                           
+                    </tr>
+                </tbody>
+            </table>            
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+        <div class="panel-body">
+            <table class="table table-bordered">
+                <thead>                
+                    <tr>
+                        <th rowspan="2">5</th>
+                        <th colspan="6" rowspan="2">Please rate your supervisor on the following factors.</th>
+                        <th scope="col" style="text-align:center"><strong>Never &nbsp;:&nbsp;1</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Seldom &nbsp;:&nbsp;2</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Often &nbsp;:&nbsp;3</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Usually &nbsp;:&nbsp;4</strong></th>
+                        <th scope="col" style="text-align:center"><strong>Always &nbsp;:&nbsp;5</strong></th>
+                    </tr>
+                </thead>
+            </table>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Gave usable performance feedback</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Recognized accomplishments</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Clearly communicated expectations</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Treated you fairly and respectfullys</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Coached, trained, & developed you</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Provided leadership</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Encouraged teamwork & cooperation</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Resolved concerns promptly</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Listened to suggestions & feedback</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Kept employees informed</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Supported work-life balance</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>
+                    <tr>
+                        <td style="width:31px; height:40px;"></td>
+                        <td colspan="6" style="width:448px; height:40px;">Provided appropriate & challenging assignments</td>
+                        <td style="width:98px; height:40px; padding:0px;"><input type="text" class="form-control" id="txt_Always" /></td>                        
+                    </tr>                    
+                </tbody>
+            </table>            
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+        <div class="panel-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">6</th> 
+                        <th colspan="5">If you accepted another job, please complete the following. </th>
+                        <th colspan="5"></th>                        
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="padding:0px;">
+                        <td></td>
+                        <td colspan="5">Name of new employer</td>
+                        <td colspan="5"><input type="text" class="form-control" id="txt_EmployerName" autocomplete="off"/></td>                        
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="5">Location of position</td>
+                        <td colspan="5"><input type="text" class="form-control" id="txt_EmployerName" autocomplete="off" /></td>   
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="5">Title of position</td>
+                        <td colspan="5"><input type="text" class="form-control" id="txt_EmployerName" autocomplete="off" /></td>   
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="5">Nature of work of position</td>
+                        <td colspan="5"><input type="text" class="form-control" id="txt_EmployerName" autocomplete="off" /></td>   
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="5">Salary of position</td>
+                        <td colspan="5"><input type="text" class="form-control" id="txt_EmployerName" autocomplete="off" /></td>   
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="5">What the new position and/or organization offers that we do not.</td>
+                        <td colspan="5"><input type="text" class="form-control" id="txt_EmployerName" autocomplete="off" /></td>   
+                    </tr>                                                            
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+        <div class="panel-body">
+            <table class="table table-bordered" id="checkboxes">
+                <thead>
+                    <tr style="padding:0px;">
+                        <th scope="col">7</th>
+                        <th colspan="10">Were your expectations of the job and this organization met? If not, why?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td><textarea class="form-control" id="txt_expectation" rows="8"></textarea></td>
+                    </tr>                    
+                </tbody>
+            </table>
+        </div>
+    </div>    
+</div>
+<div class="row">
+    <div class="col-sm-3">
+        <div class="form-group">
+
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="form-group">
+            <button type="button" class="btn btn-primary" id="btn_Submit" onclick="CreateCustomer()">Submit</button>
+            <button type="button" class="btn btn-primary" onclick="ClearText()">Reset</button>
+            <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+

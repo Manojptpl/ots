@@ -1,0 +1,1694 @@
+﻿@model OTS.Models.editpolicy
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.js"></script>
+<link href="http://cdn.rawgit.com/davidstutz/bootstrap-multiselect/master/dist/css/bootstrap-multiselect.css"
+      rel="stylesheet" type="text/css" />
+<script src="http://cdn.rawgit.com/davidstutz/bootstrap-multiselect/master/dist/js/bootstrap-multiselect.js"
+        type="text/javascript"></script>
+<style>
+    .mybtncls.btnlast {
+        list-style-type: none;
+        float: right;
+        padding-right: 4px !important;
+        padding-left: 0px !important;
+    }
+
+    .mybtncls {
+        list-style-type: none;
+        padding-right: 4px !important;
+        padding-left: 0px !important;
+    }
+
+        .mybtncls li {
+            float: left;
+            padding-left: 5px !important;
+            padding-top: 5px !important;
+        }
+
+    .cmplitetextalign {
+        margin-left: 18px;
+    }
+</style>
+<style type="text/css">
+    .multiselect-container {
+        width: 100% !important;
+        border-radius: 0px !important;
+    }
+
+    .multiselect {
+        height: 40px !important;
+        text-align: left !important;
+    }
+
+    /*for table*/
+    .dataTables_scrollHeadInner {
+        width: 100% !important;
+    }
+
+    div.dataTables_scrollHeadInner table {
+        width: 100% !important;
+    }
+</style>
+<script>
+    $(function () {
+        $('#ddlgrade').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: '100%'
+        });
+        $(".caret").css('float', 'right');
+        $(".caret").css('margin', '8px 0');
+    });
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/index" + '"]').addClass('active');
+        var table = $(".tblCreatePlan").DataTable(
+            {
+                "columnDefs": [
+                    { "targets": [8], "orderable": false }
+                ],
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search"
+                },
+                "lengthChange": false,
+                "paging": false,
+                "scrollResize": true,
+                "scrollY": 400,
+                "scrollCollapse": true,
+                "paging": false
+
+            }
+        );
+        //if (table.rows({ filter: 'applied' }).data().length == 0) {
+        //    $(".table td:nth-child(1)").hide();
+        //    //$(".tblCreatePlan").hide();
+        //}
+        $('.dataTables_filter input').css("width", 180);
+        currentRow = null;
+        var datefrom = new Date(myDateFormatter($('#txtEffectiveStartDate').val()));
+
+        var dateto = new Date(myDateFormatter($('#txtEffectiveEndDate').val()));
+        var maxdate = "";
+        var startmaxdate = "";
+        var table1 = $("#tblCreatePlan tbody").find('tr');
+        table1.each(function () {
+            if ($(this).find('td')) {
+                if ($(this).find("td").eq(3).text().trim() != "") {
+                    if (maxdate == "") {
+                        maxdate = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                        startmaxdate = myDateFormatter($(this).find("td").eq(3).text().trim());
+                    } else {
+                        if (myDateFormatter($(this).find("td").eq(4).text().trim()) > maxdate) {
+                            maxdate = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                        }
+                        if (myDateFormatter($(this).find("td").eq(3).text().trim()) > startmaxdate) {
+                            startmaxdate = myDateFormatter($(this).find("td").eq(3).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(3).text().trim());
+                        }
+                    }
+                }
+            }
+        });
+        var dt = new Date();
+        var currentdate = new Date(myDateFormatter(dt));
+        currentdate.setDate(currentdate.getDate() + 1);
+        datefrom.setDate(datefrom.getDate() + 1);
+        $('#txtEffectiveEndDate').datepicker("destroy");
+        if (dateto != "") {
+            $('#txtEffectiveEndDate').datepicker({
+                dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(datefrom), onClose: function () {
+                    var event = arguments.callee.caller.caller.arguments[0];
+                    if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+                        if ($("#ddlStatushidden").val() == "Draft") {
+                            $(this).val('');
+                        }
+
+
+                    }
+                }
+            }).attr('readonly', true).css('background-color', 'White');
+        } else {
+            if (maxdate == "2099/12/31") {
+                $('#txtEffectiveEndDate').datepicker({
+                    dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(startmaxdate), onClose: function () {
+                        var event = arguments.callee.caller.caller.arguments[0];
+                        if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+                            if ($("#ddlStatushidden").val() == "Draft") {
+                                $(this).val('');
+                            }
+                        }
+                    }
+                }).attr('readonly', true).css('background-color', 'White');
+            } else {
+                $('#txtEffectiveEndDate').datepicker({
+                    dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(maxdate), onClose: function () {
+                        var event = arguments.callee.caller.caller.arguments[0];
+                        if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+                            if ($("#ddlStatushidden").val() == "Draft") {
+                                $(this).val('');
+                            }
+                        }
+                    }
+                }).attr('readonly', true).css('background-color', 'White');
+            }
+        }
+
+        //$("#txtStartdatepolicyplan").datepicker("destroy");
+        //$('#txtStartdatepolicyplan').datepicker({dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(currentdate), onClose: function () {
+        //        var event = arguments.callee.caller.caller.arguments[0];
+        //        if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+        //            $(this).val('');
+        //        }
+        //    }
+        //}).attr('readonly', true).css('background-color', 'White');
+        //$("#txtEnddatepolicyplan").datepicker("destroy");
+        //$('#txtEnddatepolicyplan').datepicker({dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(currentdate), onClose: function () {
+        //        var event = arguments.callee.caller.caller.arguments[0];
+        //        if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+        //            $(this).val('');
+        //        }
+        //    }
+        //}).attr('readonly', true).css('background-color', 'White');
+        //$("#txtEnddatepolicyplane").datepicker("destroy");
+        //$('#txtEnddatepolicyplane').datepicker({
+        //    dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(currentdate), onClose: function () {
+        //        var event = arguments.callee.caller.caller.arguments[0];
+        //        if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+        //            $(this).val('');
+        //        }
+        //    }
+        //}).attr('readonly', true).css('background-color', 'White');
+
+
+        if ($("#ddlStatus").val() == "Enforce") {
+            $("#ddlStatus").prop("disabled", true);
+            $(".text-danger").css("visibility", "hidden");
+        }
+        else {
+            $("#ddlStatus").prop("disabled", false);
+            $(".text-danger").css("visibility", "visible");
+        }
+
+
+        $(document).on("click", "#planterm", function () {
+            $('#ddlgrade').multiselect('clearSelection');
+            var dt = new Date();
+            var currentdate = new Date(myDateFormatter(dt));
+            var endddate = new Date(myDateFormatter($('#txtEffectiveEndDate').val()));
+            var datefrom = new Date(myDateFormatter($('#txtEffectiveStartDate').val()));
+            datefrom.setDate(datefrom.getDate() + 1);
+            $('#txtStartdatepolicyplan').datepicker("destroy");
+            $('#txtStartdatepolicyplan').datepicker({
+                dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(endddate), onClose: function () {
+                    var event = arguments.callee.caller.caller.arguments[0];
+                    if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+                        $(this).val('');
+                    }
+                }
+            }).attr('readonly', true).css('background-color', 'White');
+            $('#txtEnddatepolicyplan').datepicker("destroy");
+            $('#txtEnddatepolicyplan').datepicker({
+                dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(endddate), onClose: function () {
+                    var event = arguments.callee.caller.caller.arguments[0];
+                    if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+                        $(this).val('');
+                    }
+                }
+            }).attr('readonly', true).css('background-color', 'White');
+            $("#Create_Plan").modal('show');
+        });
+
+        $('#ddlgrade').on('change', function () {
+            $("#txtStartdatepolicyplan").val('');
+        });
+        $('#txtStartdatepolicyplan').on('change', function () {
+            $('#txtEnddatepolicyplan').val('');
+            if ($('#employertype').is(':disabled') == false) {
+                $('#employertype').val('0');
+            }
+        });
+        $("#employertype").on("change", function () {
+            var ddlgrade = [];
+            ddlgrade = $("#ddlgrade").val();
+            var max_date = "";
+            var min_date = "";
+            var Employeetype = $(this).val();
+            var table = $("#tblCreatePlan tbody").find('tr');
+            if (ddlgrade.length > 0) {
+                for (var i = 0; i < ddlgrade.length; i++) {
+                    table.each(function () {
+                        if ($(this).find('td')) {
+                            if (Employeetype == 'A') {
+                                if ($(this).find("td").eq(0).attr('data_id') == ddlgrade[i] && ($(this).find("td").eq(6).attr('data_id') == 'A') && ($(this).find("td").eq(7).html().trim() == 'Active')) {
+                                   
+                                    if (max_date == "") {
+                                        max_date = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                                        min_date = myDateFormatter($(this).find("td").eq(3).text().trim());
+                                    } else {
+                                        if (myDateFormatter($(this).find("td").eq(4).text().trim()) > max_date) {
+                                            max_date = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (Employeetype == 'A' || Employeetype == 'N' || Employeetype == 'P' || Employeetype == 'R' || Employeetype == 'C') {
+                                if ($(this).find("td").eq(0).attr('data_id') == ddlgrade[i] && ($(this).find("td").eq(6).attr('data_id') == 'A') && ($(this).find("td").eq(7).html().trim() == 'Active')) {
+                                    if (max_date == "") {
+                                        max_date = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                                        min_date = myDateFormatter($(this).find("td").eq(3).text().trim());
+                                    } else {
+                                        if (myDateFormatter($(this).find("td").eq(4).text().trim()) > max_date) {
+                                            max_date = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                                        }
+                                    }
+                                } else {
+                                    if ($(this).find("td").eq(0).attr('data_id') == ddlgrade[i] && ($(this).find("td").eq(6).attr('data_id') == Employeetype || Employeetype == "A") && ($(this).find("td").eq(7).html().trim() == 'Active')) {
+                                        if (max_date == "") {
+                                            max_date = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                                            min_date = myDateFormatter($(this).find("td").eq(3).text().trim());
+                                        } else {
+                                            if (myDateFormatter($(this).find("td").eq(4).text().trim()) > max_date) {
+                                                max_date = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+
+                        }
+                    });
+                }
+            }
+            if (min_date != "") {
+                if (max_date != "" && max_date >= myDateFormatter($('#txtStartdatepolicyplan').val().trim())) {
+                    alert('You have already create policy rule of this date !');
+                    $('#txtStartdatepolicyplan').val('').focus();
+                    $('#employertype').val('0');
+                } else if (max_date == "NaN/NaN/NaN") {
+                    alert('You have already create policy rule of this date !');
+                    $('#txtStartdatepolicyplan').val('').focus();
+                    $('#employertype').val('0');
+                }
+            }
+        });
+        $("#btnsubmitpage").click(function () {
+            var data = [];
+            var table = $("#tblCreatePlan tbody");
+            table.find('tr').each(function (i) {
+                var row_class = $(this).attr('data1_id');
+                var id = $(this).closest("tr").attr('data_id');
+                var Grade = $(this).find("td").eq(0).html();
+                var GradeID = $(this).find("td").eq(0).attr('data_id');
+                var NoOfDays = $(this).find("td").eq(1).html();
+                var UOM = $(this).find("td").eq(2).html();
+                var UOMID = $(this).find("td").eq(2).attr('data_id');
+                var StartDate = $(this).find("td").eq(3).html();
+                var EndDate = $(this).find("td").eq(4).html();
+                var IslossofPay = $(this).find("td").eq(5).html();
+                var Employer_Type = $(this).find("td").eq(6).attr('data_id');
+                var Plan_Status = $(this).find("td").eq(7).attr('data_id');
+
+                var alldata = {
+                    'CREATERULE_ID': id,
+                    'Grade': Grade,
+                    'GradeID': GradeID,
+                    'NoOfDays': NoOfDays,
+                    'UOM': UOM,
+                    'UOMID': UOMID,
+                    'StartDate': StartDate,
+                    'EndDate': EndDate,
+                    'IslossofPay': IslossofPay,
+                    'Employer_Type': Employer_Type,
+                    'Plan_Status': Plan_Status,
+                    'row_class': row_class
+                }
+                data.push(alldata);
+            });
+            $.ajax({
+                type: 'POST',
+                url: '/leave/leavepolicyupdate',
+                contentType: 'application/json;charset=utf-8',
+                data: JSON.stringify({ data, policyid: $("#hiddenfieldcreateliveid").val(), enddate: $("#txtEffectiveEndDate").val(), status: $("#ddlStatus option:selected").text() }),
+                dataType: 'json',
+                success: function (response) {
+                   
+                    var succ = response.SuccessMsg;
+                    var err = response.ErrorMsg;
+                    if (succ != "" && err == "") {
+                        alert(succ);
+                    }
+                    else {
+                        alert(err);
+                    }
+                }
+            });
+
+            clearTextedit();
+        });
+
+        $(document).on("click", '#btnAddCreateRule', function () {
+
+            var count = $('#hdn_count').val();
+            count = parseInt(count) + 1;
+            $('#hdn_count').val(count);
+            var rowdataid = $("#hiddenclosetdataid").val();
+
+            if (currentRow) {
+
+                var rowindex = $("#hiddenrowindex").val();
+                var dararow_id = $("#tblCreatePlan").find('tr:eq(' + (parseInt($("#hiddenrowindex").val()) + 1) + ')').attr('data1_id');
+                table.rows('.' + dararow_id).each(function (index) {
+                    var rowcount = 0
+                   
+                    rowcount = index.toString().split(',')
+                    if (rowcount.length > 0) {
+                        var myenddate = $("#txtEnddatepolicyplane").val();
+                        var mylossofpay = $("#ddlislossofpaye").val();
+                        $.confirm({
+                            title: '',
+                            content: 'Do you want to update for all grades in this rule ? ',
+                            theme: 'modern',
+                            buttons: {
+                                All: function () {
+                                    for (var i = 0; i < rowcount.length; i++) {
+                                        table.cell(rowcount[i], 4).data(myenddate).draw();
+                                        table.cell(rowcount[i], 5).data(mylossofpay).draw();
+                                        table.cell(rowcount[i], 5).nodes().to$().attr('data_id', mylossofpay);
+
+                                    }
+                                    myenddate = "";
+                                    mylossofpay = "";
+                                    $.alert("Successfully updated row in table !");
+
+                                },
+                                One: function () {
+                                    table.cell(rowindex, 4).data(myenddate).draw();
+                                    table.cell(rowindex, 5).data(mylossofpay).draw();
+                                    table.cell(rowindex, 5).nodes().to$().attr('data_id', mylossofpay);
+
+                                    $.alert('Successfully updated row in table !');
+                                },
+                                cancel: function () {
+
+                                }
+
+                            }
+                        });
+
+                        //if (_tablerowupdate() == true) {
+
+                        //    for (var i = 0; i < rowcount.length; i++) {
+                        //        table.cell(rowcount[i], 4).data($("#txtEnddatepolicyplane").val()).draw();
+                        //        table.cell(rowcount[i], 5).data($("#ddlislossofpaye").val()).draw();
+                        //        table.cell(rowcount[i], 5).nodes().to$().attr('data_id', $("#ddlislossofpaye").val());
+                        //        //table.cell(rowcount[i], 7).css("attr",$("#txtEnddatepolicyplane").val()).draw();
+                        //       // table.cell(rowcount[i], 7).attr("data_id").data($("#txtEnddatepolicyplane").val()).draw();
+                        //    }
+                        //} else {
+                        //    table.cell(rowindex, 4).data($("#txtEnddatepolicyplane").val()).draw();
+                        //    table.cell(rowindex, 5).data($("#ddlislossofpaye").val()).draw();
+                        //    table.cell(rowindex, 5).nodes().to$().attr('data_id', $("#ddlislossofpaye").val() );
+                        //   // table.cell(rowcount[i], 7).find($("#txtEnddatepolicyplane").val()).attr("data_id");
+                        //   // table.cell(rowcount[i], 7).attr("data_id").data($("#txtEnddatepolicyplane").val()).draw();
+                        //}
+                    }
+                });
+                currentRow = null;
+                //alert("Successfully updated row in table !")
+            }
+            //else {
+            //    $("#tblCreatePlan").find("tbody").append(markup);
+            //    alert("Successfully added row in table !")
+            //}
+            clearText();
+            $('#Create_Plan').modal('hide');
+            $('#Edit_Plan').modal('hide');
+        });
+        $(document).on("click", '#btnAddCreateRule1', function () {
+            var ddlgrade = [];
+            var ddlgradetext = [];
+            ddlgrade = $("#ddlgrade").val();
+            ddlgradetext = $("#ddlgrade option:selected").map(function () { return $(this).text(); }).get().join(',').split(',');
+            if (ddlgrade.length <= 0) {
+                alert("Please Select Grade ! ");
+                $("#ddlgrade").focus();
+                return false;
+            }
+            if ($("#txtnoofdays").val() == "") {
+                alert("Duration Can't be Blank ! ");
+                $("#txtnoofdays").focus();
+                return false;
+            }
+            if ($("#ddlUOM").val() == "0") {
+                alert("Please Select UOM ! ");
+                $("#ddlUOM").focus();
+                return false;
+            }
+            if ($("#txtStartdatepolicyplan").val() == "") {
+                alert("Start Date  Can't be Blank ! ");
+                $("#txtStartdatepolicyplan").focus();
+                return false;
+            }
+            if ($("#ddlislossofpay").val() == "0") {
+                alert("Please Select Is loss of Pay  ! ");
+                $("#ddlislossofpay").focus();
+                return false;
+            }
+            if ($("#employertype").val() == "0") {
+                alert("Please Select Employment Type  ! ");
+                $("#employertype").focus();
+                return false;
+            }
+            if ($("#ddlcreaterulestatus").val() == "0") {
+                alert("Please Select Status  ! ");
+                $("#ddlcreaterulestatus").focus();
+                return false;
+            }
+            var count = $('#hdn_count').val();
+            count = parseInt(count) + 1;
+            $('#hdn_count').val(count);
+            for (var i = 0; i < ddlgrade.length; i++) {
+                var markup = "";
+
+                markup += "<tr id='row" + i + "'   data1_id='editrule" + $("#hiddenrowgroup").val() + "'  class='text-center editrule" + $("#hiddenrowgroup").val() + "'>";
+                markup += "<td  data_id='" + ddlgrade[i] + "'> " + ddlgradetext[i] + "</td > ";
+                markup += "<td> " + $("#txtnoofdays").val() + "</td > ";
+                markup += "<td  data_id='" + $("#ddlUOM").val() + "'> " + $("#ddlUOM  option:selected ").text() + "</td > ";
+                markup += "<td> " + $("#txtStartdatepolicyplan").val() + "</td > ";
+                markup += "<td> " + $("#txtEnddatepolicyplan").val() + "</td > ";
+                markup += "<td  data_id='" + $("#ddlislossofpay").val() + "'> " + $("#ddlislossofpay  option:selected ").text() + "</td > ";
+                markup += "<td  data_id='" + $("#employertype").val() + "'> " + $("#employertype  option:selected ").text() + "</td > ";
+                markup += "<td  data_id='" + $("#ddlcreaterulestatus").val() + "'> " + $("#ddlcreaterulestatus").val() + "</td > ";
+                if ($("#ddlStatushidden").val() == "Enforce") {
+                    markup += "<td> <a href='javascript:void(0)' class='font-18 btnEdit' title='Edit'><i class='fa fa-pencil m-r-5' aria-hidden='true'></i></a><a href='javascript:void(0)' class='text-danger font-18 btnDelete' title='Remove'  style = 'visibility: hidden;'><i class='fa fa-trash-o' aria-hidden='true'></i></a> </td>";
+                } else {
+                    markup += "<td> <a href='javascript:void(0)' class='font-18 btnEdit' title='Edit'><i class='fa fa-pencil m-r-5' aria-hidden='true'></i></a><a href='javascript:void(0)' class='text-danger font-18 btnDelete' title='Remove'  style = 'visibility: visible;'><i class='fa fa-trash-o' aria-hidden='true'></i></a> </td>";
+                }
+                markup += "</tr>";
+
+                if (currentRow) { }
+                else {
+                    table.row.add($(markup)).draw();
+                }
+            }
+
+            if (currentRow != null) {
+                alert("Successfully updated row in table !")
+            } else {
+                alert("Successfully added row in table !")
+            }
+            clearText();
+            $('#Create_Plan').modal('hide');
+            $('#Edit_Plan').modal('hide');
+        });
+
+        $(document).on('click', '.btnEdit', function (e) {
+            var dt = new Date();
+            //  var currentdate = new Date(myDateFormatter(dt));
+            var endddate = new Date(myDateFormatter($('#txtEffectiveEndDate').val()));
+            var datefrom = new Date(myDateFormatter($('#txtEffectiveStartDate').val()));
+            datefrom.setDate(datefrom.getDate() + 1);
+            $('#txtEnddatepolicyplane').datepicker("destroy");
+            $('#txtEnddatepolicyplane').datepicker({
+                dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(endddate), onClose: function () {
+                    var event = arguments.callee.caller.caller.arguments[0];
+                    if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+                        $(this).val('');
+                    }
+                }
+            }).attr('readonly', true).css('background-color', 'White');
+
+            $("#btnAddCreateRule").prop('disabled', false);
+            $("#txtEnddatepolicyplane").prop('disabled', false).css('backgroud-color', "#ffffff");
+            $("#ddlcreaterulestatuse").prop('disabled', false).css('backgroud-color', "#ffffff");
+            var table = $("#tblCreatePlan tbody").find('tr');
+            var $tr = $(this).closest('tr');
+            var myRow = $tr.index(); myRow
+            $("#hiddenrowindex").val($tr.index());
+            currentRow = $(this).parents('tr');
+            var d = $(this).closest('tr').attr('data_id');
+           
+            if (myDateFormatter($(this).closest('tr').find('td').eq(4).html().trim()) != "") {
+                if (myDateFormatter($(this).closest('tr').find('td').eq(4).html().trim()) <= myDateFormatter(dt)) {
+                    $("#txtEnddatepolicyplane").prop('disabled', true).css('background-color', "#eee");
+                    $("#btnAddCreateRule").prop('disabled', true);
+                    $("#ddlcreaterulestatuse").prop('disabled', true).css('backgroud-color', "#eee");
+                } else {
+                    $("#btnAddCreateRule").prop('disabled', false);
+                    $("#txtEnddatepolicyplane").prop('disabled', false).css('background-color', "#ffffff");
+                    $("#ddlcreaterulestatuse").prop('disabled', true).css('backgroud-color', "#eee");
+                }
+            }
+
+
+            $("#hiddenclosetdataid").val($(this).closest('tr').attr('data_id'));
+            $("#ddlgradee").val($(this).closest('tr').find('td').eq(0).attr('data_id'));
+            $("#txtnoofdayse").val($(this).closest('tr').find('td').eq(1).html());
+            $("#ddlUOMe ").val($(this).closest('tr').find('td').eq(2).attr('data_id'));
+            $("#txtStartdatepolicyplane").val($(this).closest('tr').find('td').eq(3).html());
+            $("#txtEnddatepolicyplane").val($(this).closest('tr').find('td').eq(4).html());
+            $("#ddlislossofpaye").val($(this).closest('tr').find('td').eq(5).attr('data_id'));
+            $("#employertypee").val($(this).closest('tr').find('td').eq(6).attr('data_id'));
+            $("#ddlcreaterulestatuse").val($(this).closest('tr').find('td').eq(7).attr('data_id'));
+            $('#Edit_Plan').modal('show');
+        });
+
+        $('#btneditplanclose').click(function () {
+            currentRow = null;
+            clearText();
+        });
+
+        $('#txtStartdatepolicyplan').on('change', function () {
+            $('#txtEnddatepolicyplan').val("");
+        });
+        $('#txtEnddatepolicyplan').on('change', function () {
+
+            var start_dt = myDateFormatter($('#txtStartdatepolicyplan').val());
+            var end_dt = myDateFormatter($('#txtEnddatepolicyplan').val());
+            if (start_dt > end_dt) {
+                alert("End Date can't less then start date.");
+                $('#txtEnddatepolicyplan').val("");
+                setTimeout(function () { $('#txtEnddatepolicyplan').focus(); })
+            }
+        });
+        $('#txtEnddatepolicyplane').on('change', function () {
+
+            var start_dt = myDateFormatter($('#txtStartdatepolicyplane').val());
+            var end_dt = myDateFormatter($('#txtEnddatepolicyplane').val());
+            if (start_dt > end_dt) {
+                alert("End Date can't less then start date.");
+                $('#txtEnddatepolicyplane').val("");
+                setTimeout(function () { $('#txtEnddatepolicyplane').focus(); })
+            }
+        });
+        $('#txtEffectiveStartDate').on('change', function () {
+            $('#txtEffectiveEndDate').val();
+        });
+        $('#txtEffectiveEndDate').on('change', function () {
+            var start_dt = myDateFormatter($('#txtEffectiveStartDate').val());
+            var end_dt = myDateFormatter($('#txtEffectiveEndDate').val());
+            if (start_dt > end_dt) {
+                alert("End Date can't less then start date.");
+                $('#txtEffectiveEndDate').val("");
+                setTimeout(function () { $('#txtEffectiveEndDate').focus(); })
+            }
+            var maxdate = "";
+            var startmaxdate = "";
+            var table1 = $("#tblCreatePlan tbody").find('tr');
+            table1.each(function () {
+                if ($(this).find('td')) {
+                    if ($(this).find("td").eq(3).text().trim() != "") {
+                        if (maxdate == "") {
+                            maxdate = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                            startmaxdate = myDateFormatter($(this).find("td").eq(3).text().trim());
+                        } else {
+                            if (myDateFormatter($(this).find("td").eq(4).text().trim()) > maxdate) {
+                                maxdate = myDateFormatter($(this).find("td").eq(4).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(4).text().trim());
+                            }
+                            if (myDateFormatter($(this).find("td").eq(3).text().trim()) > startmaxdate) {
+                                startmaxdate = myDateFormatter($(this).find("td").eq(3).text().trim() == "" ? "31-Dec-2099" : $(this).find("td").eq(3).text().trim());
+                            }
+                        }
+                    }
+                }
+            });
+            if (end_dt <= maxdate) {
+                alert('You have already create rule in this date !');
+                if ($("#ddlStatushidden").val() == "Draft") {
+                    $(this).val($("#hiddenpolicyenddate").val());
+                }
+            }
+            var dt = new Date();
+            var currentdate = new Date(myDateFormatter(dt));
+            $("#txtEnddatepolicyplane").datepicker("destroy");
+            $('#txtEnddatepolicyplane').datepicker({
+                dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(currentdate), maxDate: new Date(end_dt), onClose: function () {
+                    var event = arguments.callee.caller.caller.arguments[0];
+                    if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+                        if ($("#ddlStatushidden").val() == "Draft") {
+                            $(this).val('');
+                        }
+                    }
+                }
+            }).attr('readonly', true).css('background-color', 'White');
+
+
+        });
+        $(document).on('click', '.fa-trash-o', function (e) {
+            if (_functiondelete() == true) {
+                if (_functiondeleteall() == true) {
+                    table.rows('.' + $(this).closest('tr').attr('data1_id')).remove().draw();
+                } else {
+                    table.row($(this).parents('tr')).remove().draw();
+                }
+            }
+
+        });
+    });
+
+    function clearText() {
+        if (currentRow != null) {
+            $('#txtEnddatepolicyplane').val('');
+        } else {
+            $("#ddlgrade").val(0);
+            $("#txtnoofdays").val('');
+            $("#txtEnddatepolicyplan").val('');
+            $("#ddlUOM").val(0);
+            $("#txtStartdatepolicyplan").val('');
+            $("#ddlislossofpay").val(0);
+            $("#employertype").val('0');
+            $("#ddlcreaterulestatus").val('0');
+
+        }
+    }
+
+    function clearTextedit() {
+        if (currentRow != null) {
+            $('#txtEnddatepolicyplane').val('');
+        } else {
+            $("#ddlgradee").val(0);
+            $("#txtnoofdayse").val('');
+            $("#txtEnddatepolicyplane").val('');
+            $("#ddlUOMe").val(0);
+            $("#txtStartdatepolicyplane").val('');
+            $("#ddlislossofpaye").val(0);
+            $("#employertypee").val('0');
+            $("#ddlcreaterulestatuse").val('0');
+        }
+    }
+</script>
+
+
+<script>
+
+    function StepOne() {
+        var contentDiv = $("#DivLeavePolicy");
+        contentDiv.empty();
+        var MisReview = "";
+        MisReview += "<h4>Leave Policy</h4>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Leave Type </span> <div class='col-sm-9'> <div id='lblLeaveType'  class='cmplitetextalign' >" + $("#ddlLeaveType  option:selected ").text() + "</div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Policy Name </span>  <div class='col-sm-9'><div id='lblPolicyName'   class='cmplitetextalign' >" + $("#txtPolicyname ").val() + "</div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Policy Description  </span>  <div class='col-sm-9'> <span id='lblDesc'   class='cmplitetextalign' >" + $("#txtDesc").val() + "</span></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Start Date </span>  <div class='col-sm-9'> <div id='lblEffectiveStartDate'    class='cmplitetextalign'>" + $("#txtEffectiveStartDate").val() + "</div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>End Date</span>  <div class='col-sm-9'> <div id='lblEffectiveEndDate'   class='cmplitetextalign' >" + $("#txtEffectiveEndDate").val() + "</div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Status</span>  <div class='col-sm-9'> <div id='lblEffectiveEndDate'   class='cmplitetextalign' >" + $("#ddlStatus  option:selected").val() + "</div></div> </div>";
+        if ($("#chkIsInformationOnly").is(':checked') == true) {
+            MisReview += " <div class='row'><span class='col-sm-3'>Is Information Only  </span>  <div class='col-sm-9'> <div id='lblLeaveType' ><input type='checkbox' checked disabled class='form- check - input'></div></div> </div>";
+
+        } else {
+            MisReview += " <div class='row'><span class='col-sm-3'>Is Information Only  </span>  <div class='col-sm-9'> <div id='lblLeaveType' ><input type='checkbox' disabled class='form- check - input'></div></div> </div>";
+        }
+        contentDiv.append(MisReview);
+    }
+    function StepTwo() {
+        var contentDiv = $("#DivLeavePlan");
+        contentDiv.empty();
+        var MisReview = "";
+        MisReview += "</br><h4>Leave Plan</h4>";
+        if ($("#chkAttachmentRequired").is(':checked') == true) {
+            MisReview += " <div class='row'><span class='col-sm-3'>Attachment Required  </span>  <div class='col-sm-9'> <div id='lblLeaveType'  ><input type='checkbox' checked disabled class='form- check - input'></div></div> </div>";
+        } else {
+            MisReview += " <div class='row'><span class='col-sm-3'>Attachment Required  </span>  <div class='col-sm-9'> <div id='lblLeaveType' ><input type='checkbox' disabled class='form- check - input'></div></div> </div>";
+        }
+        MisReview += " <div class='row'><span class='col-sm-3'>Gender </span>  <div class='col-sm-9'> <div id='lblLeaveType'   class='cmplitetextalign' >" + $("#ddlGender  option:selected ").text() + "</div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Leave Year </span>  <div class='col-sm-9'> <div id='lblLeaveYear' class='cmplitetextalign' >" + $("#ddlLeaveYear  option:selected ").text() + "</div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Credit Frequency </span>  <div class='col-sm-9'> <div id='lblCreditFrequency' class='cmplitetextalign' >" + $("#ddPeriod  option:selected ").text() + "</div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Credit </span>  <div class='col-sm-9'> <div id='lblCredit' class='cmplitetextalign' >" + $("#ddlCredit  option:selected ").text() + "</div></div> </div>";
+
+        MisReview += " <div class='row'><span class='col-sm-3'>Leave Limits </span>  <div class='col-sm-9'>";
+        if ($("#chkincludepublicholidays").is(':checked') == true) {
+            MisReview += "<input type='checkbox' id='chkIncludePublicHolidaysreview' checked disabled class='form-check-input'> Include Public Holidays </br>";
+        } else {
+            MisReview += "<input type='checkbox' id='chkIncludePublicHolidaysreview' disabled class='form-check-input'>  Include Public Holidays  </br> ";
+        }
+
+        if ($("#chkincludeweekends").is(':checked') == true) {
+            MisReview += "   <input type='checkbox' id='chkIncludeWeekendsreview' checked disabled class='form-check-input'> Include Weekends  </br> ";
+        } else {
+            MisReview += "   <input type='checkbox' id='chkIncludeWeekendsreview' disabled class='form-check-input'>  Include Weekends </br> ";
+        }
+        if ($("#chkyeaeclubbed").is(':checked') == true) {
+            MisReview += "   <input type='checkbox' id='chkIncludeWeekendsreview' checked disabled class='form-check-input'> Can be Clubbed With  EL </br> ";
+        } else {
+            MisReview += "   <input type='checkbox' id='chkIncludeWeekendsreview' disabled class='form-check-input'>  Can be Clubbed With  EL </br> ";
+        }
+        if ($("#chkcanbeclubbedwithcl ").is(':checked') == true) {
+            MisReview += "  <input type='checkbox' id='chkyeaeclubbed' checked  disabled class='form- check - input'>   Can be Clubbed With  CL </br>";
+        } else {
+            MisReview += "  <input type='checkbox' id='chkyeaeclubbed'   disabled  class='form- check - input'>   Can be Clubbed With  CL   </br>";
+        }
+
+        if ($("#chkcanbehalfday ").is(':checked') == true) {
+            MisReview += "  <input type='checkbox' id='chkcanbehalfday' checked  disabled class='form- check - input'>   Can be half day </br>";
+        } else {
+            MisReview += "  <input type='checkbox' id='chkcanbehalfday'   disabled  class='form- check - input'>   Can be half day   </br>";
+        }
+
+        MisReview += "  </div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Can Avail In </span>  <div class='col-sm-9'>";
+        if ($("#chkavailprobationperiad").is(':checked') == true) {
+            MisReview += "   <input type='checkbox' id='chkavailprobationperiad' checked disabled class='form-check-input'> Probation Period</br>";
+        } else {
+            MisReview += "   <input type='checkbox' id='chkavailprobationperiad' disabled class='form-check-input'> Probation Period</br> ";
+        }
+
+        if ($("#chkavailregular").is(':checked') == true) {
+            MisReview += "   <input type='checkbox' id='chkavailregular' checked disabled class='form-check-input'> Regular Period</br>";
+        } else {
+            MisReview += "   <input type='checkbox' id='chkavailregular' disabled class='form-check-input'> Regular Period</br> ";
+        }
+
+        if ($("#chkavailcontract").is(':checked') == true) {
+            MisReview += "   <input type='checkbox' id='chkavailcontract' checked disabled class='form-check-input'> Contract Period</br>";
+        } else {
+            MisReview += "   <input type='checkbox' id='chkavailcontract' disabled class='form-check-input'> Contract Period</br> ";
+        }
+
+        if ($("#chkavailnoticeperiad").is(':checked') == true) {
+            MisReview += "   <input type='checkbox' id='chkavailnoticeperiad' checked disabled class='form-check-input'> Notice Period</br>";
+        } else {
+            MisReview += "   <input type='checkbox' id='chkavailnoticeperiad' disabled class='form-check-input'> Notice Period</br> ";
+        }
+
+        MisReview += "  </div> </div>";
+        MisReview += "</br> <div class='row'><div class='col-sm-3'> </div>  <div class='col-sm-9'> <table  class='table table-striped custom-table m-b-0 datatable'><tr> <td>Grade</td><td>No. Of Days</td><td>UOM</td><td>Start Date</td> <td>End Date</td> <td> Is loss of Pay  </td>  <td> Employment Type </td> <td> Status </td></tr>";
+
+        var table = $("#tblCreatePlan tbody").find('tr');
+        var mytable = $("#tblCreatePlan").DataTable();
+        if (mytable.data().count() > 0) {
+            table.each(function (i) {
+                if ($(this).find('td')) {
+                    var $tds = $(this).find('td');
+                    MisReview += "<tr><td>" + $(this).find('td').eq(0).html() + "</td><td>" + $(this).find('td').eq(1).html() + "</td><td>" + $(this).find('td').eq(2).html() + "</td><td>" + $(this).find('td').eq(3).html() + "</td><td>" + $(this).find('td').eq(4).html() + "</td><td>" + $(this).find('td').eq(5).html() + "</td> <td>" + $(this).find('td').eq(6).html() + "</td> <td>" + $(this).find('td').eq(7).html() + "</td>  </tr>";
+
+                }
+            });
+            MisReview += "</table></br>";
+        }
+        MisReview += "</div> </div>";
+        contentDiv.append(MisReview);
+
+    }
+    function StepFour() {
+
+
+        var contentDiv = $("#DivYearEndProcessing");
+        contentDiv.empty();
+        var MisReview = "";
+        MisReview += "<br/><h4>Year End Processing</h4>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Allow Carryover </span>  <div class='col-sm-9'> <div   class='cmplitetextalign'> Carryover Limit  :<label id='lblCarryoverLimit' >" + $("#txtCarryoverLimit ").val() + "</label> </div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Pay at Year end </span>  <div class='col-sm-9'> <div   class='cmplitetextalign'>  Min. Balance Need To be Maintained  :<label id='lblCarryoverLimit' >" + $("#txtPayatYearendMaxBal ").val() + "</label> </div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'> </span>  <div class='col-sm-9'> <div  class='cmplitetextalign'>    Maximum Encashment Per Year : <label id='lblCarryoverLimit' class='cmplitetextalign' >" + $("#txtMaximumEncashmentPerYear ").val() + "</label></div></div> </div>";
+        MisReview += " <div class='row' style='display:none'><span class='col-sm-3'>Eligible For Encashment</span>  <div class='col-sm-9'> <div   class='cmplitetextalign'> Encashment Limit :<label id='lblCarryoverLimit' >" + $("#EncashmentLimit ").val() + "</label> </div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'> </span>  <div class='col-sm-9'> <div   class='cmplitetextalign'> Min. Balance Need To be Maintained :<label id='lblCarryoverLimit' >" + $("#txteligibaleForEncashmentmaxbal ").val() + "</label>  </div></div> </div>";
+        MisReview += " <div class='row'><span class='col-sm-3'>Carry Forward to EL</span>  <div class='col-sm-9'><div   class='cmplitetextalign'>  Carry forward Limit:  <b>2 </b> </div></div> </div>";
+        contentDiv.append(MisReview);
+    }
+    function _functiondelete() {
+
+        if (confirm("Are you sure you want to delete record ?")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    function _functiondeleteall() {
+
+        if (confirm("Do you want to delete for all grades in this rule ?")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+</script>
+<script>
+    $(document).ready(function () {
+
+        //Initialize tooltips
+        $('.nav-tabs > li a[title]').tooltip();
+        //Wizard
+        $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+            var $target = $(e.target);
+            if ($target.parent().hasClass('disabled')) {
+                return false;
+            }
+        });
+        $(".next-step").click(function (e) {
+            var $active = $('.wizard .nav-tabs li.active');
+
+            if ($(e.target).val() == "stepone") {
+                if ($("#chkIsInformationOnly").is(":checked") == false) {
+                    $("#divstep2").css("pointer-events", "auto");
+                    $("#divstep4").css("pointer-events", "auto");
+                } else {
+                    $("#divstep2").css("pointer-events", "none");
+                    $("#divstep4").css("pointer-events", "none");
+
+                }
+            }
+            $active.next().removeClass('disabled');
+            $active.removeClass('active');
+            $active.addClass('disabled');
+            nextTab($active);
+        });
+        $(".prev-step").click(function (e) {
+            var $active = $('.wizard .nav-tabs li.active');
+            $active.prev().removeClass('disabled');
+            $active.removeClass('active');
+            $active.addClass('disabled');
+            prevTab($active);
+        });
+    });
+    function nextTab(elem) {
+        $(elem).next().find('a[data-toggle="tab"]').click();
+    }
+    function prevTab(elem) {
+        $(elem).prev().find('a[data-toggle="tab"]').click();
+    }
+
+
+    function myDateFormatter(dateObject) {
+        var d = new Date(moment(dateObject, '"DD-MMM-YYYY').format());
+        var day = d.getDate();
+        var month = d.getMonth() + 1;
+        var year = d.getFullYear();
+        if (day < 10) {
+            day = "0" + day;
+        }
+        if (month < 10) {
+            month = "0" + month;
+        }
+        var date = year + "/" + month + "/" + day;
+
+        return date;
+    };
+
+    function _btncancel() {
+
+        if (confirm("Are you sure you want to cancel the form ?")) {
+            ;
+            window.location.href = "/leave/LeavePolicy_History";
+
+        } else {
+            return false;
+        }
+    }
+
+    function _functiondelete() {
+
+        if (confirm("Are you sure you want to delete record ?")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    function _tablerowupdate() {
+
+        if (confirm("Do you want to update for all grades in this rule ? ")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+</script>
+
+
+
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title"> Edit Leave Policy</h4>
+    </div>
+    <div class="col-sm-4 text-right m-b-30">
+
+        @*<a href="/leave/index" class="btn btn-primary rounded"> Back</a>*@
+        @*<a href="/leave/index" class="myicon close"> x</a>*@
+
+    </div>
+</div>
+<div class="row">
+
+    <div class="col-md-12">
+        <div>
+            <section>
+                <div class="wizard card-box">
+                    <div class="wizard-inner">
+                        <div class="connecting-line"></div>
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a href="#step1" data-toggle="tab" aria-controls="step1" role="tab" title="Step 1">
+                                    <label>Leave Policy</label>
+                                </a>
+                            </li>
+                            <li role="presentation" class="disabled">
+                                <a href="#step2" data-toggle="tab" aria-controls="step2" role="tab" title="Step 2">
+                                    <label>Leave Plan</label>
+                                </a>
+                            </li>
+
+                            <li role="presentation" class="disabled">
+                                <a href="#step4" data-toggle="tab" aria-controls="step4" role="tab" title="Step 3">
+                                    <label>Year End Processing</label>
+                                </a>
+                            </li>
+                            <li role="presentation" class="disabled">
+                                <a href="#complete" data-toggle="tab" aria-controls="complete" role="tab" title="Complete">
+
+                                    <label>Summary</label>
+
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <form role="form">
+                        <div class="tab-content">
+                            <div class="tab-pane active" role="tabpanel" id="step1">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group row">
+                                            <span class="col-sm-3">Leave Type <span class="text-danger">*</span> </span>
+                                            <div class="col-sm-4">
+                                                <input type="hidden" id="hiddenfieldcreateliveid" value="@Model.LeavePolicy.ID" />
+                                                @Html.DropDownListFor(m => m.LeavePolicy.LeaveTypeID, (IEnumerable<SelectListItem>)ViewBag.leavetypeli, new { @id = "ddlLeaveType", @class = "form-control", @disabled = "disabled" })
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group row">
+                                            <span class="col-sm-3 ">Policy Name <span class="text-danger">*</span> </span>
+                                            <div class="col-sm-4">
+                                                <input type="text" id="txtPolicyname" readonly="readonly" value="@Model.LeavePolicy.PolicyName" placeholder="Policy name" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group row">
+                                            <span class="col-sm-3 ">Policy Description </span>
+                                            <div class="col-sm-4">
+                                                <textarea class="form-control" readonly="readonly" placeholder="Description" role="3" id="txtDesc"> @Model.LeavePolicy.PolicyDescription </textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group row">
+                                            <span class="col-sm-3 ">Start Date  <span class="text-danger">*</span></span>
+                                            <div class="col-sm-4">
+                                                <div class="cal-icon"><input type="text" value="@Model.LeavePolicy.StartDate" readonly="readonly" id="txtEffectiveStartDate" placeholder="dd-mmm-yyyy" class="form-control " /></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group row">
+                                            <span class="col-sm-3 ">End Date </span>
+                                            <div class="col-sm-4">
+                                                <div class="cal-icon">
+                                                    <input type="text" id="txtEffectiveEndDate" value="@Model.LeavePolicy.EndDate" placeholder="dd-mmm-yyyy" class="form-control mycal" />
+                                                    <input type="hidden" value="@Model.LeavePolicy.EndDate" id="hiddenpolicyenddate" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group row">
+                                            <span class="col-sm-3 ">Status <span class="text-danger">*</span></span>
+                                            <div class="col-sm-4">
+                                                <input type="hidden" name="name" id="ddlStatushidden" value="@Model.LeavePolicy.Status" />
+                                                @Html.DropDownListFor(m => m.LeavePolicy.Status, (IEnumerable<SelectListItem>)ViewBag.Status, new { @id = "ddlStatus", @class = "form-control" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group row">
+                                            <span class="col-sm-3 "> Is Information Only </span>
+                                            <div class="col-sm-4 form-check">
+                                                <label class="form-check-label">
+                                                    @if (Model.LeavePolicy.IsInformationOnly == 1)
+                                                    {
+                                                        <input type="checkbox" id="chkIsInformationOnly" checked disabled value="1" class="form-check-input">
+                                                    }
+                                                    else
+                                                    {
+                                                        <input type="checkbox" id="chkIsInformationOnly" disabled value="0" class="form-check-input">
+                                                    }
+
+
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                    </div>
+                                </div>
+
+                                <ul class="mybtncls pull-right">
+                                    <li>
+                                        <button type="button" id="btnStapOne" onclick="StepOne();" value="stepone" class="btn btn-primary next-step">Save and Continue</button>
+                                    </li>
+                                    <li>
+                                        <a href="#" onclick="_btncancel();" class="btn btn-primary  btncancel"> Cancel</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="tab-pane" role="tabpanel" id="step2">
+                                <div id="divstep2">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group row">
+                                                <span class="col-sm-3 "> Attachment Required</span>
+                                                <div class="col-sm-4 form-check">
+                                                    <label class="form-check-label">
+
+                                                        @if (Model.LeavePlan.AttachmentRequired == 1)
+                                                        {
+                                                            <input type="checkbox" checked disabled id="chkAttachmentRequired" class="form-check-input">
+                                                        }
+                                                        else
+                                                        {
+                                                            <input type="checkbox" disabled id="chkAttachmentRequired" class="form-check-input">
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group row">
+                                                <span class="col-sm-3 ">Gender <span class="text-danger">*</span></span>
+                                                <div class="col-sm-4">
+
+
+                                                    @Html.DropDownListFor(m => m.LeavePlan.Gender, (IEnumerable<SelectListItem>)ViewBag.Gender, new { @id = "ddlGender", @class = "form-control", @disabled = "disabled" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group row">
+                                                <span class="col-sm-3 ">Leave Year <span class="text-danger">*</span></span>
+                                                <div class="col-sm-4">
+                                                    @Html.DropDownListFor(m => m.LeavePlan.LeaveYear, (IEnumerable<SelectListItem>)ViewBag.LeaveYear, new { @id = "ddlLeaveYear", @class = "form-control", @disabled = "disabled" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group row">
+                                                <span class="col-sm-3 ">Credit Frequency <span class="text-danger">*</span></span>
+                                                <div class="col-sm-4">
+                                                    @Html.DropDownListFor(m => m.LeavePlan.CreditFrequency, (IEnumerable<SelectListItem>)ViewBag.Period, new { @id = "ddPeriod", @class = "form-control", @disabled = "disabled" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group row">
+                                                <span class="col-sm-3 ">Credit <span class="text-danger">*</span></span>
+                                                <div class="col-sm-4">
+                                                    @Html.DropDownListFor(m => m.LeavePlan.Credit, (IEnumerable<SelectListItem>)ViewBag.Credit, new { @id = "ddlCredit", @class = "form-control", @disabled = "disabled" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+
+                                            <div class="form-group row">
+                                                <span class="col-sm-3 ">Leave Limits</span>
+                                                <div class="col-sm-3">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="    font-weight: 400;">
+                                                            @if (Model.LeavePlan.IncludePublicHolidays == "1")
+                                                            {
+                                                                <input type="checkbox" checked disabled id="chkincludepublicholidays" value="">
+
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" disabled id="chkincludepublicholidays" value="">
+                                                            }
+                                                            &nbsp;Include Public Holidays
+
+                                                        </label>
+                                                    </div>
+
+
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="    font-weight: 400;">
+                                                            @if (Model.LeavePlan.IncludeWeekends == "1")
+                                                            {
+                                                                <input type="checkbox" disabled checked id="chkincludeweekends" value="">
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" disabled id="chkincludeweekends" value="">
+                                                            }
+                                                            &nbsp;Include Weekends
+                                                        </label>
+                                                    </div>
+
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="    font-weight: 400;">
+                                                            @if (Model.LeavePlan.CanbeclubbedwithEL == "1")
+                                                            {
+                                                                <input type="checkbox" checked disabled id="chkyeaeclubbed" value="">
+                                                            }
+                                                            else
+                                                            {<input type="checkbox" disabled id="chkyeaeclubbed" value="">
+                                                            } &nbsp;Can be clubbed with EL
+                                                        </label>
+
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="    font-weight: 400;">
+                                                            @if (Model.LeavePlan.CanbeclubbedwithCL == "1")
+                                                            {
+                                                                <input type="checkbox" checked disabled id="chkcanbeclubbedwithcl" value="">
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" disabled id="chkcanbeclubbedwithcl" value="">
+                                                            }
+                                                            &nbsp;Can be clubbed with CL
+                                                        </label>
+
+
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="    font-weight: 400;">
+                                                            @if (Model.LeavePlan.Canbehalfday == "1")
+                                                            {
+                                                                <input type="checkbox" checked disabled id="chkcanbehalfday" value="">
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" disabled id="chkcanbehalfday" value="">
+                                                            }
+                                                            &nbsp;Can be half day
+                                                        </label>
+                                                    </div>
+
+                                                </div>
+
+
+                                            </div>
+
+
+                                        </div>
+
+
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group row">
+                                                <span class="col-sm-3 ">Can Avail In</span>
+                                                <div class="col-sm-2">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="font-weight: 400;">
+                                                            @if (Model.LeavePlan.Probation_Period_P == "1")
+                                                            {
+                                                                <input type="checkbox" id="chkavailprobationperiad" class="can_avail" checked disabled value="">
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" id="chkavailprobationperiad" class="can_avail" disabled value="">
+                                                            }
+                                                            &nbsp; Probation Period
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="font-weight: 400;">
+                                                            @if (Model.LeavePlan.Confirmed_P == "1")
+                                                            {
+                                                                <input type="checkbox" id="chkavailregular" class="can_avail" checked disabled value="">
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" id="chkavailregular" class="can_avail" disabled value="">
+                                                            }
+                                                            &nbsp;Regular Period
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="font-weight: 400;">
+                                                            @if (Model.LeavePlan.Contract_Period_P == "1")
+                                                            {
+                                                                <input type="checkbox" id="chkavailcontract" class="can_avail" checked disabled value="">
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" id="chkavailcontract" class="can_avail" disabled value="">
+                                                            }
+                                                            &nbsp;Contract Period
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="font-weight: 400;">
+                                                            @if (Model.LeavePlan.Notice_Period_P == "1")
+                                                            {
+                                                                <input type="checkbox" id="chkavailnoticeperiad" class="can_avail" checked disabled value="">
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" id="chkavailnoticeperiad" class="can_avail" disabled value="">
+                                                            }
+                                                            &nbsp;Notice  Period
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-sm-8">
+                                            <div class="form-group row">
+
+                                                <div class="col-sm-4 text-left m-b-30">
+                                                    <a href="#" id="planterm" class="btn btn-primary rounded pull-left" data-toggle="modal" data-target="#Create_Plan"><i class="fa fa-plus"></i> &nbsp;&nbsp;Create Rule</a>
+                                                </div>
+                                                <label class="col-sm-8 col-form-label"></label>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            @*<div class="table-responsive">*@
+
+                                            <input type="hidden" id="hdn_count" value="1" />
+                                            @*<table id="tblCreatePlan" class="table table-striped custom-table m-b-0 tblCreatePlan">*@
+                                            <table id="tblCreatePlan" style="width:100%" class="table table-striped custom-table m-b-0  is_informationonlyenable tblCreatePlan">
+                                                <thead>
+                                                    <tr>
+
+
+
+                                                        <th>
+                                                            Grade
+                                                        </th>
+                                                        <th>
+                                                            Duration
+                                                        </th>
+                                                        <th>
+                                                            UOM
+                                                        </th>
+                                                        <th>
+                                                            Start Date
+                                                        </th>
+                                                        <th>
+                                                            End Date
+                                                        </th>
+                                                        <th>
+                                                            Is loss of Pay
+                                                        </th>
+
+                                                        <th>
+                                                            Employment Type
+                                                        </th>
+                                                        <th>
+                                                            Status
+                                                        </th>
+                                                        <th>
+                                                            Action
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (Model.LeavePlan.tblCreateRule != null)
+                                                    {
+
+                                                        foreach (var item in Model.LeavePlan.tblCreateRule)
+                                                        {
+                                                            <tr id="row1" data_id="@item.CREATERULE_ID" data1_id="@item.row_class" class="text-center @item.row_class">
+                                                                <td data_id="@item.GradeID">@item.Grade  </td>
+                                                                <td>@item.NoOfDays </td>
+                                                                <td data_id="@item.UOMID">@item.UOM</td>
+                                                                <td>@item.StartDate</td>
+                                                                <td>@item.EndDate </td>
+                                                                <td data_id="@item.IslossofPay.ToString().Trim()">@item.IslossofPay  </td>
+                                                                <td data_id="@item.Employer_Type.ToString().Trim().Substring(0,1)">@item.Employer_Type  </td>
+                                                                <td data_id="@item.Plan_Status.ToString().Trim()">@item.Plan_Status  </td>
+                                                                <td>
+                                                                    <a href="javascript:void(0)" class="font-18 btnEdit" title="Edit"><i class="fa fa-pencil m-r-5" aria-hidden="true"></i></a>
+                                                                    <a href="javascript:void(0)" class="text-danger font-18 btnDelete" title="Remove"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+
+                                        @*</div>*@
+                                    </div>
+                                </div>
+                                <ul class="mybtncls pull-right">
+                                    <li>
+                                        <button type="button" class="btn btn-default prev-step">Previous</button>
+                                    </li>
+                                    <li>
+                                        <button type="button" onclick="StepTwo();" class="btn btn-primary next-step">Save and Continue</button>
+                                    </li>
+                                    <li>
+                                        <a href="#" onclick="_btncancel();" class="btn btn-primary   btncancel"> Cancel</a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="tab-pane" role="tabpanel" id="step4">
+                                <div id="divstep4">
+                                    <div class="row">
+                                        <div class="col-sm-8">
+                                            <div class="form-group row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="font-weight:400">
+                                                            <input type="checkbox" checked disabled onclick="document.getElementById('txtCarryoverLimit').disabled=!this.checked;" id="chkAllowCarryover" value="Role"> Allow Carryover
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-6 ">
+                                                    <div class="form-group row">
+                                                        <div class="col-sm-4">
+                                                            <span> Carryover Limit</span>
+                                                        </div>
+                                                        <div class="col-sm-8 ">
+                                                            <input type="number" readonly="readonly" id="txtCarryoverLimit" value="@Model.YearEndProcessing.AllowCarryover_CarryoverLimit" disabled min="0" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-8">
+                                            <div class="form-group row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="font-weight:400">
+                                                            <input type="checkbox" checked disabled onclick="document.getElementById('txtPayatYearendMaxBal').disabled=!this.checked;" id="chkPayatYearend" value="Role"> Pay at Year end
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-6 ">
+                                                    <div class="form-group row">
+                                                        <div class="col-sm-4">
+                                                            <span>Min. Balance Need To be Maintained</span>
+                                                        </div>
+                                                        <div class="col-sm-8 ">
+                                                            <input type="number" checked readonly="readonly" value="@Model.YearEndProcessing.PayatYearend_MinBal" id="txtPayatYearendMaxBal" disabled min="0" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group row">
+                                                        <div class="col-sm-4">
+                                                            <span>Maximum Encashment Per Year</span>
+                                                        </div>
+                                                        <div class="col-sm-8 ">
+                                                            <input type="number" id="txtMaximumEncashmentPerYear" disabled min="0" value="@Model.YearEndProcessing.PayatYearend_MaxEncashment" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+
+                                    <div class="row" style="display:none">
+                                        <div class="col-sm-8">
+                                            <div class="form-group row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="font-weight:400">
+                                                            <input type="checkbox" checked disabled onclick="document.getElementById('EncashmentLimit').disabled=!this.checked;document.getElementById('txteligibaleForEncashmentmaxbal').disabled=!this.checked;" id="chkEligibleForEncashment" value="Role">&nbsp;Eligible For Encashment
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-6 ">
+                                                    <div class="form-group row">
+                                                        <div class="col-sm-4">
+                                                            <span>Encashment Limit</span>
+                                                        </div>
+                                                        <div class="col-sm-8 ">
+                                                            <input type="number" readonly="readonly" value="@Model.YearEndProcessing.EligibleForEncashment_Limit" id="EncashmentLimit" min="0" disabled class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group row">
+                                                        <div class="col-sm-4">
+                                                            <span>Min. Balance Need To be Maintained</span>
+                                                        </div>
+                                                        <div class="col-sm-8 ">
+                                                            <input type="number" readonly="readonly" value="@Model.YearEndProcessing.EligibleForEncashment_MinBal" id="txteligibaleForEncashmentmaxbal" disabled min="0" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-sm-8">
+                                            <div class="form-group row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-check">
+                                                        <label class="form-check-label" style="font-weight:400">
+                                                            <input type="checkbox" disabled onclick="document.getElementById('txtcarrayforyear').disabled=!this.checked;" id="chkcarrayforwardyear" value="Role"> Carry Forward to EL
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-6 ">
+                                                    <div class="form-group row">
+                                                        <div class="col-sm-4">
+                                                            <span> Carry Forward Limit</span>
+                                                        </div>
+                                                        <div class="col-sm-8 ">
+                                                            <input type="number" id="txtcarrayforyear" value="@Model.YearEndProcessing.CarryForwardtoEL_CFLimit" disabled min="0" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                        </div>
+                                    </div>
+                                </div>
+                                <ul class="mybtncls pull-right">
+                                    <li>
+                                        <button type="button" class="btn btn-default prev-step">Previous</button>
+                                    </li>
+                                    <li>
+                                        <button type="button" onclick="StepFour();" class="btn btn-primary btn-info-full next-step">Save and Continue</button>
+                                    </li>
+                                    <li>
+                                        <a href="#" onclick="_btncancel();" class="btn btn-primary   btncancel"> Cancel</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="tab-pane" role="tabpanel" id="complete">
+
+                                <div id="DivLeavePolicy"></div>
+                                <div id="DivLeavePlan"></div>
+                                <div id="DivYearEndProcessing"></div>
+                                <br />
+                                @*<input type="submit" class="btn btn-primary" name="Apply" value="Submit">*@
+                                <ul class="mybtncls btnlast pull-left">
+                                    <li>
+                                        <button type="button" class="btn btn-default prev-step">Previous</button>
+                                    </li>
+                                    <li>
+                                        <a href="/leave/LeavePolicy_History" id="btnsubmitpage" class="btn btn-primary">Update</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" id="btncancelpage" onclick="_btncancel();" class="btn btn-primary btncancel">Cancel</a>
+                                    </li>
+                                </ul>
+
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+<div id="Edit_Plan" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <button type="button" id="btneditplanclose" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h4>Edit Rule</h4>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="row">
+                        <input type="hidden" id="hiddenclosetdataid" />
+
+                        <div class="col-sm-4 form-group">
+                            <label>Grade <span class="text-danger">*</span> </label>
+                            @Html.DropDownList("ddlgradee", (IEnumerable<SelectListItem>)ViewBag.Grade, new { @class = "form-control", disabled = "disabled" })
+                        </div>
+                        <div class=" col-sm-4 form-group">
+                            <label>No. Of Days <span class="text-danger">*</span> </label>
+                            <input type="text" min="0" onkeypress="if(this.value.length==0 && event.keyCode == 48) return false; " name="name" class="form-control mynumval" id="txtnoofdayse" readonly placeholder="No Of Days" value="" />
+                        </div>
+                        <div class=" col-sm-4 form-group">
+                            <label>UOM <span class="text-danger">*</span> </label>
+                            @Html.DropDownList("ddlUOMe", (IEnumerable<SelectListItem>)ViewBag.UOM, "Day", new { @class = "form-control", disabled = "disabled" })
+                        </div>
+                        <div class=" col-sm-4 form-group">
+                            <label>Start Date <span class="text-danger">*</span> </label>
+                            <div class="cal-icon"><input type="text" id="txtStartdatepolicyplane" readonly="readonly" placeholder="dd-mmm-yyyy" value="" class="form-control "></div>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>End Date  </label>
+                            <div class="cal-icon"><input type="text" id="txtEnddatepolicyplane" placeholder="dd-mmm-yyyy" class="form-control mycal"></div>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Is loss of Pay <span class="text-danger">*</span>  </label>
+                            @Html.DropDownList("ddlislossofpaye", (IEnumerable<SelectListItem>)ViewBag.Islosseofpay, new { @class = "form-control" })
+
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Employment Type <span class="text-danger">*</span>  </label>
+                            @Html.DropDownList("employertypee", (IEnumerable<SelectListItem>)ViewBag.employertype, new { @class = "form-control", disabled = "disabled" })
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Status  <span class="text-danger">*</span>  </label>
+                            @Html.DropDownList("ddlcreaterulestatuse", (IEnumerable<SelectListItem>)ViewBag.statuscreaterule, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <input type="button" id="btnAddCreateRule" class="btn btn-primary" name="Apply" value="Update" />
+                    @*<input type="button" class="btn btn-primary" onclick="javascript: clearText();" name="" value="Reset" />*@
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Create_Plan" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <button type="button" id="btncreateplanclose" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h4>Create Rule</h4>
+                </div>
+
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="row">
+                        <div class="col-sm-4 form-group">
+                            <label>Grade <span class="text-danger">*</span> </label>
+                            @Html.DropDownList("ddlgrade", (IEnumerable<SelectListItem>)ViewBag.Grade, new { @class = "form-control", multiple = "true" })
+                        </div>
+                        <div class=" col-sm-4 form-group">
+                            <label>Duration <span class="text-danger">*</span> </label>
+                            <input type="text" maxlength="5" autocomplete="off" min="0" name="name" onkeypress="if(this.value.length==0 && event.keyCode == 48) return false; " class="form-control mynumval" id="txtnoofdays" placeholder="Duration" value="" />
+                        </div>
+                        <div class=" col-sm-4 form-group">
+                            <label>UOM <span class="text-danger">*</span> </label>
+                            @Html.DropDownList("ddlUOM", (IEnumerable<SelectListItem>)ViewBag.UOM, new { @class = "form-control" })
+                        </div>
+
+                        <div class=" col-sm-4 form-group">
+                            <label>Start Date <span class="text-danger">*</span> </label>
+                            <div class="cal-icon"><input type="text" id="txtStartdatepolicyplan" placeholder="dd-mmm-yyyy" value="" class="form-control mycal"></div>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>End Date  </label>
+                            <div class="cal-icon"><input type="text" id="txtEnddatepolicyplan" placeholder="dd-mmm-yyyy" class="form-control mycal"></div>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Is loss of Pay <span class="text-danger">*</span>  </label>
+                            @Html.DropDownList("ddlislossofpay", (IEnumerable<SelectListItem>)ViewBag.Islosseofpay, new { @class = "form-control" })
+
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Employment Type <span class="text-danger">*</span>  </label>
+                            @Html.DropDownList("employertype", (IEnumerable<SelectListItem>)ViewBag.employertype, new { @class = "form-control" })
+
+                        </div>
+
+                        <div class="col-sm-4 form-group">
+                            <label>Status  <span class="text-danger">*</span>  </label>
+                            @Html.DropDownList("ddlcreaterulestatus", (IEnumerable<SelectListItem>)ViewBag.statuscreaterule, new { @class = "form-control" })
+
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="hiddenrowindex" />
+                    <input type="hidden" id="hiddenrowgroup" value="1" />
+                    <input type="button" id="btnAddCreateRule1" class="btn btn-primary" name="Apply" value="Submit" />
+                    <input type="button" class="btn btn-primary" onclick="clearText();" name="" value="Reset" />
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+

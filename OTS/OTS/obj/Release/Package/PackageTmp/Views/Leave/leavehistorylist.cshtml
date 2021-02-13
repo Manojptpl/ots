@@ -1,0 +1,648 @@
+﻿@using System.Data;
+
+@*<style>
+    @@media (min-width: 992px) {
+        .modal-lg {
+            width: 1038px;
+        }
+    }
+</style>*@
+<script>
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/leavehistorylist" + '"]').addClass('active');
+        $("#fromfirsthalf").prop("disabled", true);
+        $("#fromsecondhalf").prop("disabled", true);
+        $("#tofirsthalf").prop("disabled", true);
+        $("#tosecondhalf").prop("disabled", true);
+        var table = $(".tbl_leavecancelhistory").DataTable(
+            {
+                "columnDefs": [
+                    { "targets": [7], "orderable": false }
+                ],
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search"
+                },
+                "order": [[0, 'asc']]
+            }
+        );
+        if (@ViewBag.event_permission.Export == 1) {
+            var buttons = new $.fn.dataTable.Buttons(table, {
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fa fa-file-excel-o fa-lg"></i>  ',
+                        title: 'Leave History',
+                        titleAttr: 'Excel'
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fa fa-file-text-o fa-lg"></i>  ',
+                        title: 'Leave History',
+                        titleAttr: 'CSV'
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fa fa-file-pdf-o fa-lg"></i>  ',
+                        title: 'Leave History',
+                        titleAttr: 'PDF'
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fa fa-print fa-lg"></i>  ',
+                        title: 'Leave History',
+                        titleAttr: 'Print'
+                    }
+                ]
+            }).container().appendTo($('#buttons'));
+        }
+
+        //$("#ddlleavetype").change(function () {
+        //        var search = "";
+        //        if ($(this).val() != "0") {
+        //            search = $("#ddlleavetype option:selected").text();
+        //        $("#leavecancelapply").DataTable().columns(1).search(search).draw();
+        //        } else
+        //    { $("#leavecancelapply").DataTable().columns(1).search("").draw(); }
+
+        //    });
+        });
+
+    function FunctionView(ID) {     
+         
+            $.ajax({
+                type: 'POST',
+                url: '/leave/viewapplyleavedetails',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ "tbl_id": ID ,flag:'A' }),
+                dataType: 'json',
+                success: function (response) {
+                   
+                    $("#lblempcode").html(response[0].EmployeeID);
+                    $('#lblleavetype').html(response[0].LeaveType_Name);
+                    $('#lblempname').html(response[0].Employee_Name);
+                    var fromday = response[0].LeaveHalfDay == "" ? "" : " (" + response[0].LeaveHalfDay + ")";
+                    $('#lblfrom_date').html(response[0].FromDate + fromday);
+                    var today = response[0].LeaveDay == "" ? "" : " (" + response[0].LeaveDay + ")";
+                    $("#lblto_date").html(response[0].ToDate + today );
+                    $("#lblnoofdays").html(response[0].NumberOfDays);
+
+                    $("#lblleavebalance").text(response[0].LeaveBalance);
+                    $("#lblremarks").text(response[0].Remarks);
+                    $("#lblrejectedremark").text(response[0].REJECT_REMARK);
+
+                    if (response[0].Attachment == "") {
+                        $("#applyview").show();
+                        $("#applyviewa").hide();
+                    } else {
+                        $("#applyview").hide();
+                        $("#applyviewa").attr("href", "/UploadFile/" + response[0].Attachment).text(response[0].Attachment).show();
+
+                    }
+                    
+
+                }
+            }); 
+    }
+</script>
+<div class="row">
+    <div class="col-sm-9">
+        <h4 class="page-title">Leave History </h4>
+    </div>
+
+    <div class="col-sm-3" id="buttons" >
+        
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive">
+
+            <table id="leavecancelapply" class="table table-striped custom-table m-b-0 tbl_leavecancelhistory">
+                <thead>
+                    <tr>
+                        <th width="45px">Sr.</th>
+                        <th>Employee </th>
+                        <th>Leave Type</th>
+                        <th>From Date</th>
+                        <th>To Date</th>
+                        <th class="Noofdays">No. Of Days</th>
+
+                   
+                        @*<th>Remarks</th>*@
+                        <th class="text-center">Status</th>
+                        <th></th>
+                   
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @{
+                        int sno = 0;
+                    }
+                    @foreach (var item in Model.Tables[0].Rows)
+                    {
+
+
+                    <tr>
+                        <td>@{ sno++; }@sno</td>
+                        <td><span>@item["EMPLOYEE_NAME"]</span>@*<br /><span>@item["EMPLOYEE_CODE"]</span>*@</td>
+                        <td>@item["LEAVE_TYPE_NAME"]</td>
+                        <td>@item["LEAVE_FROM_DATE"]</td>
+                        <td>@item["LEAVE_TO_DATE"]</td>
+                        <td class="text-center">@item["NUMBER_OF_DAYS"]</td>
+                        @*<td>@item["DESCRIPTION"] </td>*@
+                        <td class="text-center" width="10px">
+
+                            @if (@item["STATUS"].ToString().Trim() == "Submitted")
+                            {
+                                <label class="badge bg-warning"  >&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                            }
+                            else if (@item["STATUS"].ToString().Trim() == "Cancellation Submitted")
+                            {
+                                <label class="badge bg-warning" style="white-space: pre-line">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                            }
+                            else if (@item["STATUS"].ToString().Trim() == "Approved")
+                            {
+                                <label class="badge bg-success" >&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                            }
+                            else if (@item["STATUS"].ToString().Trim() == "Cancellation Approved")
+                            {
+                                <label class="badge bg-success" style="white-space: pre-line">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                            } else if (@item["STATUS"].ToString().Trim() == "Rejected")
+                            { 
+                                <label class="badge" style="white-space: pre-line;background-color:#FC0404"  >&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                            }
+                           else if (@item["STATUS"].ToString().Trim() == "Cancellation Rejected")
+                            {
+                            <label class="badge" style="white-space: pre-line;background-color:#FC0404">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                            }
+                            else if (@item["STATUS"].ToString().Trim() == "Withdrawn")
+                            {
+                                <label class="badge" style="white-space: pre-line;background-color:#FC0404">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                            }
+                            else if (@item["STATUS"].ToString().Trim() == "In Progress")
+                            {
+                                <label class="badge" style="background-color:coral">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                            }
+                            else if (@item["STATUS"].ToString().Trim() == "Cancellation In Progress")
+                            {
+                                <label class="badge" style="white-space: pre-line;background-color:coral">&nbsp;&nbsp;@item["STATUS"]&nbsp;&nbsp;</label>
+                            }
+                        
+                        </td>
+
+                        <td>
+ 
+
+                            @if (item["LEAVE_TYPE_NAME"].ToString().Trim() == "Leave Encashment")
+                            {
+
+                            }
+                            else
+                            {
+                                <a href="#" title="View" data-toggle="modal" onclick="FunctionView(@item["ID"] )" data-target="#Apply_Leave"><i class="glyphicon glyphicon-eye-open"></i></a>
+                            }
+                       </td>
+                    </tr>
+                    }
+                </tbody>
+              
+            </table>
+ 
+                     
+
+        </div>
+    </div>
+</div>
+
+@*<div id="Apply_Leave" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h4 class="modal-title"> View Apply Leave Details</h4>
+            </div>
+            <div class="modal-body card-box">
+
+                <form class="m-b-30">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Employee  </label> 
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group"> 
+                                <span id="ddlapplyempname_name">    </span>
+                            </div>
+                        </div>
+                     </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Type   </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <span id="ddlapplyleavetype_name">    </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Balance </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <span id="txtleavebalance">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">  From Half Day </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                            
+                                <label class="radio-inline">
+                                    <input type="radio" id="fromfirsthalf" name="optradio">First Half
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" id="fromsecondhalf" name="optradio">Second Half
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">  To Half Day </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                              
+                              
+                                <label class="radio-inline">
+                                    <input type="radio" id="tofirsthalf" name="optradioto">First Half
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" id="tosecondhalf" name="optradioto">Second Half
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">From Date  </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <span id="txt_fromDate">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">To Date </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <span id="txt_toDate">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Number of Days   </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <span id="txt_days">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Remarks</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <span id="txtapplyremarks">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Reject Remarks</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <span id="txtrejectremarks">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Attachment </label> 
+                               
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                               <span id="applyview">No Attachment Selected</span>
+                                <a id="applyviewa" href="" download=""> </a>
+                        </div>
+                    </div>
+
+                   
+                    </form>
+          
+                    </div>
+            </div>
+    </div>
+</div>*@
+
+<div id="Apply_Leave" class="modal custom-modal fade" role="dialog">
+        <div class="modal-dialog">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <div class="modal-content modal-lg">
+                 
+                <div class="modal-header">
+                    <h4 class="modal-title" id="txtModelTitle">View Apply Leave Details</h4>
+                    <div class="form-group">
+                        <h5></h5>
+                        <br />
+                        <div class="box-color">
+                            <table class="table m-b-0">
+                                <tbody id="viewUserDetail">
+                                    <tr>
+                                        <td style="border-top:none;"><strong>Employee Name</strong></td>
+                                        <td style="border-top:none;">:</td>
+                                        <td style="border-top:none;"><span id="lblempname"> 	</span></td>
+
+                                        <td style="border-top:none;"><strong>Employee Code</strong></td>
+                                        <td style="border-top:none;">:</td>
+                                        <td style="border-top:none;"><span id="lblempcode"></span></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Leave Type</strong></td>
+                                        <td>:</td>
+                                        <td><span id="lblleavetype">	 </span></td>
+
+                                        <td><strong>Leave Balance</strong></td>
+                                        <td>:</td>
+                                        <td><span id="lblleavebalance">3</span></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>From Date</strong></td>
+                                        <td>:</td>
+                                        <td><span id="lblfrom_date"></span></td>
+
+                                        <td><strong>To Date</strong></td>
+                                        <td>:</td>
+                                        <td><span id="lblto_date"></span></td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td><strong>No Of Days</strong></td>
+                                        <td>:</td>
+                                        <td><span id="lblnoofdays"></span></td>
+
+                                        <td><strong>Attachment</strong></td>
+                                        <td>:</td>
+                                        <td><span id="applyview">No Attachment Selected</span><a id="applyviewa" href="" download=""> </a></td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td><strong>Remarks</strong></td>
+                                        <td>:</td>
+                                        <td><span id="lblremarks"></span></td>
+
+                                        <td><strong>Rejected Remarks</strong></td>
+                                        <td>:</td>
+                                        <td><span id="lblrejectedremark"></span></td>
+                                    </tr>
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+                </div>    
+
+                 
+                </div>
+        </div>
+    </div>
+<!---Leave Cancel View-->
+@*<div id="Cancel_Leave" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h4 class="modal-title">View  Cancellation Apply Details </h4>
+            </div>
+            <div class="modal-body card-box">
+                <form class="m-b-30">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Employee  </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="ddlcancelempname_name">    </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Type   </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="ddlcancelleavetype_name">    </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Number of Days   </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="txt_ddays">    </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Day   </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="ddlcancelLeaveDays">    </span>
+                                &nbsp; &nbsp;
+                                <label class="radio-inline">
+                                    <input type="radio" id="fromfirsthalfcancel" disabled name="optradioc">First Half
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" id="fromsecondhalfcancel" disabled name="optradioc">Second Half
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">From Date  </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="txt_ffromDate">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">To Date  </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="txt_ttoDate">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Cancel From Date  </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="txt_cfromDate">    </span>
+                                &nbsp;&nbsp;
+                                <label class="radio-inline">
+                                    <input type="radio" id="fromfirsthalfcancel" disabled name="optradioc">First Half
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" id="fromsecondhalfcancel" disabled name="optradioc">Second Half
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Cancel To Date  </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="txt_ctoDate">    </span>
+                                &nbsp;&nbsp;
+                                <label class="radio-inline">
+                                    <input type="radio" disabled class="fromcheck" id="rdcancelSecondhalftcancelto" name="optradiocancelto">First Half
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" disabled class="fromcheck" id="rdcancelSecondhalftcancelto" name="optradiocancelto">Second Half
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Cancel Remarks</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="txt_ctotalDate">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Net No Of Days</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="txtcancelremarks">    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Attachment </label>
+
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <span id="applycancelview">No Attachment Selected</span>
+                                <a id="applycancelviewa" href="" download=""> </a>
+                            </div>
+                        </div>
+                    </div>
+                  </form>
+                 
+                    </div>
+            </div>
+    </div>
+</div>*@

@@ -1,0 +1,46 @@
+﻿
+<style type="text/css">
+    .comment {
+        width: 100%;
+        margin: 10px;
+    }
+
+    a {
+        color: #0254EB
+    }
+
+    .required {
+        color: red;
+    }
+
+    a:visited {
+        color: #0254EB
+    }
+
+    a.morelink {
+        text-decoration: none;
+        outline: none;
+    }
+
+
+    .morecontent span {
+        display: none;
+    }
+
+    .ui-datepicker-calendar {
+        display: none;
+    }
+
+    .modal.in .modal-dialog {
+        -webkit-transform: translate(0, 0);
+        -ms-transform: translate(0, 0);
+        -o-transform: translate(0, 0);
+        transform: translate(0, 0);
+        width: 80%;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/EmpTimesheet_Report" + '"]').addClass('active');
+    })
+</script>

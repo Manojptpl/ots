@@ -1,0 +1,362 @@
+﻿@model IEnumerable<OTS.Models.HomeModel>
+<style type="text/css">
+    table {
+        border-collapse: collapse;
+        width: 90%;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2
+    }
+
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .ui-datepicker-calendar {
+        display: none;
+    }
+</style>
+<html>
+<head>
+<script  type="text/javascript">
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/DeptTimesheet_Report" + '"]').addClass('active');
+        $("#btn_edit_close").click(function () {
+            $('#Employee_wise_report').modal('hide');
+        });
+        var minOffset = -1, maxOffset = 2;
+        var thisYear = new Date().getFullYear();
+        var select = $('#year');
+        for (var i = 0; i <= maxOffset; i++) {
+            var year = thisYear - i;
+            $('<option>', { value: year, text: year }).appendTo(select);
+        }
+
+        $(document).on("click", "#btnsearch", function () {
+           
+            var month = $('#month').val();
+            var year = $('#year').val();
+            var cl = "infoo";
+            $.ajax({
+                url: '/Report/AdminMonthWiseProjectHours',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(
+                    {
+                        'Month': month, 'Year': year
+                    }),
+                dataType: 'json',
+                success: function (data) {
+                   
+                    var st;
+                    var len = Object.keys(data).length;
+                    if (len > 0) {
+                        $('#tab2 tbody').empty();
+                        //Append each row to html table
+                        for (var i = 0; i < len; i++) {
+                            $('#tab2 tbody').append("<tr id=" + cl + "><td id='proj'>" + data[i].Project + "</td><td><a href='#' class='tbl2' data-id=" + data[i].Project_id + " proj_cost=" + data[i].Project_cost + " > " + data[i].No_of_hours + "</a ></td ><td style='text-align:right'>" + data[i].Project_cost + "</td></tr > ");
+                        }
+
+                        $('#project_rpt').show();
+                        $('#tab2').show();
+                    }
+                    else {
+                        $('#tab2').hide();
+                        alert("No Data Found..");
+                    }
+
+                },
+                error: function () {
+                    alert("");
+                }
+            });
+        })
+        $("tr#info td a").click(function (e) {
+           
+            $('#tab3').hide();
+            $('.Employeewise').hide();
+            $('.myproj').hide();
+         
+            var currt = new Date; // get current date
+            var mon = (currt.getMonth()) + 1;   // get current month
+            var yr = currt.getFullYear();      // get current year
+            $('#month').val(mon);
+            $('#year').val(yr);
+            var cl = "infoo";
+            var dept_id = $(this).attr('data-id');
+            $.ajax({
+                url: '/Report/AdminProjectWiseHours',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(
+                    {
+                        'Month': mon, 'Year': yr, 'department_id': dept_id
+                    }),
+                dataType: 'json',
+                success: function (data) {
+                   
+                    var len = Object.keys(data).length;
+                    $('#tab2 tbody').empty();
+                    //Append each row to html table
+                    for (var i = 0; i < len; i++) {
+                        $('#tab2 tbody').append("<tr id=" + cl + "><td id='proj'>" + data[i].Project + "</td><td><a href='#' class='tbl2' data-id=" + data[i].Project_id + " proj_cost=" + data[i].Project_cost + " > " + data[i].No_of_hours + "</a ></td ><td style='text-align:right'>" + data[i].Project_cost + "</td></tr > ");
+                    }
+                    $('#txtDate').val(mon + '/' + yr);
+                    $('#project_rpt').show();
+                    $('#tab2').show();
+
+                },
+                error: function () {
+                    alert("");
+                }
+            });
+
+            // e.stopPropagation();
+        });
+        $(document).on('click', ".tbl2", function (e) {
+           
+            var year = $('#year').val();
+            var month = $('#month').val();
+            var cl = "info2";
+            var hours = ($(this).html()).split(":");
+            var final_hours = hours[0] + '.' + hours[1];
+            var project_id = $(this).attr('data-id');
+            var project_cst = $(this).attr('proj_cost');
+            var project_name = $(this).closest("tr").find('td#proj').html();
+            $.ajax({
+                url: '/Report/HoursWiseEmployee',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(
+                    {
+                        'Project_id': project_id, 'Month': month, 'Year': year
+                    }),
+                dataType: 'json',
+                success: function (data) {
+
+                    var len = Object.keys(data).length;
+                    var common_cost;
+                    if (len != 0) {
+                        $('#tab3 tbody').empty();
+                        //Append each row to html table
+                        for (var i = 0; i < len; i++) {
+                            $('#tab3 tbody').append("<tr id=" + cl + "><td>" + data[i].Employees + "</td><td>" + data[i].No_of_hours + "</td ><td id='hour_cost' style='text-align:right'>" + data[i].Employee_Cost + "</td></tr > ");
+
+                        }
+                        $('.Employeewise').show();
+                        $('.myproj').show();
+                        $('#tab3').show();
+                        $('.project_cost').text(project_cst);
+                        $('.project_name').text(project_name);
+                        $('#Employee_wise_report').modal('show');
+                        var temp_amt = 0;
+                        $('#tab3').each(function () {
+                            var emp_amt = 0;
+                            $(this).find('tr#info2 td#hour_cost').each(function () {
+
+                                var combat = $(this).text();
+
+
+                                if (!isNaN(combat) && combat.length !== 0) {
+                                    emp_amt = parseFloat(emp_amt) + parseFloat(combat);
+                                }
+
+                            });
+                            temp_amt = emp_amt.toFixed(2);
+                            $('.empgrdtotal').text(emp_amt.toFixed(2)).digits();
+                        });
+                        $('#common_cost').text(parseFloat(parseFloat(data[0].Common_Cost) * parseFloat(final_hours)).toFixed(2));
+                        var final = parseFloat(temp_amt) + parseFloat(parseFloat(data[0].Common_Cost) * parseFloat(final_hours));
+                        $('#final_cost').text(parseFloat(final).toFixed(2)).digits();
+                    }
+
+                },
+                error: function () {
+                    alert("");
+                }
+            });
+
+            e.stopPropagation();
+        });
+    })
+    $.fn.digits = function () {
+        return this.each(function () {
+            $(this).text($(this).text().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,"));
+        })
+    }
+</script>
+</head>
+<body>
+    <div class="container" style="height:100%;">
+        <div id="wait" style="display:none;width:109px;height:100px;position:absolute;top:50%;left:50%;padding:2px;">
+            <img src="~/Content/themes/base/images/Ellipsis.gif" width="104" height="104" /><br>Loading..
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">Department Timesheet</div>
+            <div class="panel-body" style="height:100%;">
+                <div class="row">
+                    <div class="col-md-12">
+                        <table id="tab1">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Departments)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.No_of_projects)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Total_cost)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr id="info">
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Departments)
+                                            @*@Html.HiddenFor(modelItem => item.Department_id)*@
+                                        </td>
+                                        <td>
+                                            <a href="javascript:void(0);" class="subtot" data-id="@item.Department_id">@Html.DisplayFor(modelItem => item.No_of_projects)</a>
+                                        </td>
+                                        <td id="tot" style="text-align:right">
+                                            @Html.DisplayFor(modelItem => item.Total_cost)
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td><b>Total</b></td>
+                                    <td><label class="grdtot" value="" name="" /></td>
+                                    <td style="text-align:right"><label class="grdtotal" value="" name="" /></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 30px;">
+                    <div class="col-md-12">
+                        <div class="row" id="project_rpt">
+                            <div class="form-group">
+                                <div class="col-sm-3">
+                                    <h5 class="projectwise">Project Wise Cost Report</h5>
+                                </div>
+                                <div class="col-sm-2">
+                                    <select name="year" id="year" style="height:30px; border-radius:18px; margin-left: 60px;">
+                                        <option value="">Select Year</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <select name="month" id="month" style="height:30px; border-radius: 18px;">
+                                        <option value="0">Select Month </option>
+                                        <option value="1">Jan</option>
+                                        <option value="2">Feb</option>
+                                        <option value="3">Mar</option>
+                                        <option value="4">Apr</option>
+                                        <option value="5">May</option>
+                                        <option value="6">Jun</option>
+                                        <option value="7">Jul</option>
+                                        <option value="8">Aug</option>
+                                        <option value="9">Sep</option>
+                                        <option value="10">Oct</option>
+                                        <option value="11">Nov</option>
+                                        <option value="12">Dec</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2" style="margin-top: -2px;">
+                                    <button type='button' id='btnsearch' class="btn btn-primary" style=" border-radius:43px;">Search</button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-sm-12">
+                        <table id="tab2">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Project
+                                    </th>
+                                    <th>
+                                        No of Hours
+                                    </th>
+                                    <th>
+                                        Project Cost
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div> <hr />
+        </div>
+    </div>
+</body>
+</html>
+
+
+<div id="Employee_wise_report" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" id="btn_edit_close" class="close">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="panel" id="pnl_header">
+                <div class="panel-body">
+                    <div class="modal-header"> <h5 class="Employeewise">Employee Wise Report Project Cost=<label class="project_cost" value="" name="" /></h5></div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                               <h5 class="myproj"><label class="project_name" value="" name="" /></h5>
+                                <table id="tab3">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Employees
+                                            </th>
+                                            <th>
+                                                No of Hours
+                                            </th>
+                                            <th style="text-align:right">
+                                                Cost
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td><b>Total</b></td>
+                                            <td><label class="empgrdtot" value="" name="" /></td>
+                                            <td style="text-align:right"><label class="empgrdtotal" value="" name="" /></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Per Head Cost</th>
+                                            <th style="text-align:right">Total Cost</th>
+                                        </tr>
+                                        <tr>
+                                            <td><b>+Per Head Per Hour Cost</b></td>
+                                            <td><label name="" id="common_cost"></label></td>
+                                            <td style="text-align:right"><label name="" id="final_cost"></label></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

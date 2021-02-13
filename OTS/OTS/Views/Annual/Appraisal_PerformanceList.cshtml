@@ -1,0 +1,1443 @@
+﻿@model IEnumerable<OTS.Models.CommonAppraisalModel>
+<meta content="width=device-width, initial-scale=1" name="viewport" />
+<script type="text/javascript">
+    $(document).ready(function(){
+         
+        $('ul.list-unstyled  li a[href$="' + "/Appraisal_PerformanceList" + '"]').addClass('active');
+        $('#datatableList').DataTable({
+            "columnDefs": [
+                { "targets": [10], "orderable": false }
+            ],
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Search"
+            }
+        });
+        $('input[type="text"]').each(function () {
+            $(this).on('keypress', function (event) {
+                var letters = /^[1-5]+$/;
+                var key = String.fromCharCode(!event.fromCharCode ? event.which : event.charCode);
+                if (!letters.test(key)) {
+                    event.preventDefault();
+                    return false;
+                }
+            });
+        });
+        $(document).on("click", ".btn_view", function () {
+            $.ajax({
+                type: "POST",
+                url: "/Annual/appraisaldetailsview",
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ 'id': $(this).attr("data_id") }),
+                dataType: 'json',
+                success: function (data) {
+                    debugger;
+                    $("#txt_EmpName").val(data.NAME);
+                    $("#txt_ManagerName").val(data.MANAGER_NAME);
+                    $("#txt_PositionTitle").val(data.DESIGNATION);
+                    $("#txt_ReviewDate").val(data.CURRENT_DATE);
+                    $("#txt_FromDate").val(data.FROM_DATE);
+                    //$("#txt_ToDate").val(data.TO_DATE);
+                    $("#txt_Department").val(data.DEPARTMENT);
+                    $("#txt_KeyResponsibility").val(data.GOAL_QUARTER);
+                    //$("#txt_FinalRating").val(data.FINAL_RATING);
+                    //$("#txt_FinalRating").val(data.MGR_RATING);
+                    $("#txt_FinalRating").val(data.OVERALL_RATING_MGR);
+
+                    $("#txt_CURRENTROLL_SELFRATING").val(data.CURRENTROLL_SELFRATING);
+                    $("#txt_CURRENTROLL_SELFEXP").val(data.CURRENTROLL_SELFEXP);
+                    //$("#txt_CURRENTROLL_MGRRATING").val(data.CURRENTROLL_MGRRATING);
+                    $("#txt_CURRENTROLL_MGRRATING").val(data.strCURRENTROLL_MGRRATING);
+                    $("#txt_CURRENTROLL_MGREXP").val(data.CURRENTROLL_MGREXP);
+                    $("#txt_QUALITYWORK_SELFRATING").val(data.QUALITYWORK_SELFRATING);
+                    $("#txt_QUALITYWORK_SELFEXP").val(data.QUALITYWORK_SELFEXP);
+                    //$("#txt_QUALITYWORK_MGRRATING").val(data.QUALITYWORK_MGRRATING);
+                    $("#txt_QUALITYWORK_MGRRATING").val(data.strQUALITYWORK_MGRRATING);
+                    $("#txt_QUALITYWORK_MGREXP").val(data.QUALITYWORK_MGREXP);
+                    $("#txt_ORGWORK_SELFRATING").val(data.ORGWORK_SELFRATING);
+                    $("#txt_ORGWORK_SELFEXP").val(data.ORGWORK_SELFEXP);
+                    //$("#txt_ORGWORK_MGRRATING").val(data.ORGWORK_MGRRATING);
+                    $("#txt_ORGWORK_MGRRATING").val(data.strORGWORK_MGRRATING);
+                    $("#txt_ORGWORK_MGREXP").val(data.ORGWORK_MGREXP);
+                    $("#txt_INITIATE_SELFRATING").val(data.INITIATE_SELFRATING);
+                    $("#txt_INITIATE_SELFEXP").val(data.INITIATE_SELFEXP);
+                    //$("#txt_INITIATE_MGRRATING").val(data.INITIATE_MGRRATING);
+                    $("#txt_INITIATE_MGRRATING").val(data.strINITIATE_MGRRATING);
+                    $("#txt_INITIATE_MGREXP").val(data.INITIATE_MGREXP);
+                    $("#txt_PERSONAL_SELFRATING").val(data.PERSONAL_SELFRATING);
+                    $("#txt_PERSONAL_SELFEXP").val(data.PERSONAL_SELFEXP);
+                    //$("#txt_PERSONAL_MGRRATING").val(data.PERSONAL_MGRRATING);
+                    $("#txt_PERSONAL_MGRRATING").val(data.strPERSONAL_MGRRATING);
+                    $("#txt_PERSONAL_MGREXP").val(data.PERSONAL_MGREXP);
+                    $("#txt_VSKILL_SELFRATING").val(data.VSKILL_SELFRATING);
+                    $("#txt_VSKILL_SELFEXP").val(data.VSKILL_SELFEXP);
+                    //$("#txt_VSKILL_MGRRATING").val(data.VSKILL_MGRRATING);
+                    $("#txt_VSKILL_MGRRATING").val(data.strVSKILL_MGRRATING);
+                    $("#txt_VSKILL_MGREXP").val(data.VSKILL_MGREXP);
+                    $("#txt_WSKILL_SELFRATING").val(data.WSKILL_SELFRATING);
+                    $("#txt_WSKILL_SELFEXP").val(data.WSKILL_SELFEXP);
+                    //$("#txt_WSKILL_MGRRATING").val(data.WSKILL_MGRRATING);
+                    $("#txt_WSKILL_MGRRATING").val(data.strWSKILL_MGRRATING);
+                    $("#txt_WSKILL_MGREXP").val(data.WSKILL_MGREXP);
+                    $("#txt_TEAM_SELFRATING").val(data.TEAM_SELFRATING);
+                    $("#txt_TEAM_SELFEXP").val(data.TEAM_SELFEXP);
+                    //$("#txt_TEAM_MGRRATING").val(data.TEAM_MGRRATING);
+                    $("#txt_TEAM_MGRRATING").val(data.strTEAM_MGRRATING);
+                    $("#txt_TEAM_MGREXP").val(data.TEAM_MGREXP);
+                    $("#txt_CONFIDENTIALITY_SELFRATING").val(data.CONFIDENTIALITY_SELFRATING);
+                    $("#txt_CONFIDENTIALITY_SELFEXP").val(data.CONFIDENTIALITY_SELFEXP);
+                    //$("#txt_CONFIDENTIALITY_MGRRATING").val(data.CONFIDENTIALITY_MGRRATING);
+                    $("#txt_CONFIDENTIALITY_MGRRATING").val(data.strCONFIDENTIALITY_MGRRATING);
+                    $("#txt_CONFIDENTIALITY_MGREXP").val(data.CONFIDENTIALITY_MGREXP);
+                    $("#txt_ATTENDANCE_SELFRATING").val(data.ATTENDANCE_SELFRATING);
+                    $("#txt_ATTENDANCE_SELFEXP").val(data.ATTENDANCE_SELFEXP);
+                    //$("#txt_ATTENDANCE_MGRRATING").val(data.ATTENDANCE_MGRRATING);
+                    $("#txt_ATTENDANCE_MGRRATING").val(data.strATTENDANCE_MGRRATING);
+                    $("#txt_ATTENDANCE_MGREXP").val(data.ATTENDANCE_MGREXP); 
+                    //$("#txt_SECTION_SECOND_TOTALRATING").val(data.SECTION_SECOND_TOTALRATING);
+                    $("#txt_SECTION_SECOND_TOTALRATING").val(data.MGR_RATING);
+
+                    $("#txt_SECTION_ONE_OVERALL_TOTALRATING").val(data.SECTION_ONE_OVERALL_TOTALRATING);
+                    $("#txt_SECTION_2_OVERALL_TOTALRATING").val(data.SECTION_2_OVERALL_TOTALRATING);
+                    $("#txt_SUBTOTAL").val(data.SUBTOTAL);
+                    $("#txt_OVERALL_RATING").val(data.OVERALL_RATING);
+                    $("#txt_EmpRating").val(data.EMP_RATING);
+
+                    $('#view_appraisal').modal('show');
+                }
+            });
+        });
+        $(document).on("click", ".btn_edit", function () {
+             $("#hdn_Emp_id").val($(this).attr('data_id'));
+            $.ajax({
+                type: "POST",
+                url: "/Annual/appraisaldetailsedit",
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ 'id': $(this).attr('data_id') }),
+                dataType: 'json',
+                success: function (data) {
+                    $("#txt_editEmpName").val(data.NAME);
+                    $("#txt_editManagerName").val(data.MANAGER_NAME);
+                    $("#txt_editPositionTitle").val(data.DESIGNATION);
+                    $("#txt_editReviewDate").val(data.CURRENT_DATE);
+                    $("#txt_editDepartment").val(data.DEPARTMENT);
+                    $("#txt_editKeyResponsibility").val(data.GOAL_QUARTER);
+                    $("#txt_editFinalRatingTemp").val(data.FINAL_RATING);
+                    $("#txt_editFinalRating").val(data.OVERALL_RATING_MGR);
+
+                    $("#txt_editCURRENTROLL_SELFRATING").val(data.CURRENTROLL_SELFRATING);
+                    $("#txt_editCURRENTROLL_SELFEXP").val(data.CURRENTROLL_SELFEXP);
+                    //$("#txt_editCURRENTROLL_MGRRATING").val(data.CURRENTROLL_MGRRATING);
+                    $("#txt_editCURRENTROLL_MGRRATING").val(data.strCURRENTROLL_MGRRATING);
+                    $("#txt_editCURRENTROLL_MGREXP").val(data.CURRENTROLL_MGREXP);
+                    $("#txt_editQUALITYWORK_SELFRATING").val(data.QUALITYWORK_SELFRATING);
+                    $("#txt_editQUALITYWORK_SELFEXP").val(data.QUALITYWORK_SELFEXP);
+                    //$("#txt_editQUALITYWORK_MGRRATING").val(data.QUALITYWORK_MGRRATING);
+                    $("#txt_editQUALITYWORK_MGRRATING").val(data.strQUALITYWORK_MGRRATING);
+                    $("#txt_editQUALITYWORK_MGREXP").val(data.QUALITYWORK_MGREXP);
+                    $("#txt_editORGWORK_SELFRATING").val(data.ORGWORK_SELFRATING);
+                    $("#txt_editORGWORK_SELFEXP").val(data.ORGWORK_SELFEXP);
+                    //$("#txt_editORGWORK_MGRRATING").val(data.ORGWORK_MGRRATING);
+                    $("#txt_editORGWORK_MGRRATING").val(data.strORGWORK_MGRRATING);
+                    $("#txt_editORGWORK_MGREXP").val(data.ORGWORK_MGREXP);
+                    $("#txt_editINITIATE_SELFRATING").val(data.INITIATE_SELFRATING);
+                    $("#txt_editINITIATE_SELFEXP").val(data.INITIATE_SELFEXP);
+                    //$("#txt_editINITIATE_MGRRATING").val(data.INITIATE_MGRRATING);
+                    $("#txt_editINITIATE_MGRRATING").val(data.strINITIATE_MGRRATING);
+                    $("#txt_editINITIATE_MGREXP").val(data.INITIATE_MGREXP);
+                    $("#txt_editPERSONAL_SELFRATING").val(data.PERSONAL_SELFRATING);
+                    $("#txt_editPERSONAL_SELFEXP").val(data.PERSONAL_SELFEXP);
+                    //$("#txt_editPERSONAL_MGRRATING").val(data.PERSONAL_MGRRATING);
+                    $("#txt_editPERSONAL_MGRRATING").val(data.strPERSONAL_MGRRATING);
+                    $("#txt_editPERSONAL_MGREXP").val(data.PERSONAL_MGREXP);
+                    $("#txt_editVSKILL_SELFRATING").val(data.VSKILL_SELFRATING);
+                    $("#txt_editVSKILL_SELFEXP").val(data.VSKILL_SELFEXP);
+                    //$("#txt_editVSKILL_MGRRATING").val(data.VSKILL_MGRRATING);
+                    $("#txt_editVSKILL_MGRRATING").val(data.strVSKILL_MGRRATING);
+                    $("#txt_editVSKILL_MGREXP").val(data.VSKILL_MGREXP);
+                    $("#txt_editWSKILL_SELFRATING").val(data.WSKILL_SELFRATING);
+                    $("#txt_editWSKILL_SELFEXP").val(data.WSKILL_SELFEXP);
+                    //$("#txt_editWSKILL_MGRRATING").val(data.WSKILL_MGRRATING);
+                    $("#txt_editWSKILL_MGRRATING").val(data.strWSKILL_MGRRATING);
+                    $("#txt_editWSKILL_MGREXP").val(data.WSKILL_MGREXP);
+                    $("#txt_editTEAM_SELFRATING").val(data.TEAM_SELFRATING);
+                    $("#txt_editTEAM_SELFEXP").val(data.TEAM_SELFEXP);
+                    //$("#txt_editTEAM_MGRRATING").val(data.TEAM_MGRRATING);
+                    $("#txt_editTEAM_MGRRATING").val(data.strTEAM_MGRRATING);
+                    $("#txt_editTEAM_MGREXP").val(data.TEAM_MGREXP);
+                    $("#txt_editCONFIDENTIALITY_SELFRATING").val(data.CONFIDENTIALITY_SELFRATING);
+                    $("#txt_editCONFIDENTIALITY_SELFEXP").val(data.CONFIDENTIALITY_SELFEXP);
+                    //$("#txt_editCONFIDENTIALITY_MGRRATING").val(data.CONFIDENTIALITY_MGRRATING);
+                    $("#txt_editCONFIDENTIALITY_MGRRATING").val(data.strCONFIDENTIALITY_MGRRATING);
+                    $("#txt_editCONFIDENTIALITY_MGREXP").val(data.CONFIDENTIALITY_MGREXP);
+                    $("#txt_editATTENDANCE_SELFRATING").val(data.ATTENDANCE_SELFRATING);
+                    $("#txt_editATTENDANCE_SELFEXP").val(data.ATTENDANCE_SELFEXP);
+                    //$("#txt_editATTENDANCE_MGRRATING").val(data.ATTENDANCE_MGRRATING);
+                    $("#txt_editATTENDANCE_MGRRATING").val(data.strATTENDANCE_MGRRATING);
+                    $("#txt_editATTENDANCE_MGREXP").val(data.ATTENDANCE_MGREXP); 
+                    //$("#txt_editSECTION_SECOND_TOTALRATING").val(data.SECTION_SECOND_TOTALRATING);
+                    $("#txt_editSECTION_SECOND_TOTALRATING").val(data.MGR_RATING);
+
+                    $("#txt_editSECTION_ONE_OVERALL_TOTALRATING").val(data.SECTION_ONE_OVERALL_TOTALRATING);
+                    $("#txt_editSECTION_2_OVERALL_TOTALRATING").val(data.SECTION_2_OVERALL_TOTALRATING);
+                    $("#txt_editSUBTOTAL").val(data.SUBTOTAL);
+                    $("#txt_editOVERALL_RATING").val(data.OVERALL_RATING);
+                    $("#txt_editEmpRating").val(data.EMP_RATING);
+
+                    $('#edit_appraisal').modal('show');
+                }
+            });
+        });
+        $("#btn_Update").on('click', function () {
+            //var Emp_id = $(this).attr("data_id");
+            var Emp_id = $("#hdn_Emp_id").val();
+            var CURRENTROLL_MGRRATING = $("#txt_editCURRENTROLL_MGRRATING").val();
+            var CURRENTROLL_MGREXP =$("#txt_editCURRENTROLL_MGREXP").val();
+            var QUALITYWORK_MGRRATING =$("#txt_editQUALITYWORK_MGRRATING").val();
+            var QUALITYWORK_MGREXP =$("#txt_editQUALITYWORK_MGREXP").val();
+            var ORGWORK_MGRRATING =$("#txt_editORGWORK_MGRRATING").val();
+            var ORGWORK_MGREXP =$("#txt_editORGWORK_MGREXP").val();
+            var INITIATE_MGRRATING =$("#txt_editINITIATE_MGRRATING").val();
+            var INITIATE_MGREXP =$("#txt_editINITIATE_MGREXP").val();
+            var PERSONAL_MGRRATING =$("#txt_editPERSONAL_MGRRATING").val();
+            var PERSONAL_MGREXP =$("#txt_editPERSONAL_MGREXP").val();
+            var VSKILL_MGRRATING =$("#txt_editVSKILL_MGRRATING").val();
+            var VSKILL_MGREXP =$("#txt_editVSKILL_MGREXP").val();
+            var WSKILL_MGRRATING =$("#txt_editWSKILL_MGRRATING").val();
+            var WSKILL_MGREXP =$("#txt_editWSKILL_MGREXP").val();
+            var TEAM_MGRRATING =$("#txt_editTEAM_MGRRATING").val();
+            var TEAM_MGREXP =$("#txt_editTEAM_MGREXP").val();
+            var CONFIDENTIALITY_MGRRATING =$("#txt_editCONFIDENTIALITY_MGRRATING").val();
+            var CONFIDENTIALITY_MGREXP =$("#txt_editCONFIDENTIALITY_MGREXP").val();
+            var ATTENDANCE_MGRRATING =$("#txt_editATTENDANCE_MGRRATING").val();
+            var ATTENDANCE_MGREXP =$("#txt_editATTENDANCE_MGREXP").val();
+            var SECTION_SECOND_TOTALRATING =$("#txt_editSECTION_SECOND_TOTALRATING").val();
+
+            var SECTION_ONE_OVERALL_TOTALRATING =$("#txt_editSECTION_ONE_OVERALL_TOTALRATING").val();
+            var SECTION_2_OVERALL_TOTALRATING_MGR =$("#txt_editSECTION_2_OVERALL_TOTALRATING").val();
+            var SUBTOTAL_MGR =$("#txt_editSUBTOTAL").val();
+            var OVERALL_RATING_MGR = $("#txt_editOVERALL_RATING").val();
+            var MGR_RATING = $("#txt_editSECTION_SECOND_TOTALRATING").val();
+
+            var ObjAppraisal = {
+                'EMP_ID': Emp_id,
+                'CURRENTROLL_MGRRATING': CURRENTROLL_MGRRATING,
+                'CURRENTROLL_MGREXP': CURRENTROLL_MGREXP,
+                'QUALITYWORK_MGRRATING': QUALITYWORK_MGRRATING,
+                'QUALITYWORK_MGREXP': QUALITYWORK_MGREXP,
+                'ORGWORK_MGRRATING': ORGWORK_MGRRATING,
+                'ORGWORK_MGREXP': ORGWORK_MGREXP,
+                'INITIATE_MGRRATING': INITIATE_MGRRATING,
+                'INITIATE_MGREXP': INITIATE_MGREXP,
+                'PERSONAL_MGRRATING': PERSONAL_MGRRATING,
+                'PERSONAL_MGREXP': PERSONAL_MGREXP,
+                'VSKILL_MGRRATING': VSKILL_MGRRATING,
+                'VSKILL_MGREXP': VSKILL_MGREXP,
+                'WSKILL_MGRRATING': WSKILL_MGRRATING,
+                'WSKILL_MGREXP': WSKILL_MGREXP,
+                'TEAM_MGRRATING': TEAM_MGRRATING,
+                'TEAM_MGREXP': TEAM_MGREXP,
+                'CONFIDENTIALITY_MGRRATING': CONFIDENTIALITY_MGRRATING,
+                'CONFIDENTIALITY_MGREXP': CONFIDENTIALITY_MGREXP,
+                'ATTENDANCE_MGRRATING': ATTENDANCE_MGRRATING,
+                'ATTENDANCE_MGREXP': ATTENDANCE_MGREXP,
+                'SECTION_SECOND_TOTALRATING': SECTION_SECOND_TOTALRATING,
+                'SECTION_ONE_OVERALL_TOTALRATING': SECTION_ONE_OVERALL_TOTALRATING,
+                'SECTION_2_OVERALL_TOTALRATING_MGR': SECTION_2_OVERALL_TOTALRATING_MGR,
+                'SUBTOTAL_MGR': SUBTOTAL_MGR,
+                'OVERALL_RATING_MGR': OVERALL_RATING_MGR,
+                'MGR_RATING': MGR_RATING
+            };
+            if (CURRENTROLL_MGRRATING != '' && CURRENTROLL_MGREXP != '' && QUALITYWORK_MGRRATING != '' && QUALITYWORK_MGREXP != '' && ORGWORK_MGRRATING != '' && ORGWORK_MGREXP !='' &&
+                INITIATE_MGRRATING != '' && INITIATE_MGREXP != '' && PERSONAL_MGRRATING != '' && PERSONAL_MGREXP != '' && VSKILL_MGRRATING != '' && VSKILL_MGREXP != '' && WSKILL_MGRRATING != '' && WSKILL_MGREXP !='' &&
+                TEAM_MGRRATING != '' && TEAM_MGREXP != '' && CONFIDENTIALITY_MGRRATING != '' && CONFIDENTIALITY_MGREXP != '' && ATTENDANCE_MGRRATING != '' && ATTENDANCE_MGREXP != '' && MGR_RATING !='') {
+
+                $.ajax({
+
+                    type: 'POST',
+                    url: '/Annual/UpdateAppraisal/',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(ObjAppraisal),
+                    dataType: 'json',
+                    success: function (data) {
+                        $("#hdn_Emp_id").val('');
+                        var a = data.SuccessMsg;
+                        var b = data.ErrorMsg;
+                        if (data != null && a != null) {
+                            alert(a);
+                        }
+                        else {
+                            alert(b);
+                        }
+                        ClearText();
+                    },
+                    error: function (data) {
+                        $("#hdn_Emp_id").val('');
+                    }
+                });
+            }
+            else if (CURRENTROLL_MGRRATING == "") {
+                alert('Manager Rating cannot be left blank in PROFICIENCY IN CURRENT ROLE.');
+                $("#txt_CURRENTROLL_MGRRATING").focus();
+            }
+            else if (CURRENTROLL_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in PROFICIENCY IN CURRENT ROLE.');
+                $("#txt_CURRENTROLL_MGREXP").focus();
+            }
+            else if (QUALITYWORK_MGRRATING == "") {
+                alert('Manager Rating cannot be left blank in QUALITY OF WORK.');
+                $("#txt_QUALITYWORK_MGRRATING").focus();
+            }
+            else if (QUALITYWORK_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in QUALITY OF WORK.');
+                $("#txt_QUALITYWORK_MGREXP").focus();
+            }
+            else if (ORGWORK_MGRRATING == "") {
+                alert('Manager Rating cannot be left blank in Planning and Organization OF WORK.');
+                $("#txt_ORGWORK_MGRRATING").focus();
+            }
+            else if (ORGWORK_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in Planning and Organization OF WORK.');
+                $("#txt_ORGWORK_MGREXP").focus();
+            }
+            else if (INITIATE_MGRRATING == "") {
+                alert('Manager Rating cannot be left blank in INITIATE.');
+                $("#txt_INITIATE_MGRRATING").focus();
+            }
+            else if (INITIATE_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in INITIATE.');
+                $("#txt_INITIATE_MGREXP").focus();
+            }
+            else if (PERSONAL_MGRRATING == "") {
+                alert('Manager Rating cannot be left blank in INTERPERSONAL RELATIONS.');
+                $("#txt_PERSONAL_MGRRATING").focus();
+
+            }
+            else if (PERSONAL_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in INTERPERSONAL RELATIONS.');
+                $("#txt_PERSONAL_MGREXP").focus();
+            }
+            else if (VSKILL_MGRRATING == "") {
+                alert('Manager Rating cannot be left blank in VERBAL & LISTENING SKILLS.');
+                $("#txt_VSKILL_MGRRATING").focus();
+            }
+            else if (VSKILL_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in VERBAL & LISTENING SKILLS.');
+                $("#txt_VSKILL_MGREXP").focus();
+            }
+            else if (WSKILL_MGRRATING == "") {
+                alert('Manager Rating cannot be left blank in WRITING SKILLS.');
+                $("#txt_WSKILL_MGRRATING").focus();
+            }
+            else if (WSKILL_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in WRITING SKILLS.');
+                $("#txt_WSKILL_MGRRATING").focus();
+            }
+            else if (TEAM_MGRRATING == "") {
+                alert('Manager Rating cannot be left blank in TEAM PARTICIPATION.');
+                $("#txt_TEAM_MGRRATING").focus();
+            }
+            else if (TEAM_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in TEAM PARTICIPATION.');
+                $("#txt_TEAM_MGREXP").focus();
+            }
+            else if (CONFIDENTIALITY_MGRRATING == '') {
+                alert('Manager Rating cannot be left blank in DISCRETION AND CONFIDENTIALITY.');
+                $("#txt_CONFIDENTIALITY_MGRRATING").focus();
+            }
+            else if (CONFIDENTIALITY_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in DISCRETION AND CONFIDENTIALITY.');
+                $("#txt_CONFIDENTIALITY_MGREXP").focus();
+            }
+            else if (ATTENDANCE_MGRRATING == "") {
+                alert('Manager Rating cannot be left blank in PUNCTUALITY AND ATTENDANCE.');
+                $("#txt_ATTENDANCE_MGRRATING").focus();
+            }
+            else if (ATTENDANCE_MGREXP == "") {
+                alert('Manager Explanation cannot be left blank in PUNCTUALITY AND ATTENDANCE.');
+                $("#txt_ATTENDANCE_MGREXP").focus();
+            }
+            else if (MGR_RATING =="") {
+                alert('Manager rating cannot be left blank in MGR Rating.');
+                $("#txt_SECTION_SECOND_TOTALRATING").focus();
+            }
+        });
+        $("#btn_EditNext").on('click', function (e) {            
+            e.preventDefault();
+            $('#edittab a[href="#editSection2"]').tab('show');
+        });
+        $("#btn_EditReset").on('click', function () {
+            $("#txt_editCURRENTROLL_MGRRATING").val("");
+            $("#txt_editCURRENTROLL_MGREXP").val("");
+            $("#txt_editQUALITYWORK_MGRRATING").val("");
+            $("#txt_editQUALITYWORK_MGREXP").val("");
+            $("#txt_editORGWORK_MGRRATING").val("");
+            $("#txt_editORGWORK_MGREXP").val("");
+            $("#txt_editINITIATE_MGRRATING").val("");
+            $("#txt_editINITIATE_MGREXP").val("");
+            $("#txt_editPERSONAL_MGRRATING").val("");
+            $("#txt_editPERSONAL_MGREXP").val("");
+            $("#txt_editVSKILL_MGRRATING").val("");
+            $("#txt_editVSKILL_MGREXP").val("");
+            $("#txt_editWSKILL_MGRRATING").val("");
+            $("#txt_editWSKILL_MGREXP").val("");
+            $("#txt_editTEAM_MGRRATING").val("");
+            $("#txt_editTEAM_MGREXP").val("");
+            $("#txt_editCONFIDENTIALITY_MGRRATING").val("");
+            $("#txt_editCONFIDENTIALITY_MGREXP").val("");
+            $("#txt_editATTENDANCE_MGRRATING").val("");
+            $("#txt_editATTENDANCE_MGREXP").val("");
+        });
+        WC_CURRENTROLL_MGREXP();
+        WC_QUALITYWORK_MGREXP();
+        WC_ORGWORK_MGREXP();
+        WC_INITIATE_MGREXP();
+        WC_PERSONAL_MGREXP();
+        WC_VSKILL_MGREXP();
+        WC_WSKILL_MGREXP();
+        WC_TEAM_MGREXP();
+        WC_CONFIDENTIALITY_MGREXP();
+        WC_ATTENDANCE_MGREXP();
+    });
+    function WC_CURRENTROLL_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editCURRENTROLL_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_CURRENTROLL_MGREXP').text(textlen);
+        });
+    }
+    function WC_QUALITYWORK_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editQUALITYWORK_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_QUALITYWORK_MGREXP').text(textlen);
+        });
+    }
+    function WC_ORGWORK_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editORGWORK_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_ORGWORK_MGREXP').text(textlen);
+        });
+    }    
+    function WC_INITIATE_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editINITIATE_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_INITIATE_MGREXP').text(textlen);
+        });
+    }
+    function WC_PERSONAL_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editPERSONAL_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_PERSONAL_MGREXP').text(textlen);
+        });
+    }
+    function WC_VSKILL_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editVSKILL_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_VSKILL_MGREXP').text(textlen);
+        });
+    }
+    function WC_WSKILL_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editWSKILL_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_WSKILL_MGREXP').text(textlen);
+        });
+    }
+    function WC_TEAM_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editTEAM_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_TEAM_MGREXP').text(textlen);
+        });
+    }
+    function WC_CONFIDENTIALITY_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editCONFIDENTIALITY_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_CONFIDENTIALITY_MGREXP').text(textlen);
+        });
+    }
+    function WC_ATTENDANCE_MGREXP() {
+        var maxLength = 500;
+        $('#txt_editATTENDANCE_MGREXP').keyup(function () {
+            var textlen = maxLength - $(this).val().length;
+            $('#dc_ATTENDANCE_MGREXP').text(textlen);
+        });
+    }
+
+    
+
+    function ClearText() {
+        $("#txt_editCURRENTROLL_MGRRATING").val("");
+        $("#txt_editCURRENTROLL_MGREXP").val("");
+        $("#txt_editQUALITYWORK_MGRRATING").val("");
+        $("#txt_editQUALITYWORK_MGREXP").val("");
+        $("#txt_editORGWORK_MGRRATING").val("");
+        $("#txt_editORGWORK_MGREXP").val("");
+        $("#txt_editINITIATE_MGRRATING").val("");
+        $("#txt_editINITIATE_MGREXP").val("");
+        $("#txt_editPERSONAL_MGRRATING").val("");
+        $("#txt_editPERSONAL_MGREXP").val("");
+        $("#txt_editVSKILL_MGRRATING").val("");
+        $("#txt_editVSKILL_MGREXP").val("");
+        $("#txt_editWSKILL_MGRRATING").val("");
+        $("#txt_editWSKILL_MGREXP").val("");
+        $("#txt_editTEAM_MGRRATING").val("");
+        $("#txt_editTEAM_MGREXP").val("");
+        $("#txt_editCONFIDENTIALITY_MGRRATING").val("");
+        $("#txt_editCONFIDENTIALITY_MGREXP").val("");
+        $("#txt_editATTENDANCE_MGRRATING").val("");
+        $("#txt_editATTENDANCE_MGREXP").val("");
+        $("#txt_editSECTION_SECOND_TOTALRATING").val("");
+
+        $("#txt_editSECTION_ONE_OVERALL_TOTALRATING").val("");
+        $("#txt_editSECTION_2_OVERALL_TOTALRATING").val("");
+        $("#txt_editSUBTOTAL").val("");
+        $("#txt_editOVERALL_RATING").val("");
+    }
+    function CancelOnClick() {
+        window.location.href = "/Home/Dashboard";
+    }
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    function AvgCalculate() {
+        var total = 0;
+        var subtotal = 0;
+        var overallRating = 0;
+        var Avg = 0;
+        var FINAL_RATING = parseFloat($("#txt_editFinalRatingTemp").val());
+        var CURRENTROLL_MGRRATING = parseInt($("#txt_editCURRENTROLL_MGRRATING").val());
+        var QUALITYWORK_MGRRATING = parseInt($("#txt_editQUALITYWORK_MGRRATING").val());
+        var ORGWORK_MGRRATING = parseInt($("#txt_editORGWORK_MGRRATING").val());
+        var INITIATE_MGRRATING = parseInt($("#txt_editINITIATE_MGRRATING").val());
+        var PERSONAL_MGRRATING = parseInt($("#txt_editPERSONAL_MGRRATING").val());
+        var VSKILL_MGRRATING = parseInt($("#txt_editVSKILL_MGRRATING").val());
+        var WSKILL_MGRRATING = parseInt($("#txt_editWSKILL_MGRRATING").val());
+        var TEAM_MGRRATING = parseInt($("#txt_editTEAM_MGRRATING").val());
+        var CONFIDENTIALITY_MGRRATING = parseInt($("#txt_editCONFIDENTIALITY_MGRRATING").val());
+        var ATTENDANCE_MGRRATING = parseInt($("#txt_editATTENDANCE_MGRRATING").val());
+        total = CURRENTROLL_MGRRATING + QUALITYWORK_MGRRATING + ORGWORK_MGRRATING + INITIATE_MGRRATING + PERSONAL_MGRRATING + VSKILL_MGRRATING + WSKILL_MGRRATING + TEAM_MGRRATING + CONFIDENTIALITY_MGRRATING + ATTENDANCE_MGRRATING;
+        if ($.isNumeric(total)) {
+            Avg = parseFloat(total / 10);
+        }
+        subtotal = parseFloat((FINAL_RATING + Avg));
+        overallRating = parseFloat(subtotal / 2);
+        $("#txt_editFinalRating").val(overallRating);
+        $("#txt_editSECTION_SECOND_TOTALRATING").val(Avg);
+        $("#txt_editSECTION_ONE_OVERALL_TOTALRATING").val(FINAL_RATING);
+        $("#txt_editSECTION_2_OVERALL_TOTALRATING").val(Avg);
+        $("#txt_editSUBTOTAL").val(subtotal);
+        $("#txt_editOVERALL_RATING").val(overallRating);
+    }
+
+</script>
+<div class="row">
+    <div class="col-sm-6">
+        <h4 class="page-title">Appraisal History</h4>
+    </div>
+    <div class="col-sm-4 text-right m-b-30">
+
+    </div>
+    <div class="col-sm-2 text-right m-b-30">
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <table class="table table-striped table-responsive custom-table m-b-0" id="datatableList" style="font-size:11px;">
+            <thead>
+                <tr>
+                    <th>Emp ID</th>
+                    <th>Name</th>
+                    <th>Manager</th>
+                    <th>Position Title</th>
+                    <th>Department</th>
+                    <th>Goal Quarter</th>
+                    <th>First Section Rating</th>
+                    <th>Second Section Rating</th>
+                    <th>Final Rating</th>
+                    <th>Emp Overall Rating</th>
+                    <th>Year</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>                
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EMP_ID)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.NAME)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.MANAGER_NAME)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DESIGNATION)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DEPARTMENT)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.GOAL_QUARTER)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.strSECTION_ONE_OVERALL_TOTALRATING)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.strSECTION_2_OVERALL_TOTALRATING_MGR)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.strOVERALL_RATING_MGR)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.strOVERALL_RATING)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Year)
+                        </td>                         
+                        <td class="text-center">
+                            @if (item.EMP_ID == Convert.ToInt32(Session["EMP_ID"].ToString()))
+                            {                            
+                            <a href="javascript:void(0);" title="View" class="btn_view" data_id="@item.EMP_ID"><i class="fa fa-eye m-r-5"></i> </a>
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" title="Edit" class="btn_edit" data_id="@item.EMP_ID"><i class="fa fa-pencil m-r-5"></i>  </a>
+                                <a href="javascript:void(0);" title="View" class="btn_view" data_id="@item.EMP_ID"><i class="fa fa-eye m-r-5"></i> </a>
+                            }
+                        </td>                        
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<div id="view_appraisal" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg" style="width:94.6%">
+            <div class="modal-header">
+                <h4 class="modal-title">View Appraisal</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="panel">
+                        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">Annual Appraisal Form</h4></div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Name:<span class="required">*</span></label>
+                                        <input type="text" class="form-control" id="txt_EmpName" readonly="readonly" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Manager Name:<span class="required">*</span></label>
+                                        <input type="text" class="form-control" id="txt_ManagerName" readonly="readonly" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Position Title:</label>
+                                        <input type="text" class="form-control" id="txt_PositionTitle" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Date of Review:</label>
+                                        <div class="cal-icon">
+                                            <input class="form-control" placeholder="dd-mmm-yyyy" type="text" id="txt_ReviewDate" readonly="readonly" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Department:</label>
+                                        <input type="text" class="form-control" id="txt_Department" readonly="readonly" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="form-group">
+                                        <label>Goal Quarter:</label>
+                                        <input type="text" class="form-control" id="txt_KeyResponsibility" readonly="readonly" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="form-group">
+                                        <label>Final Rating:</label>
+                                        <input type="text" class="form-control" id="txt_FinalRating" readonly="readonly" />
+                                    </div>
+                                </div>                                
+                            </div>                            
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="tab" role="tabpanel">
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#Section1" aria-controls="home" role="tab" data-toggle="tab">Performance Factors</a></li>
+                            <li role="presentation"><a href="#Section2" aria-controls="profile" role="tab" data-toggle="tab">Overall Performance Rating</a></li>
+                            @*<li role="presentation"><a href="#Section3" aria-controls="messages" role="tab" data-toggle="tab">Final Submit</a></li>*@
+                        </ul>
+                        <!-- Tab panes -->
+                        <div class="tab-content tabs">
+                            <div role="tabpanel" class="tab-pane fade in active" id="Section1">
+                                <div class="panel">
+                                    <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                                    <div class="panel-body">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:10px">1</th>
+                                                    <th style="width:550px; height:40px;"><span class="badge badge-primary"><mark>PERFORMANCE FACTORS</mark> </span> </th>
+                                                    <th scope="col" style="text-align:center"><span class="badge badge-primary"><mark>Self Rating</mark></span></th>
+                                                    <th scope="col" style="text-align:center"><span class="badge badge-primary"><mark>Explanation</mark></span></th>
+                                                    <th scope="col" style="text-align:center"><span class="badge badge-primary"><mark>Manager Rating</mark></span></th>
+                                                    <th scope="col" style="text-align:center"><span class="badge badge-primary"><mark>Explanation</mark></span></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                        <table class="table table-bordered">
+                                            <tbody>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>PROFICIENCY IN CURRENT ROLE:</mark></span> <br />
+                                                        <ul>
+                                                            <li>Demonstrates knowledge of position and/or team role.</li>
+                                                            <li>Understands how position and responsibilities fit within the organization and contribute to department results.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_CURRENTROLL_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_CURRENTROLL_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea></td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_CURRENTROLL_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_CURRENTROLL_MGREXP" style="height:40px;padding:0px;" readonly="readonly"></textarea></td>
+
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>QUALITY OF WORK:</mark></span><br />
+                                                        <ul>
+                                                            <li>Maintains standards consistently. Is consistent in achieving accuracy, neatness,thoroughness, overall effectiveness and attentiveness to detail.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_QUALITYWORK_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_QUALITYWORK_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_QUALITYWORK_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_QUALITYWORK_MGREXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>PLANNING AND ORGANIZATION OF WORK:</mark></span><br />
+                                                        <ul>
+                                                            <li>Establishes priorities. Anticipates and prepares for changing workload or working conditions.</li>
+                                                            <li>Coordinates and uses available resources to get work done to assure important deadlines are met.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_ORGWORK_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_ORGWORK_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_ORGWORK_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_ORGWORK_MGREXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>INITIATIVE:</mark></span><br />
+                                                        <ul>
+                                                            <li>Shows ability to work independently in context of the job.</li>
+                                                            <li>Demonstrates willingness to assume additional responsibility.</li>
+                                                            <li>Suggests ways to enhance work processes or operations.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_INITIATE_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_INITIATE_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_INITIATE_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_INITIATE_MGREXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>INTERPERSONAL RELATIONS:</mark></span><br />
+                                                        <ul>
+                                                            <li>Maintains positive working relationships.</li>
+                                                            <li>Is flexible and willing to cooperate with others.</li>
+                                                            <li>Demonstrates ability to listen and understand.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_PERSONAL_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_PERSONAL_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_PERSONAL_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_PERSONAL_MGREXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>VERBAL & LISTENING SKILLS:</mark></span><br />
+                                                        <ul>
+                                                            <li>Expresses self well verbally, using language appropriate for the intended audience.</li>
+                                                            <li>Listens actively and acknowledges understanding.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_VSKILL_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_VSKILL_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_VSKILL_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_VSKILL_MGREXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>WRITING SKILLS:</mark></span><br />
+                                                        <ul>
+                                                            <li>Presents ideas clearly in written format, using appropriate language, grammar and style.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_WSKILL_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_WSKILL_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_WSKILL_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_WSKILL_MGREXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>TEAM PARTICIPATION:</mark></span><br />
+                                                        <ul>
+                                                            <li>Proactively builds partnerships and seeks involvement with other constituencies/employees.</li>
+                                                            <li>Works cooperatively and effectively with team members.</li>
+                                                            <li>Demonstrates clear understanding of team goals and contributes to their achievement.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_TEAM_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_TEAM_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_TEAM_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_TEAM_MGREXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>DISCRETION AND CONFIDENTIALITY:</mark></span><br />
+                                                        <ul>
+                                                            <li>Knows what FIT information or materials are sensitive and why.</li>
+                                                            <li>Demonstrates ability to maintain sensitive information in confidence, sharing only with appropriate contacts.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_CONFIDENTIALITY_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_CONFIDENTIALITY_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_CONFIDENTIALITY_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_CONFIDENTIALITY_MGREXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>PUNCTUALITY AND ATTENDANCE:</mark></span><br />
+                                                        <ul>
+                                                            <li>Arrives and is ready to begin working at scheduled time.</li>
+                                                            <li>Maintains acceptable record of attendance.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_ATTENDANCE_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_ATTENDANCE_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_ATTENDANCE_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_ATTENDANCE_MGREXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label><mark>Section II Total Rating:</mark><span class="required">*</span></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="form-group">
+                                                    <label><mark>Emp Rating:</mark></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" id="txt_EmpRating" style="margin-left:-10px;" onkeypress="return isNumberKey(event);" disabled="disabled"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label><mark>Manager Rating:</mark><span class="required">*</span></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" id="txt_SECTION_SECOND_TOTALRATING" style="margin-left:-10px;" onkeypress="return isNumberKey(event);" disabled="disabled"/>
+                                                </div>
+                                            </div>                                            
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div>
+                            <div role="tabpanel" class="tab-pane fade" id="Section2">
+                                <div class="panel">
+                                    <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                                    <div class="panel-body">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th rowspan="2" style="width:37px">2</th>
+                                                    <th colspan="6" rowspan="2"></th>
+                                                    <th style="width:461px; text-align:center"><span class="badge badge-primary"><mark>Total Rating</mark> </span></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                        <table class="table table-bordered">
+                                            <tbody>
+                                                <tr>
+                                                    <td></td>
+                                                    <td><span class="badge badge-primary"><mark>Section I: Key Responsibilities</mark></span></td>
+                                                    <td><input type="text" class="form-control" id="txt_SECTION_ONE_OVERALL_TOTALRATING" onkeypress="return isNumberKey(event);" readonly="readonly"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td><span class="badge badge-primary"><mark>Section II: Performance Factors</mark></span></td>
+                                                    <td><input type="text" class="form-control" id="txt_SECTION_2_OVERALL_TOTALRATING" onkeypress="return isNumberKey(event);" readonly="readonly" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td><span class="badge badge-primary"><mark>SUBTOTAL:</mark></span></td>
+                                                    <td><input type="text" class="form-control" id="txt_SUBTOTAL" onkeypress="return isNumberKey(event);" readonly="readonly"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td><span class="badge badge-primary"><mark>OVERALL RATING:</mark></span></td>
+                                                    <td><input type="text" class="form-control" id="txt_OVERALL_RATING" onkeypress="return isNumberKey(event);" readonly="readonly"/></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>                                    
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group form-group-toggle" data-toggle="buttons">
+                                        <button type="button" class="btn btn-primary" id="btn_Submit" disabled="disabled">Submit</button>
+                                        <button type="button" class="btn btn-primary" id="btnReset" onclick="ClearText()" disabled="disabled">Reset</button>
+                                        <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+                                        @foreach (var item in Model)
+                                        {
+                                            <input type="hidden" id="hdn_Emp_id" value="@item.EMP_ID" />
+                                        }
+                                    </div>
+                                </div>
+                            </div>                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="edit_appraisal" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg" style="width:94.6%">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Appraisal</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="panel">
+                        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">Annual Appraisal Form</h4></div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Name:<span class="required">*</span></label>
+                                        <input type="text" class="form-control" id="txt_editEmpName" readonly="readonly" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Manager Name:<span class="required">*</span></label>
+                                        <input type="text" class="form-control" id="txt_editManagerName" readonly="readonly" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Position Title:</label>
+                                        <input type="text" class="form-control" id="txt_editPositionTitle" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Date of Review:</label>
+                                        <div class="cal-icon">
+                                            <input class="form-control" placeholder="dd-mmm-yyyy" type="text" id="txt_editReviewDate" readonly="readonly" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Department:</label>
+                                        <input type="text" class="form-control" id="txt_editDepartment" readonly="readonly" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="form-group">
+                                        <label>Goal Quarter:</label>
+                                        <input type="text" class="form-control" id="txt_editKeyResponsibility" readonly="readonly" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="form-group">
+                                        <label>Final Rating:</label>
+                                        <input type="text" class="form-control" id="txt_editFinalRating" readonly="readonly" />                                        
+                                        <input type="hidden" id="txt_editFinalRatingTemp"/>
+                                    </div>
+                                </div>
+                                
+                            </div>                            
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="tab" role="tabpanel">
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist" id="edittab">
+                            <li role="presentation" class="active"><a href="#editSection1" aria-controls="home" role="tab" data-toggle="tab">Performance Factors</a></li>
+                            <li role="presentation"><a href="#editSection2" aria-controls="profile" role="tab" data-toggle="tab">Overall Performance Rating</a></li>
+                            @*<li role="presentation"><a href="#editSection3" aria-controls="messages" role="tab" data-toggle="tab">Final Submit</a></li>*@
+                        </ul>
+                        <!-- Tab panes -->
+                        <div class="tab-content tabs">
+                            <div role="tabpanel" class="tab-pane fade in active" id="editSection1">
+                                <div class="panel">
+                                    <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                                    <div class="panel-body">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:10px">1</th>
+                                                    <th style="width:550px; height:40px;"><span class="badge badge-primary"><mark>PERFORMANCE FACTORS</mark> </span> </th>
+                                                    <th scope="col" style="text-align:center"><span class="badge badge-primary"><mark>Self Rating</mark></span></th>
+                                                    <th scope="col" style="text-align:center"><span class="badge badge-primary"><mark>Explanation</mark></span></th>
+                                                    <th scope="col" style="text-align:center"><span class="badge badge-primary"><mark>Manager Rating</mark></span></th>
+                                                    <th scope="col" style="text-align:center"><span class="badge badge-primary"><mark>Explanation</mark></span></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                        <table class="table table-bordered">
+                                            <tbody>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>PROFICIENCY IN CURRENT ROLE:</mark></span> <br />
+                                                        <ul>
+                                                            <li>Demonstrates knowledge of position and/or team role.</li>
+                                                            <li>Understands how position and responsibilities fit within the organization and contribute to department results.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editCURRENTROLL_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editCURRENTROLL_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea></td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editCURRENTROLL_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" maxlength="500" id="txt_editCURRENTROLL_MGREXP" style="height:40px;padding:0px;"></textarea><span id="dc_CURRENTROLL_MGREXP">500</span>&nbsp; Characters Left</td>
+
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>QUALITY OF WORK:</mark></span><br />
+                                                        <ul>
+                                                            <li>Maintains standards consistently. Is consistent in achieving accuracy, neatness,thoroughness, overall effectiveness and attentiveness to detail.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editQUALITYWORK_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editQUALITYWORK_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editQUALITYWORK_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" name="txtScript" maxlength="500" id="txt_editQUALITYWORK_MGREXP" style="height:40px; padding:0px;"></textarea><span id="dc_QUALITYWORK_MGREXP">500</span>&nbsp; Characters Left</td>
+
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>PLANNING AND ORGANIZATION OF WORK:</mark></span><br />
+                                                        <ul>
+                                                            <li>Establishes priorities. Anticipates and prepares for changing workload or working conditions.</li>
+                                                            <li>Coordinates and uses available resources to get work done to assure important deadlines are met.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editORGWORK_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editORGWORK_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editORGWORK_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" name="txtScript" maxlength="500" id="txt_editORGWORK_MGREXP" style="height:40px; padding:0px;"></textarea><span id="dc_ORGWORK_MGREXP">500</span>&nbsp; Characters Left</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>INITIATIVE:</mark></span><br />
+                                                        <ul>
+                                                            <li>Shows ability to work independently in context of the job.</li>
+                                                            <li>Demonstrates willingness to assume additional responsibility.</li>
+                                                            <li>Suggests ways to enhance work processes or operations.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editINITIATE_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editINITIATE_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editINITIATE_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" name="txtScript" maxlength="500" id="txt_editINITIATE_MGREXP" style="height:40px; padding:0px;"></textarea><span id="dc_INITIATE_MGREXP">500</span>&nbsp; Characters Left</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>INTERPERSONAL RELATIONS:</mark></span><br />
+                                                        <ul>
+                                                            <li>Maintains positive working relationships.</li>
+                                                            <li>Is flexible and willing to cooperate with others.</li>
+                                                            <li>Demonstrates ability to listen and understand.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editPERSONAL_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editPERSONAL_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editPERSONAL_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" name="txtScript" maxlength="500" id="txt_editPERSONAL_MGREXP" style="height:40px; padding:0px;"></textarea><span id="dc_PERSONAL_MGREXP">500</span>&nbsp; Characters Left</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>VERBAL & LISTENING SKILLS:</mark></span><br />
+                                                        <ul>
+                                                            <li>Expresses self well verbally, using language appropriate for the intended audience.</li>
+                                                            <li>Listens actively and acknowledges understanding.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editVSKILL_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editVSKILL_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editVSKILL_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" name="txtScript" maxlength="500" id="txt_editVSKILL_MGREXP" style="height:40px; padding:0px;"></textarea><span id="dc_VSKILL_MGREXP">500</span>&nbsp; Characters Left</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>WRITING SKILLS:</mark></span><br />
+                                                        <ul>
+                                                            <li>Presents ideas clearly in written format, using appropriate language, grammar and style.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editWSKILL_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editWSKILL_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editWSKILL_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" name="txtScript" maxlength="500" id="txt_editWSKILL_MGREXP" style="height:40px; padding:0px;"></textarea><span id="dc_WSKILL_MGREXP">500</span>&nbsp; Characters Left</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>TEAM PARTICIPATION:</mark></span><br />
+                                                        <ul>
+                                                            <li>Proactively builds partnerships and seeks involvement with other constituencies/employees.</li>
+                                                            <li>Works cooperatively and effectively with team members.</li>
+                                                            <li>Demonstrates clear understanding of team goals and contributes to their achievement.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editTEAM_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editTEAM_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editTEAM_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" name="txtScript" maxlength="500" id="txt_editTEAM_MGREXP" style="height:40px; padding:0px;"></textarea><span id="dc_TEAM_MGREXP">500</span>&nbsp; Characters Left</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>DISCRETION AND CONFIDENTIALITY:</mark></span><br />
+                                                        <ul>
+                                                            <li>Knows what FIT information or materials are sensitive and why.</li>
+                                                            <li>Demonstrates ability to maintain sensitive information in confidence, sharing only with appropriate contacts.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editCONFIDENTIALITY_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editCONFIDENTIALITY_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editCONFIDENTIALITY_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" name="txtScript" maxlength="500" id="txt_editCONFIDENTIALITY_MGREXP" style="height:40px; padding:0px;"></textarea><span id="dc_CONFIDENTIALITY_MGREXP">500</span>&nbsp; Characters Left</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="height:40px;" class="d-flex flex-row bg-secondary"></td>
+                                                    <td>
+                                                        <span class="badge badge-primary"><mark>PUNCTUALITY AND ATTENDANCE:</mark></span><br />
+                                                        <ul>
+                                                            <li>Arrives and is ready to begin working at scheduled time.</li>
+                                                            <li>Maintains acceptable record of attendance.</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editATTENDANCE_SELFRATING" onkeypress="return isNumberKey(event);" maxlength="1" readonly="readonly" /></td>
+                                                    <td style="width:170px"><textarea class="form-control" id="txt_editATTENDANCE_SELFEXP" style="height:40px; padding:0px;" readonly="readonly"></textarea> </td>
+                                                    <td style="width:51px"><input type="text" class="form-control" id="txt_editATTENDANCE_MGRRATING" onkeypress="return isNumberKey(event);" maxlength="1"/></td>
+                                                    <td style="width:170px"><textarea class="form-control" name="txtScript" maxlength="500" id="txt_editATTENDANCE_MGREXP" style="height:40px; padding:0px;"></textarea><span id="dc_ATTENDANCE_MGREXP">500</span>&nbsp; Characters Left</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label><mark>Section II Total Rating:</mark><span class="required">*</span></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="form-group">
+                                                    <label><mark>Emp Rating:</mark></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" id="txt_editEmpRating" style="margin-left:-10px;" onkeypress="return isNumberKey(event);" disabled="disabled"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                    <label><mark>Manager Rating:</mark><span class="required">*</span></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control" id="txt_editSECTION_SECOND_TOTALRATING" style="margin-left:-10px;" onkeypress="return isNumberKey(event);" onclick="AvgCalculate();" />                                                    
+                                                </div>
+                                            </div>                                            
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <a class="btn btn-lg" href="#" id="btn_EditNext"><span>Next</span></a>&nbsp;&nbsp;
+                                            <a class="btn btn-lg" href="#" id="btn_EditReset"><span>Reset</span></a>&nbsp;&nbsp;
+                                            <a class="btn btn-lg" href="#" onclick="CancelOnClick()"><span>Cancel</span></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div role="tabpanel" class="tab-pane fade" id="editSection2">
+                                <div class="panel">
+                                    <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                                    <div class="panel-body">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th rowspan="2" style="width:37px">2</th>
+                                                    <th colspan="6" rowspan="2"></th>
+                                                    <th style="width:461px; text-align:center"><span class="badge badge-primary"><mark>Total Rating</mark> </span></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                        <table class="table table-bordered">
+                                            <tbody>
+                                                <tr>
+                                                    <td></td>
+                                                    <td><span class="badge badge-primary"><mark>Section I: Key Responsibilities</mark></span></td>
+                                                    <td><input type="text" class="form-control" id="txt_editSECTION_ONE_OVERALL_TOTALRATING" onkeypress="return isNumberKey(event);" readonly="readonly"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td><span class="badge badge-primary"><mark>Section II: Performance Factors</mark></span></td>
+                                                    <td><input type="text" class="form-control" id="txt_editSECTION_2_OVERALL_TOTALRATING" onkeypress="return isNumberKey(event);" readonly="readonly"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td><span class="badge badge-primary"><mark>SUBTOTAL:</mark></span></td>
+                                                    <td><input type="text" class="form-control" id="txt_editSUBTOTAL" onkeypress="return isNumberKey(event);" readonly="readonly"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td><span class="badge badge-primary"><mark>OVERALL RATING:</mark></span></td>
+                                                    <td><input type="text" class="form-control" id="txt_editOVERALL_RATING" onkeypress="return isNumberKey(event);" readonly="readonly"/></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <a class="btn btn-lg" href="#" id="btn_Update"><span>Update</span></a>&nbsp;&nbsp;
+                                            <a class="btn btn-lg" href="#" id="btnReset"><span>Reset</span></a>&nbsp;&nbsp;
+                                            <a class="btn btn-lg" href="#" onclick="CancelOnClick()"><span>Cancel</span></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                                                        
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style type="text/css">
+    a:hover, a:focus {
+        outline: none;
+        text-decoration: none;
+    }
+
+    .tab .nav-tabs {
+        border: none;
+    }
+
+        .tab .nav-tabs li a {
+            padding: 12px 15px;
+            margin-right: 10px;
+            font-size: 17px;
+            font-weight: 800;
+            color: #9b9b9c;
+            text-transform: uppercase;
+            border: 2px solid #e5e7e9;
+            border-radius: 0;
+            overflow: hidden;
+            z-index: 1;
+            position: relative;
+        }
+
+            .tab .nav-tabs li a:hover,
+            .tab .nav-tabs li a:focus,
+            .tab .nav-tabs li.active a {
+                background: transparent;
+                border: 2px solid #3a506b;
+                color: #fff;
+            }
+
+            .tab .nav-tabs li a:before {
+                content: "";
+                width: 500%;
+                height: 0;
+                background: #ff9f1c;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                opacity: 0;
+                z-index: -1;
+                transform: translateX(-50%) translateY(-50%) rotate(45deg);
+                transition: all 0.3s ease-in-out 0s;
+            }
+
+            .tab .nav-tabs li a:hover:before,
+            .tab .nav-tabs li.active a:before {
+                height: 170%;
+                opacity: 1;
+            }
+
+    .tab .tab-content {
+        padding: 20px 30px;
+        margin-top: 10px;
+        font-size: 15px;
+        color: #fff;
+        line-height: 27px;
+        letter-spacing: 1px;
+        background: #3a506b;
+        position: relative;
+    }
+
+        .tab .tab-content:before {
+            content: "";
+            border-top: 30px solid #fff;
+            border-bottom: 30px solid transparent;
+            border-right: 30px solid transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .tab .tab-content:after {
+            content: "";
+            border-bottom: 30px solid #fff;
+            border-top: 30px solid transparent;
+            border-left: 30px solid transparent;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+</style>
+<style type="text/css">
+    .btn{
+    color: #fff;
+    background-color: transparent;
+    font-family: 'Cairo', sans-serif;
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: capitalize;
+    border: 2px solid #3c40c6;
+    border-radius: 15px 0;
+    padding: 5px 15px;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease 0s;
+}
+.btn:hover{
+    color: #fff;
+    background-color: #fff;
+}
+.btn:before,
+.btn:after{
+    content: '';
+    background-color: #3c40c6;
+    height: 100%;
+    width: 100%;
+    border-radius: 10px 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    transition: all 0.3s ease;
+}
+.btn:hover:before{ transform: scale(0); }
+.btn:after{
+    height: 79%;
+    width: 115%;
+    border-radius: 20px;
+    transform: translateX(-50%) translateY(-50%) scale(0);
+    left: 50%;
+    top: 50%;
+}
+.btn:hover:after{ transform:translateX(-50%) translateY(-50%) scale(1); }
+.btn.green{ border-color: #10ac84; }
+.btn.green:before,
+.btn.green:after{
+    background-color: #10ac84;
+}
+.btn.orange{ border-color: #ff7b00; }
+.btn.orange:before,
+.btn.orange:after{
+    background-color: #ff7b00;
+}
+.btn.pink{ border-color: #f368e0; }
+.btn.pink:before,
+.btn.pink:after{
+    background-color: #f368e0;
+}
+</style>
+

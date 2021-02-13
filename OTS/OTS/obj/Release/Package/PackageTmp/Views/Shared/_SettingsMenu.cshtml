@@ -1,0 +1,15 @@
+﻿
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-inner slimscroll">
+        <div class="sidebar-menu">
+            <ul class="partialmenu">
+                <li>
+                    <a href="~/home/dashboard"><i class="fa fa-home"></i> Back to Home</a>
+                </li>
+                <li class="menu-title">Settings</li>
+                @Html.Raw(HttpUtility.HtmlDecode(Session["SettingMenus"].ToString()))
+            </ul>
+        </div>
+    </div>
+</div>
+

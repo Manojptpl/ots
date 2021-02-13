@@ -1,0 +1,636 @@
+﻿<html>
+<head>
+    <link rel="stylesheet" href="~/assets/css/jquery.rateyo.min.css" />
+
+    <script type="text/javascript" src="~/assets/js/radialIndicator.js"></script>
+    <script type="text/javascript" src="~/assets/js/radialIndicator.min.js"></script>
+
+    <script type="text/javascript" src="~/assets/js/jquery.rateyo.min.js"></script>
+
+    <style type="text/css">
+        .output {
+            position: absolute;
+            bottom: 14px;
+            left: 148px;
+            text-align: center;
+            width: 100%;
+            font-size: 13px;
+            font-family: 'Advent Pro', sans-serif;
+            color: #4c87c6;
+        }
+
+        .inputseekbar {
+            position: absolute;
+            top: 15px;
+        }
+
+        progress, input.inputseekbar {
+            width: 285px;
+        }
+
+            progress[value] {
+                margin-top: 20px;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                border: none;
+                height: 10px;
+                /* For IE10 */
+                /*color: #00bdf8;*/
+            }
+
+                progress[value]::-webkit-progress-value {
+                    background-image: -webkit-linear-gradient(-45deg, transparent 1%, rgba(0, 0, 0, .1) 1%, rgba(0,0, 0, .1) 1%, transparent 66%), -webkit-linear-gradient(top, rgba(255, 255, 255, .25), rgba(0, 0, 0, .25)), -webkit-linear-gradient(left,#f44,#09c);
+                    border-radius: 2px;
+                    background-size: 35px 20px, 100% 100%, 100% 100%;
+                    animation: none;
+                }
+
+                    progress[value]::-webkit-progress-value::after {
+                        content: '';
+                        width: 6px;
+                        height: 6px;
+                        position: absolute;
+                        border-radius: 100%;
+                        right: 7px;
+                        top: 7px;
+                        background-color: white;
+                    }
+
+            /*progress[value]::-moz-progress-bar {
+                background-color: #00bdf8;
+            }*/
+
+            input.inputseekbar[type="range"] {
+                -webkit-appearance: none;
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+                height: 38px;
+                background: none;
+                outline: none !important;
+                border: none;
+                margin: 0;
+                padding: 0;
+            }
+
+                input.inputseekbar[type="range"]:focus {
+                    outline: none;
+                    border-radius: 25px;
+                }
+
+                input.inputseekbar[type="range"]::-ms-track {
+                    border: inherit;
+                    color: transparent; /* don't drawn vertical reference line */
+                    background: transparent;
+                }
+
+                input.inputseekbar[type="range"]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    background-color: #00bdf8;
+                    height: 15px;
+                    width: 15px;
+                    border-radius: 50%;
+                }
+
+
+
+                input.inputseekbar[type="range"]::-ms-thumb {
+                    width: 15px;
+                    height: 15px;
+                    border-radius: 50%;
+                    border: 0;
+                    background: #00bdf8;
+                }
+
+                input.inputseekbar[type="range"]::-ms-fill-lower,
+                input.inputseekbar[type="range"]::-ms-fill-upper {
+                    background: transparent;
+                }
+
+                input.inputseekbar[type="range"]::-ms-tooltip {
+                    display: none;
+                }
+
+        .navbar-inverse.navbar {
+            background-color: rgba(158,158,158,1);
+            color: rgba(255,255,255,.84);
+        }
+
+        .navbar-inverse .navbar-nav > li > a {
+            color: white;
+        }
+
+        .ui-datepicker {
+            width: 180px;
+            font-size: 12px;
+        }
+
+        .ui-datepicker-calendar {
+            display: none;
+        }
+
+        input {
+            max-width: 400px;
+        }
+
+        .required {
+            color: red;
+        }
+    </style>
+
+    <script type="text/javascript">      
+        $(document).ready(function () {
+            $('a[href$="' + "/Create_Goal" + '"]').closest("li").addClass('active');
+            $("input").change(function (e) {
+                var value = e.target.value;
+                $("progress").val(value);
+            });
+            $('#range').on("input", function () {
+                $('.output').val(this.value + "%");
+            }).trigger("change");
+            $("#btn_viewGoal").click(function () {
+                // show Modal
+                $('#IndentlistView').modal('show');
+            })
+            $(function () {
+
+                $(".rateYo").rateYo({
+                    starWidth: "20px"
+                });
+            });
+            $(document).on("click", ".rateYo", function (e) {
+                $(this).rateYo().on("rateyo.change", function (e, data) {
+                    var rating = data.rating;
+                    var finalrating = parseFloat(parseFloat(rating) * 2);
+
+                    //alert(finalrating);
+                    $(this).closest('tr').find('div.indicatorContainer').empty();
+                    $(this).closest('tr').find('div.indicatorContainer').radialIndicator({
+                        barColor: '#4c87c6',
+                        barWidth: 40,
+                        initValue: finalrating,
+                        roundCorner: true,
+                        percentage: false
+
+                    });
+                    $("canvas").css({ "width": "40px", "height": "40px" });
+                });
+            });
+            $(document).on("click", "#btn_next", function () {
+                var title = $("#txttitle").val();
+                var type = $("#ddl_type option:selected").val();
+                var client = $("#ddl_client option:selected").val()
+                var project = $("#ddl_project option:selected").val();
+                var date = $("#txtdate").val();
+                var status = $("#ddl_status option:selected").val();
+                var completion = $("#output_value").val();
+                var description = $("#txt_desc").val();
+                var html = "";
+
+                html += "<tr style='font-style:10px;'>";
+                html += "<td>" + title + "</td>" + "<td>" + type + "</td>" + "<td>" + client + "</td>" + "<td>" + project + "</td>";
+                html += "<td>" + date + "</td>" + "<td>" + status + "</td>" + "<td>" + completion + "</td>";
+                html += "<td>" + description + "</td></tr>";
+                $("#tbltimezone tbody").append(html);
+                alert("Goal Added Sucessfully!");
+                cleardata();
+
+
+            })
+
+            $('#Customer').on('change', function () {
+                var customer_id = $('#Customer').val();
+                $.ajax({
+                    url: '/Goal/GetProjectList',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(
+                        {
+                            'Customer_Id': customer_id
+                        }),
+                    dataType: 'json',
+                    success: function (data) {
+                        var b = data.ErrorMsg;
+                        if (data != null) {
+                            var len = Object.keys(data).length;
+                            $("#ddl_project").html("");
+                            $("#ddl_project").append($('<option></option>').val("0").html("Select"))
+                            //Append each row to dropdown
+                            for (var i = 0; i < len; i++) {
+
+                                $("#ddl_project").append($('<option></option>').val(data[i].Project_id).html(data[i].Project_Name))
+                            }
+                            setTimeout(function () { $('#ddl_project').focus(); }, 1);
+                        }
+                        else {
+                            alertify.alert(b);
+                        }
+                    },
+                    error: function () {
+                        alert("");
+                    }
+                });
+            })
+        });
+        function cleardata() {
+            $("#txttitle").val("");
+            $("#ddl_type").val("");
+            $("#ddl_client").val("");
+            $("#ddl_project").val("");
+            $("#txtdate").val("");
+            $("#ddl_status").val("");
+            $("#txt_desc").val("");
+            $("#output_value").val("");
+        }
+    </script>
+
+</head>
+<body>
+    <div class="row">
+        <div class="col-md-12">
+            <div>
+                <section>
+                    <h3>Performance Evaluation</h3>
+                    <div class="wizard card-box">
+                        <div class="wizard-inner">
+
+                            <div class="connecting-line"></div>
+                            <div class="row">
+                                @*<label class="control-label col-sm-1" id="as">Date:<span class="required">*</span></label>
+                                    <div class="col-sm-2">
+                                        <input type='text' id='txtDate' class="form-control" placeholder="Select Quarter & Year" autocomplete="off" />
+                                    </div>*@
+
+
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li role="presentation" class="active">
+                                        <a href="#step1" data-toggle="tab" aria-controls="step1" role="tab" title="Step 1">
+                                            <label> Personal Competency</label>
+
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#step2" data-toggle="tab" aria-controls="step2" role="tab" title="Step 2">
+                                            <label>Organizational Competency</label>
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#step3" data-toggle="tab" aria-controls="step3" role="tab" title="Step 3">
+                                            <label>My Goals</label>
+                                        </a>
+                                    </li>
+
+                                </ul>
+
+                            </div>
+                        </div>
+                        <form id="example-form" action="#">
+                            <div class="tab-content">
+                                <div class="tab-pane active" role="tabpanel" id="step1">
+                                    <div class="row table-responsive ">
+                                        <div class="col-md-12">
+                                            <table class="table table-striped custom-table m-b-0 " id="tblcountry">
+                                                <thead>
+                                                    <tr style="background-color:#fecc00">
+                                                        <th class="text-left" style="font-weight:bold;background-color: #00bff9;">Personal Competency(10%)</th>
+                                                        <th style="font-weight:bold;background-color: #00bff9;">Rating</th>
+                                                        <th style="font-weight:bold;background-color: #00bff9;">Score</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left" style="width:45%; color:#4c87c6; font-weight:bold">Learning Curve </th>
+
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+
+                                                        </td>
+                                                        <td>
+                                                            <div class="indicatorContainer">
+                                                            </div>
+
+                                                        </td>
+
+
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold">Aptitude</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo" style="width:20px;"> </div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+
+
+                                                    </tr>
+
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold">Communication</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+
+
+
+                                                    </tr>
+
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold">Personal Developement</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+
+
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold">Punctuality & Attendance</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold">Motivation</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                            <br />
+                                            <br />
+                                            <label>Description</label>
+                                            <div>
+                                                <textarea rows="4" cols="94"></textarea>
+                                            </div>
+                                            <div style="margin-top:20px">
+                                                <center>
+                                                    <button type="button" class="btn btn-primary" id="btn_save">Save</button>
+                                                    <button type="button" class="btn btn-primary" id="btn_reset">Reset</button>
+                                                </center>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane" role="tabpanel" id="step2">
+                                    <div class="row table-responsive">
+                                        <div class="col-md-12">
+                                            <table class="table table-striped custom-table  " id="tbltimezone1">
+                                                <thead>
+                                                    <tr style="background-color:#fecc00">
+                                                        <th class="text-left" style="font-weight:bold;background-color: #00bff9;">Organizational Competency(10%)</th>
+                                                        <th style="font-weight:bold;background-color: #00bff9;">Rating</th>
+                                                        <th style="font-weight:bold;background-color: #00bff9;">Score</th>
+                                                    </tr>
+                                                    <tr style="vertical-align:bottom;">
+                                                        <th class="text-left" style="width:45%; color:#4c87c6; font-weight:bold">Planning & Organizing</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold">Leadership</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold"> Reliability</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+
+
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold"> Resposibility  </th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold">Result Orientation</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-left" style="color:#4c87c6; font-weight:bold">Team Work</th>
+                                                        <td>
+                                                            <div id="rateYo" class="rateYo"></div>
+                                                        </td>
+                                                        <td>
+                                                            <div class="indicatorContainer">
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                            <br />
+                                            <br />
+                                            <label>Description</label>
+                                            <div>
+                                                <textarea rows="4" cols="100"></textarea>
+                                            </div>
+                                            <div style="margin-top:20px">
+                                                <center>
+                                                    <button type="button" class="btn btn-primary" id="btn_save">Save</button>
+                                                    <button type="button" class="btn btn-primary" id="btn_reset">Reset</button>
+                                                </center>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane" role="tabpanel" id="step3">
+                                    <div class="row table-responsive">
+                                        <table class="table table-striped custom-table">
+                                            <thead style="width:100%;">
+                                                <tr style="vertical-align:bottom; background-color:#fecc00">
+                                                    <th class="text-left" style="font-weight:bold;background-color: #00bff9;">My Goals(80%)</th>
+                                                    <th style="background-color: #00bff9;"><button type="button" class="btn btn-success" style="float:right;" id="btn_viewGoal">+ Add Goal</button></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                        <table class="table table-striped custom-table" id="tbltimezone">
+                                            <thead>
+
+                                                <tr>
+                                                    <th style="font-weight:bold">Goal Title</th>
+                                                    <th style="font-weight:bold">Type</th>
+                                                    <th style="font-weight:bold">Client</th>
+                                                    <th style="font-weight:bold">Project</th>
+                                                    <th style="font-weight:bold">Due Date</th>
+                                                    <th style="font-weight:bold">Status</th>
+                                                    <th style="font-weight:bold">% Completion</th>
+                                                    <th style="font-weight:bold">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="My_Goals_details "></tbody>
+                                        </table>
+                                        <br />
+                                        <br />
+
+                                        <div style="margin-top:20px">
+                                            <center>
+                                                <button type="button" class="btn btn-primary" id="btn_submit">Submit</button>
+
+                                            </center>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div id="IndentlistView" class="modal custom-modal fade" role="dialog">
+        <div class="modal-dialog">
+            <button type="button" class="close" data-dismiss="modal" id="btnclose">&times;</button>
+            <div class="modal-content modal-lg">
+                <div class="modal-header">
+                    <h4 class="modal-title" style=" margin-left: -78px;"> Add Your Goals</h4>
+                </div>
+                <div class="modal-body card-box" style="WIDTH: 119%; margin-left: -85px; background-color:#eff3f6; border-color:#eff3f6;">
+                    <form class="m-b-30">
+                        <div class="row">
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" style="color:#4c87c6; font-weight:bold">Goal Title <span class="text-danger">*</span></label>
+                                    <input type="text" id="txttitle" class="form-control ">
+
+
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" style="color:#4c87c6; font-weight:bold">Type <span class="text-danger">*</span></label>
+                                    <select id="ddl_type" style="height: 40px;width: 319px;">
+                                        <option value="Monthly">Monthly</option>
+                                        <option value="Quarterly">Quarterly</option>
+                                        <option value="Mid-Year">Mid-Year</option>
+                                        <option value="Annual">Annual</option>
+
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" style="color:#4c87c6; font-weight:bold">Client <span class="text-danger">*</span></label>
+                                    @Html.DropDownList("Customer", (IEnumerable<SelectListItem>)ViewBag.Customerlist, "Select", new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" style="color:#4c87c6; font-weight:bold">Project <span class="text-danger">*</span></label>
+                                    <select id="ddl_project" style="height: 40px;width: 319px;">
+                                        <option value="select">Select</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" style="color:#4c87c6; font-weight:bold">Due Date <span class="text-danger">*</span></label>
+                                    <input type="date" id="txtdate" class="form-control ">
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" style="color:#4c87c6; font-weight:bold">Status <span class="text-danger">*</span></label><br />
+                                    <select id="ddl_status" style="height: 40px;width: 319px;">
+
+                                        <option value="New">New</option>
+                                        <option value="In-Progress">In-Progress</option>
+                                        <option value="Completed">Completed</option>
+
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" style="color:#4c87c6; font-weight:bold">% Complete <span class="text-danger">*</span></label>
+                                    <input type="range" max="100" step="1" class="inputseekbar" id="range">
+                                    <progress max="100" id="progressbarcolor"></progress>
+                                    <output for="range" class="output" id="output_value"></output>
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <label style="color:#4c87c6; font-weight:bold; margin-top: 50px;">Description</label>
+                                <div>
+                                    <textarea rows="4" cols="100" id="txt_desc"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <br />
+                        <br />
+                        <div>
+                            <center>   <button type="button" class="btn btn-primary" id="btn_next">Next</button></center>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+

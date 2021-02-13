@@ -1,0 +1,546 @@
+﻿<script type="text/javascript" src="~/assets/js/json-to-table.js"></script>
+<script type="text/javascript" src="~/assets/js/xls.core.min.js"></script>
+<script type="text/javascript" src="~/assets/js/FileSaver.min.js"></script>
+<script type="text/javascript" src="~/assets/js/html2canvas.js"></script>
+<link rel="stylesheet" href="~/assets/css/tableexport.min.css" />
+<script type="text/javascript" src="~/assets/js/tableexport.min.js"></script>
+
+<style type="text/css">
+    .required {
+        color: red;
+    }
+
+    div.dataTables_wrapper div.dataTables_filter input {
+        border-radius: 50px !important;
+        width: auto;
+    }
+</style>
+
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title">Team Expense</h4>
+    </div>
+    <div class="col-sm-4 text-right m-b-30" id="buttons">
+    </div>
+</div>
+
+<div class="row filter-row">
+    <div class="col-sm-2 col-xs-6">
+        <div class="form-group form-focus ">
+            <label style="font-size: 12px;" class="control-label">Select Month</label>
+            <select style="height: 39px;padding: 16px 11px 4px !important;" class="form-control floating myclass" id="ddl_month">
+                <option value="0">Select </option>
+                <option value="1">Jan</option>
+                <option value="2">Feb</option>
+                <option value="3">Mar</option>
+                <option value="4">Apr</option>
+                <option value="5">May</option>
+                <option value="6">Jun</option>
+                <option value="7">Jul</option>
+                <option value="8">Aug</option>
+                <option value="9">Sep</option>
+                <option value="10">Oct</option>
+                <option value="11">Nov</option>
+                <option value="12">Dec</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-sm-2 col-xs-6">
+        <div class="form-group form-focus">
+            <label style="font-size: 12px;" class="control-label">Select Year</label>
+            <select style="height: 39px;padding: 16px 11px 4px !important;" class="form-control floating myclass" id="ddl_year">
+                <option value="0">Select</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-sm-2 col-xs-6">
+        <div class="form-group form-focus">
+            <input type="button" class="btn btn-success btn-block" style="border-radius:35px;height: 39px;font-size:12px;" value="Search" id="btn_Search" />
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <div class="table-responsive">
+            <table class="table table-striped table-responsive custom-table text-left tblTimesheet" id="tblExpense">
+                <thead>
+                    <tr>
+                        <th>Sr.No</th>
+                        <th>Employee Name</th>
+                        <th>Status</th>
+                        <th>View</th>
+                        <th>Team View</th>
+                    </tr>
+                </thead>
+                <tbody id="tblBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-sm-6" id="div_team">
+        <div class="table-responsive">
+            <table class="table table-striped table-responsive custom-table text-left tblTeamTimesheet" id="tblTeamExpense">
+                <thead>
+                    <tr>
+                        <th>Sr.No</th>
+                        <th>Employee Name</th>
+                        <th>Status</th>
+                        <th>View</th>
+                        <th>Team View</th>
+                    </tr>
+                </thead>
+                <tbody id="tblTeamBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="view_expense" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" id="btn_viewClose" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg" style="width:1060px;">
+            <div class="modal-header">
+                <h4 class="modal-title">View Expense</h4>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 ApproveDiv">
+                    <div class="form-group">
+                        <button type='button' id='btnApproved' class="btn btn-primary" onclick="ForApproval();" style="border-radius:18px;">Approve</button>
+                    </div>
+
+                </div>
+                <div class="col-sm-4 ApproveDiv">
+                    <div class="form-group">
+                        <button type='button' id='btnReject' class="btn btn-danger" onclick="ForReject();" style="border-radius:18px;">Reject</button>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <button type='button' id='btnExport' class="btn btn-primary" style="border-radius:18px;padding: 8px 14px;">Export To Excel</button>
+                        <input type="hidden" id="Emp_Name" />
+                        <input type="hidden" id="Emp_id" />
+                        <input type="hidden" id="month" />
+                        <input type="hidden" id="year" />
+                        <input type="hidden" id="rejected_date" />
+                        <input type="hidden" id="hdnDocStatus" />
+                    </div>
+                </div>
+            </div>
+            <div class="row ApproveDiv">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <label class="control-label col-sm-1">Remark:<span class="required">*</span></label>
+                        <textarea type="text" placeholder="Give Remark About Appoval/Rejection." class="form-control" id="txt_remark" rows="4" maxlength="200" autocomplete="off" style="border-radius:18px;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <form class="m-b-30">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="panel">
+                                <div class="panel panel-heading">History</div>
+                                <div class="panel-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-responsive custom-table text-left tblEmpTimesheet" id="tblEmpExpense">
+                                            <thead>
+                                                <tr>
+                                                    <th>Employee Name</th>
+                                                    <th>Expense Date</th>
+                                                    <th>Project</th>
+                                                    <th>Expense Type</th>
+                                                    <th>Expense Amount</th>
+                                                    <th>File Name</th>
+                                                    <th>Description</th>
+                                                    <th>Status</th>
+                                                    @*<th>Action</th>*@
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tblExpBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    $(function () {
+
+        $('ul.list-unstyled  li a[href$="' + "/Expense" + '"]').addClass('active');
+
+        var minOffset = -2, maxOffset = 0;
+
+        var thisYear = new Date().getFullYear();
+        var select = $('#ddl_year');
+
+        for (var i = minOffset; i <= maxOffset; i++) {
+            var year = thisYear + i;
+            $('<option>', { value: year, text: year }).appendTo(select);
+        }
+
+        var currentTime = new Date();
+        var month = parseInt(parseInt(currentTime.getMonth()) + parseInt(1));
+        var year = thisYear;
+
+        $('#div_team').hide();
+
+        GetData(month, year);
+       
+    });
+
+    $(document).on('click', ".tbl2", function (e)
+    {
+        debugger;
+        var emp_name = $(this).closest("tr").find('td#emp_name').html();
+        var mon = $(this).attr('data_month');
+        var yr = $(this).attr('data_year');
+        var emp_id = $(this).attr('data_id');
+        if (emp_name != "" && mon != "" && yr != "" && emp_id != "") {
+            $.ajax({
+                url: '/Team/ExpenseDetails',
+                type: 'GET',
+                contenttype: "application/json; charset=utf-8",
+                data:{ 'Month': mon, 'Year': yr, 'Emp_id': emp_id },
+                datatype: 'Json',
+                success: function (response)
+                {
+                    debugger;
+                    var history = JSON.parse(response);
+                    
+                    if (history.length > 0 ) {
+                        $('#tblExpBody').empty();
+                        var html = "";
+                        var status = "";
+                        $.each(history, function (txt, val) {
+                            status = val.EXPENSE_STATUS;
+                            html += "<tr>";
+                            html += "<td>" + val.EMP_NAME + "</td>";
+                            html += "<td>" + val.EXPENSE_DATE + "</td>";
+                            html += "<td>" + val.PROJECT_NAME + "</td>";
+                            html += "<td>" + val.EXPENSE_TYPE_NAME + "</td>";
+                            html += "<td>" + val.EXPENSE_AMOUNT + "</td>";
+                            html += "<td>" + val.FILE_NAMES + "</td>";
+                            html += "<td>" + val.DESCRIPTION + "</td>";
+                            if (val.EXPENSE_STATUS == 'Open') {
+                                html += "<td class='text-center' width='10px'><label class='badge' style='white-space:pre-line;background-color:#FC0404'>&nbsp;&nbsp;" + val.EXPENSE_STATUS + "&nbsp;&nbsp;</label></td>";
+                            }
+                            else if (val.EXPENSE_STATUS == 'Submitted') {
+                                html += "<td class='text-center' width='10px'><label class='badge bg-warning'>&nbsp;&nbsp;" + val.EXPENSE_STATUS + "&nbsp;&nbsp;</label></td>";
+                            }
+                            else if (val.EXPENSE_STATUS == 'Approved') {
+                                html += "<td class='text-center' width='10px'><label class='badge bg-success'>&nbsp;&nbsp;" + val.EXPENSE_STATUS + "&nbsp;&nbsp;</label></td>";
+                            }
+                            else if (val.EXPENSE_STATUS == 'Rejected') {
+                                html += "<td class='text-center' width='10px'><label class='badge' style='white-space:pre-line;background-color:#FC0404'>&nbsp;&nbsp;" + val.EXPENSE_STATUS + "&nbsp;&nbsp;</label></td>";
+                            }
+                            else if (val.EXPENSE_STATUS == 'Rejected Hr') {
+                                html += "<td class='text-center' width='10px'><label class='badge' style='white-space:pre-line;background-color:#FC0404'>&nbsp;&nbsp;" + val.EXPENSE_STATUS + "&nbsp;&nbsp;</label></td>";
+                            }
+                            else {
+                                html += "<td class='text-center' width='10px'><label class='badge  bg-success'>&nbsp;&nbsp;" + val.EXPENSE_STATUS + "&nbsp;&nbsp;</label></td>";
+                            }
+                            html += "</tr>";
+                        });
+                        $('#tblExpBody').append(html);
+
+                        if (status == 'Submitted') {
+                            $('.ApproveDiv').show();
+                        }
+                        else {
+                            $('.ApproveDiv').hide();
+                        }
+
+                        $('#Emp_id').val(emp_id);
+                        $('#Emp_Name').val(emp_name);
+                        $('#month').val(mon);
+                        $('#year').val(yr);
+                        $('#hdnDocStatus').val(status);
+
+                        $('#view_expense').modal();
+                    }
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            });
+        }
+    });
+
+    $(document).on('click', ".tbl3", function (e) {
+        debugger;
+        var month = $(this).attr('data_month');
+        var year = $(this).attr('data_year');
+        var emp_id = $(this).attr('data_id');
+        var emp_name = $(this).closest("tr").find('td#emp_name').html();
+        $.ajax({
+            url: '/Report/TeamEmp_ExpDetails',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(
+                {
+                    'Month': month, 'Year': year, 'Emp_id': emp_id
+                }),
+            dataType: 'json',
+            success: function (data) {
+                debugger;
+                var len = Object.keys(data).length;
+                if (len != 0) {
+                    $('#tab2 tbody').empty();
+                    var html = '';
+                    //Append each row to html table
+                    for (var i = 0; i < len; i++) {
+                        html += "<tr id='info1'>";
+                        html += "<td id='emp_name'>" + data[i].Employees + "</td><td>" + data[i].Status + "</td>";
+                        if (data[i].Status != 'No Entry') {
+                            html += "<td><a href='javascript:void(0);' class='mng' data_month='" + data[i].TransactionMonth + "' data_year='" + data[i].TransactionYear + "' data_id='" + data[i].Emp_id + "' >View</a></td>";
+                        }
+                        else {
+                            html += "<td><a href='javascript:void(0);' class='' data_month='" + data[i].TransactionMonth + "' data_year='" + data[i].TransactionYear + "' data_id='" + data[i].Emp_id + "' >View</a></td>";
+                        }
+                        html += "</tr>";
+                    }
+                    $('#tab2 tbody').append(html);
+                    $('#EmpRpt1').show();
+                    $('.empname').text(emp_name);
+                }
+                else {
+                    $('#EmpRpt1').hide();
+                    alert("No Data Found.");
+                }
+
+            },
+            error: function () {
+                alert("");
+            }
+        });
+
+        e.stopPropagation();
+    });
+
+    $(document).on('click', ".mng", function (e) {
+        var emp_name = $(this).closest("tr").find('td#emp_name').html();
+        var mon = $(this).attr('data_month');
+        var yr = $(this).attr('data_year');
+        var emp_id = $(this).attr('data_id');
+        var options = { "backdrop": "static", keyboard: true };
+        $.ajax({
+            url: '/Report/TeamExpenseDetails',
+            type: 'GET',
+            contenttype: "application/json; charset=utf-8",
+            data:
+            {
+                'Month': mon, 'Year': yr, 'Emp_id': emp_id, 'Emp_name': emp_name
+            },
+            datatype: 'Json',
+            success: function (response) {
+                debugger;
+                $('#myModalContent').html(response);
+                $('#myModal').modal(options);
+                $('#myModal').modal('show');
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        });
+
+    });
+
+    $('#btnExport').click(function () {
+        var Emp_name = $('#Emp_Name').val();
+        var tm_month = $('#month').val();
+        var months = {
+            '1': 'Jan', '2': 'Feb', '3': 'Mar', '4': 'Apr', '5': "May", '6': 'Jun',
+            '7': 'Jul', '8': 'Aug', '9': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec'
+        };
+        var selectedMonthName = months[tm_month];
+        var tm_year = $('#year').val();
+        var ExportButtons = document.getElementById('tblEmpExpense');
+
+        var instance = new TableExport(ExportButtons, {
+            headers: true,                              // (Boolean), display table headers (th or td elements) in the <thead>, (default: true)
+            footers: true,                              // (Boolean), display table footers (th or td elements) in the <tfoot>, (default: false)
+            formats: ['csv'],                           // (String[]), filetype(s) for the export, (default: ['xls', 'csv', 'txt'])
+            filename: Emp_name + '-Expense-' + selectedMonthName + '-' + tm_year,   // (id, String), filename for the downloaded file, (default: 'id')
+            bootstrap: false,                           // (Boolean), style buttons using bootstrap, (default: true)
+            exportButtons: false,                        // (Boolean), automatically generate the built-in export buttons for each of the specified formats (default: true)
+            position: 'bottom',                         // (top, bottom), position of the caption element relative to table, (default: 'bottom')
+            ignoreRows: null,                           // (Number, Number[]), row indices to exclude from the exported file(s) (default: null)
+            ignoreCols: 9,                           // (Number, Number[]), column indices to exclude from the exported file(s) (default: null)
+            trimWhitespace: true
+        });
+
+        var exportData = instance.getExportData()['tblEmpExpense']['csv'];
+
+        instance.export2file(exportData.data, exportData.mimeType, exportData.filename, exportData.fileExtension);
+
+    });
+
+    $('#btn_Search').click(function () {
+        var Month = $('#ddl_month option:selected').val();
+        var Year = $('#ddl_year option:selected').val();
+
+        if (Month == "0") {
+            alert("Please Select Month.");
+            setTimeout(function () { $('#ddl_month').focus(); }, 1);
+            return false;
+        }
+        else if (Year == "0") {
+            alert("Please Select Year.");
+            setTimeout(function () { $('#ddl_year').focus(); }, 1);
+            return false;
+        }
+        GetData(Month, Year);
+    })
+
+    function ForApproval() {
+        var status = $('#hdnDocStatus').val();
+        var remark = $('#txt_remark').val();
+        if (status == "Submitted" && remark != "") {
+            $.ajax({
+                type: 'POST',
+                url: '/Home/ApprovedExpenseByMng',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ 'Approve_Remark': remark }),
+                dataType: 'json',
+                success: function (data) {
+
+                    var succ = data.SuccessMsg;
+                    var err = data.ErrorMsg;
+                    if (succ != null && err == null) {
+                        alert(succ);
+                        $('#btnApproved').prop('disabled', true);
+                        $('#btnReject').prop('disabled', true);
+                        $('#txt_remark').val("");
+                        $("tr td a").removeAttr('href', true);
+                    }
+                    else {
+                        alert(err);
+                    }
+                },
+                error: function () {
+
+                }
+            });
+        }
+        else if (status != "Submitted") {
+            alert("Employee Submission Pending.");
+        }
+        else {
+            alert("Please give your remark before approving the Expense.");
+            setTimeout(function () { $('#txt_remark').focus(); });
+        }
+
+    }
+
+    function ForReject() {
+        var status = $('#hdnDocStatus').val();
+        var remark = $('#txt_remark').val();
+        if (status == "Submitted" && remark != "") {
+            $.ajax({
+                type: 'POST',
+                url: '/Home/RejectedExpenseByMng',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ 'Reject_Remark': remark }),
+                dataType: 'json',
+                success: function (data) {
+
+                    var succ = data.SuccessMsg;
+                    var err = data.ErrorMsg;
+                    if (succ != null && err == null) {
+                        alert(succ);
+                        $('#btnApproved').prop('disabled', true);
+                        $('#btnReject').prop('disabled', true);
+                        $('#txt_remark').val("");
+                        $("tr td a").removeAttr('href', true);
+                    }
+                    else {
+                        alert(err);
+                    }
+                },
+                error: function () {
+
+                }
+            });
+        }
+        else if (status != "Submitted") {
+            alert("Employee Submission Pending.");
+        }
+        else {
+            alert("Please give your remark before rejecting the Expense.");
+            setTimeout(function () { $('#txt_remark').focus(); });
+        }
+    }
+
+    $.fn.digits = function () {
+        return this.each(function () {
+            $(this).text($(this).text().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,"));
+        })
+    }
+
+    function GetData(month, year) {
+        $('#ddl_month').val(month);
+        $('#ddl_year').val(year);
+        $.ajax({
+            type: "GET",
+            url: "/Team/GetTeam_Expense",
+            data: { "month": month, "year": year },
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (data) {
+                var result = JSON.parse(data);
+                if (result.length > 0) {
+                    $("#tblExpense").dataTable().fnDestroy();
+                    $('#tblBody').empty();
+                    var html = "";
+                    $.each(result, function (txt, val) {
+                        html += "<tr id='info'>";
+                        html += "<td>" + val.SR_NO + "</td>";
+                        html += "<td id='emp_name'>" + val.Emp_Name + "</td>";
+                        html += "<td>" + val.Doc_Status + "</td>";
+                        if (val.Doc_Status != 'No Entry') {
+                            html += "<td><a href='javascript:void(0);' class='tbl2' data_month='" + val.Tran_Month + "' data_year='" + val.Tran_Year + "' data_id='" + val.EMP_ID + "' ><i class='fa fa-eye' aria-hidden='true'></a></td>";
+                        }
+                        else {
+                            html += "<td></td>";
+                        }
+                        if (val.Role == '3') {
+                            html += "<td></td>";
+                        }
+                        else {
+                            html += "<td><a href='javascript:void(0);' class='tbl3' data_month='" + val.Tran_Month + "' data_year='" + val.Tran_Year + "' data_id='" + val.EMP_ID + "' ><i class='fa fa-eye' aria-hidden='true'></a></td>";
+                        }
+                        html += "</tr>";
+                    });
+                    $('#tblBody').append(html);
+                    $("#tblExpense").DataTable(
+                        {
+                            "columnDefs": [
+                                { "targets": [3, 4], "orderable": false }
+                            ],
+                            "language": {
+                                "search": "",
+                                "searchPlaceholder": "Search"
+                            }
+                        });
+                }
+            },
+            error: function (data) {
+                alert("Session is expired, Please login again.");
+                location.href = location.href;
+            }
+        });
+
+    }
+
+</script>
+
+
+

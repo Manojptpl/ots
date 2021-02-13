@@ -1,0 +1,234 @@
+﻿<style type="text/css">
+
+    table.myclass {
+        border-radius: 3px;
+    }
+    .required {
+        color: red;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2
+    }
+
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+</style>
+
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading">Employee Expense</div>
+        <br />
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group form-focus ">
+                        <label style="font-size: 12px;" class="control-label">Department Name:</label>
+                        @Html.DropDownList("Departments", (IEnumerable<SelectListItem>)ViewBag.Deptlist, new { @class = "form-control floating", @style = "height:44px;padding: 16px 11px 4px !important;border-radius:34px;", onchange = "BindEmployee();" })
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-focus ">
+                        <label style="font-size: 12px;" class="control-label">Employee Name:</label>
+                        @Html.DropDownList("Employees", (IEnumerable<SelectListItem>)ViewBag.Emplist, new { @class = "form-control floating", @style = "height:44px;padding: 16px 11px 4px !important; border-radius:34px;" })
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <button type='button' id='btnsearch' class="btn btn-primary" style="border-radius: 18px;padding: 8px 33px;">Search</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" id="EmpRpt">
+                    <table id="tab1">
+                        <thead>
+                            <tr>
+                                <th>Employee Name</th>
+                                <th style="text-align:right">Total Expense</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Employee_wise_expense" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" id="btn_edit_close" class="close">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="panel" id="pnl_header">
+                <div class="panel-body">
+                    <div class="modal-header"><h4 class="modal-title">Employee Monthly Expense </h4></div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12" id="EmpRptt">
+                                <h5>Month Report</h5>
+                                <table id="tab2" class="table table-striped custom-table m-b-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th style="text-align:right">Total Expense</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td>Total</td>
+                                            <td style="text-align:right"><label name="" id="final_cost"></label></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/EmpExpense_Report" + '"]').addClass('active');
+
+        $(document).on('click', '#btnsearch', function (e) {
+            var emp_id = $('#Employees option:selected').val();
+            var dept_id = $('#Departments option:selected').val();
+            if (dept_id == "0") {
+                alert("Please Select Department.");
+                setTimeout(function () { $('#Departments').focus(); });
+                return false;
+            }
+            if (emp_id == "0") {
+                alert("Please Select Employee.");
+                setTimeout(function () { $('#Employees').focus(); });
+                return false;
+            }
+            $.ajax({
+                type: "GET",
+                url: '/Report/EmployeeWiseExpense',
+                contentType: "application/json; charset=utf-8",
+                data: { 'Emp_Id': emp_id },
+                dataType: 'Json',
+                success: function (data)
+                {
+                    var result = JSON.parse(data);
+                    if (result.length > 0)
+                    {
+                        $('#tblBody').empty();
+                        var html = "";
+                        //Append each row to html table
+                        $.each(result, function (txt, val) {
+                            html += "<tr id='info'>";
+                            html += "<td>" + val.EMP_NAME + "</td>";
+                            html += "<td style='text-align:right'><a href='javascript:void(0);' class='tbl2'>" + val.EXPENSE_AMOUNT + "</a></td>";
+                            html += "</tr>";
+                        });
+                        $('#tblBody').append(html);
+                        //$('#EmpRpt').show();
+                        $('#tab1').each(function () {
+                            var emp_amt = 0;
+                            $(this).find('tr#info td a.tbl2').each(function () {
+                                var combat = $(this).text();
+
+                                if (!isNaN(combat) && combat.length !== 0) {
+                                    emp_amt = parseFloat(emp_amt) + parseFloat(combat);
+                                }
+                            });
+                            $('#final_cost').text(emp_amt.toFixed(2));
+                        });
+                    }
+                },
+                error: function (data) {
+                    alert("Session is expire.Please Login Again.");
+                    location.href = location.href;
+                }
+                });
+        });
+
+        $(document).on('click', ".tbl2", function (e) {
+
+            var emp_id = $('#Employees option:selected').val();
+            $.ajax({
+                url: '/Report/ExpenseMBreakUp',
+                type: 'GET',
+                contenttype: "application/json; charset=utf-8",
+                data:
+                {
+                    'Emp_id': emp_id
+                },
+                datatype: 'Json',
+                success: function (data) {
+
+                    var len = Object.keys(data).length;
+                    $('#tab2 tbody').empty();
+                    //Append each row to html table
+                    for (var i = 0; i < len; i++) {
+                        $('#tab2 tbody').append("<tr id='info'><td>" + data[i].ShowDate + "</td><td style='text-align:right'>" + data[i].ExpenseAmount + "</td></tr>");
+                    }
+                    $('#Employee_wise_expense').modal('show');
+                },
+                error: function (data) {
+                    alert(data.responseText);
+                }
+            });
+
+        });
+
+        $("#btn_edit_close").click(function () {
+            $('#Employee_wise_expense').modal('hide');
+        });
+    });
+
+    function BindEmployee() {
+        var Dept_id = $('#Departments option:selected').val();
+        if (Dept_id != "") {
+            $.ajax({
+                type: "GET",
+                url: '/Report/GetEmployeeList',
+                contentType: "application/json; charset=utf-8",
+                data: { 'Dept_Id': Dept_id },
+                dataType: 'Json',
+                success: function (data)
+                {
+                    var result = JSON.parse(data);
+                    if (result.length > 0)
+                    {                        
+                        $("#Employees").html("");
+                        $("#Employees").append($('<option></option>').val("0").html("Select"))
+                        //Append each row to dropdown
+                        $.each(result, function (txt,val)
+                        {
+                            $("#Employees").append($('<option></option>').val(val.EMP_ID).html(val.EMP_NAME))
+                        });                           
+                    }
+                },
+                error: function (data) {
+                    alert("Something went wrong.");
+                    location.href = location.href;
+                }
+            });
+        }
+        else {
+            alert("Please Select Department.");
+            setTimeout(function () { $('#Departments').focus(); });
+            return false;
+        }
+
+    }
+</script>

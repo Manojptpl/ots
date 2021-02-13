@@ -1,0 +1,347 @@
+﻿@using System.Data
+@{
+    ViewBag.Title = "index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+
+    .cmplitetextalign {
+        margin-left: 18px;
+    }
+</style>
+ 
+<script>
+    $(document).ready(function () { 
+        $('ul.list-unstyled  li a[href$="' + "/leavePolicy_History" + '"]').addClass('active');
+        var table= $(".tbl_leavepolicy").DataTable(
+            {
+                "columnDefs": [
+                    { "targets": [6], "orderable": false }
+                ],
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search"
+                }
+            }
+        );
+
+        if (@ViewBag.event_permission.Export==1)
+        {
+            var buttons = new $.fn.dataTable.Buttons(table, {
+                buttons: [
+                   {
+                    extend: 'excelHtml5',
+                    text: '<i class="fa fa-file-excel-o fa-lg"></i>  ',
+                    title: 'Leave Policy',
+                    titleAttr: 'Excel'
+                },
+                {
+                    extend: 'csvHtml5',
+                    text: '<i class="fa fa-file-text-o fa-lg"></i>  ',
+                    title: 'Leave Policy',
+                    titleAttr: 'CSV'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="fa fa-file-pdf-o fa-lg"></i>  ',
+                    title: 'Leave Policy',
+                    titleAttr: 'PDF'
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fa fa-print fa-lg"></i> ',
+                    title: 'Leave Policy',
+                    titleAttr: 'ifrint'
+                }
+            ]
+        }).container().appendTo($('#buttons'));
+        }
+      
+
+
+        $(document).on('click', '#btn_editpolicy', function (e) {
+            window.location.href = "/leave/editleave_policy/" + $(this).closest("tr td a").attr("data_id");
+        })
+    });
+
+    function functionView(T) {
+        $("#tblCreatePlan tbody").find('tr:gt(0)').remove(); 
+         $.ajax({
+            type: 'POST',
+            url: '/leave/leavepolicyview',
+            contentType: 'application/json;charset=utf-8',
+            data: JSON.stringify({ "tbl_id": T }),       
+            dataType: 'json',
+            success: function (response) {
+                $("#lbleavetype").text(response.leavepolicy.LeaveTypeID);
+                $("#lbPolicyName").text(response.leavepolicy.PolicyName);
+                $("#lbDesc").text(response.leavepolicy.PolicyDescription);
+                $("#lbEffectiveStartDate").text(response.leavepolicy.StartDate);
+                $("#lbEffectiveEndDate").text(response.leavepolicy.EndDate);
+                $("#lbstatus").text(response.leavepolicy.Status);
+
+                if (response.leavepolicy.IsInformationOnly == '1') {
+                    $("#chkisinformationonly").prop('checked', true);
+                } else {
+                    $("#chkisinformationonly").prop('checked', false);
+                } 
+                if (response.leaveplan.AttachmentRequired == '1') {
+                    $("#chkattachmentrequired").prop('checked', true);
+                } else {
+                    $("#chkattachmentrequired").prop('checked', false);
+                }
+                if (response.leaveplan.Gender == "M") {
+                    $("#gender").text('Male');
+                } else if (response.leaveplan.Gender == "F") {
+                    $("#gender").text('Female');
+                } else if (response.leaveplan.Gender == "A") {
+                    $("#gender").text('All');
+                } else {
+                    $("#gender").text(response.leaveplan.Gender);
+                }
+                $("#leaveyear").text(response.leaveplan.LeaveYear);
+                $("#creditfrequency").text(response.leaveplan.CreditFrequency);
+                $("#credit").text(response.leaveplan.Credit);
+
+                if (response.leaveplan.IncludePublicHolidays == '1') {
+                    $("#chkIncludePublicHolidaysreview").prop('checked', true);
+                } else {
+                    $("#chkIncludePublicHolidaysreview").prop('checked', false);
+                } 
+                if (response.leaveplan.IncludeWeekends  == '1') {
+                    $("#chkIncludeWeekendsreview").prop('checked', true);
+                } else {
+                    $("#chkIncludeWeekendsreview").prop('checked', false);
+                }  
+                if (response.leaveplan.CanbeclubbedwithEL == '1') {
+                    $("#chkcanbeclubbedwithel").prop('checked', true);
+                } else {
+                    $("#chkcanbeclubbedwithel").prop('checked', false);
+                }  
+
+                if (response.leaveplan.CanbeclubbedwithCL == '1') {
+                    $("#chkcanbeclubbedwithcl").prop('checked', true);
+                } else {
+                    $("#chkcanbeclubbedwithcl").prop('checked', false);
+                }
+               
+                if (response.leaveplan.Canbehalfday == '1') {
+                    $("#chkcanbehalfday").prop('checked', true);
+                } else {
+                    $("#chkcanbehalfday").prop('checked', false);
+                }
+
+                if (response.leaveplan.Notice_Period_P == '1') {
+                    $("#chkavailnoticeperiad").prop('checked', true);
+                } else {
+                    $("#chkavailnoticeperiad").prop('checked', false);
+                }
+
+                if (response.leaveplan.Probation_Period_P == '1') {
+                    $("#chkavailprobationperiad").prop('checked', true);
+                } else {
+                    $("#chkavailprobationperiad").prop('checked', false);
+                }
+
+                if (response.leaveplan.Confirmed_P == '1') {
+                    $("#chkavailregular").prop('checked', true);
+                } else {
+                    $("#chkavailregular").prop('checked', false);
+                }
+
+                if (response.leaveplan.Contract_Period_P == '1') {
+                    $("#chkavailcontract").prop('checked', true);
+                } else {
+                    $("#chkavailcontract").prop('checked', false);
+                } 
+                var len = Object.keys(response.leaveplan.tblCreateRule == null ? 0 : response.leaveplan.tblCreateRule).length; 
+                for (var i = 0; i < len; i++) {
+                    var markup = "";
+                    markup += "<tr id='row'" + i + "'  class='text-center'>"; 
+                    markup += "<td  data_id='" + response.leaveplan.tblCreateRule[i].GradeID + "'> " + response.leaveplan.tblCreateRule[i].Grade + "</td > ";
+                    markup += "<td> " + response.leaveplan.tblCreateRule[i].NoOfDays + "</td > ";
+                    markup += "<td  data_id='" + response.leaveplan.tblCreateRule[i].UOMID + "'> " + response.leaveplan.tblCreateRule[i].UOM + "</td > ";
+                    markup += "<td> " + response.leaveplan.tblCreateRule[i].StartDate + "</td > ";
+                    markup += "<td> " + response.leaveplan.tblCreateRule[i].EndDate + "</td > ";
+                    markup += "<td  data_id='" + response.leaveplan.tblCreateRule[i].IslossofPay + "'> " + response.leaveplan.tblCreateRule[i].IslossofPay + "</td > ";
+                    markup += "<td  data_id='" + response.leaveplan.tblCreateRule[i].Employer_Type + "'> " + response.leaveplan.tblCreateRule[i].Employer_Type + "</td > ";
+                    markup += "<td  data_id='" + response.leaveplan.tblCreateRule[i].Plan_Status + "'> " + response.leaveplan.tblCreateRule[i].Plan_Status + "</td > "; 
+                    //markup += "<td> <a href='javascript:void(0)' class='font-18 btnEdit' title='Edit'><i class='fa fa-pencil m-r-5' aria-hidden='true'></i></a> <a href='javascript:void(0)' class='text-danger font-18 btnDelete' title='Remove'><i class='fa fa-trash-o' aria-hidden='true'></i></a></td>";
+                    markup += "</tr>";
+                 
+                    $("#tblCreatePlan tbody").append(markup);
+                }
+                $("#lblCarryoverLimit").text(response.yearendprocessing.AllowCarryover_CarryoverLimit);
+                $("#lblpayatyearendminbal").text(response.yearendprocessing.PayatYearend_MinBal);
+                $("#lblpayatyearendmaximumencashment").text(response.yearendprocessing.PayatYearend_MaxEncashment);
+                $("#lbleligibleforencashmentencashmentlimit").text(response.yearendprocessing.EligibleForEncashment_Limit);
+                $("#lbleligibleforencashmentminbal").text(response.yearendprocessing.EligibleForEncashment_MinBal);
+                $("#CarrayForYear").text(response.yearendprocessing.CarryForwardtoEL_CFLimit);
+                
+            }
+       
+
+        });
+
+    }
+    </script>
+
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title">Leave Policy</h4>
+    </div>
+    <div class="col-sm-1 text-right m-b-30">
+        @if(ViewBag.event_permission.Create == 1)
+        { 
+        <a href="/leave/leave_policy" class="btn btn-primary rounded"><i class="fa fa-plus"></i>Add New</a>
+       }
+      
+    </div>
+    <div class="col-sm-3 text-right m-b-30" id="buttons">
+     
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div>
+            <table class="table table-striped custom-table m-b-0 tbl_leavepolicy">
+                <thead>
+                    <tr>
+                        <th>Sr.</th>
+                        <th>Policy Name</th>    
+                        <th>Leave Type</th>                        
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center"> Action </th>
+                    </tr>
+                </thead>
+
+
+                <tbody>
+                    @foreach (DataRow item in Model.Rows)
+                    {
+                        <tr>
+                            <td>@item["SR_NO"]</td>
+                            <td>@item["POLICY_NAME"]</td>
+                            <td>@item["LEAVETYPE"]</td>
+                            <td>@item["STARTDATE"]</td>
+                            <td>@item["ENDDATE"]</td>
+                        
+                                <td class="text-center" >
+                                        @if (@item["STATUS"].ToString().Trim() == "Enforce")
+                                        {
+                                             <label  style="width:70px" class="badge bg-success">@item["STATUS"]</label>
+                                        }
+                                        else
+                                        {
+                                            <label style="width:70px" class="badge bg-brown">@item["STATUS"]</label>
+                                        }
+                                </td>
+                           
+
+                            <td class="text-center">
+                                @if (ViewBag.event_permission.Update == 1)
+                                {
+                                    <a href="javascript:void(0);" data_id="@item["LEAVE_POLICY_ID"]" id="btn_editpolicy" title="Edit"><i class="fa fa-pencil m-r-5"></i>  </a>
+                                }
+                             
+                                &nbsp; &nbsp; 
+                                @if (ViewBag.event_permission.View == 1)
+                                {
+                                <a href="#" title="View" data-toggle="modal" onclick="functionView(@item["LEAVE_POLICY_ID"]);"  data-target="#View_Policy"><i class="glyphicon glyphicon-eye-open"></i></a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="View_Policy" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg" style="width:90%">
+            <div class="modal-header">
+                <h4 class="modal-title"> Leave Policy View</h4>
+            </div>
+            
+            <div class="modal-body">
+             
+                <form>
+                    <div class="tab-pane active card-box" role="tabpanel" id="complete">
+
+                        <div id="DivLeavePolicy">
+                            <h4>Leave Policy</h4>
+                            <div class="row"><span class="col-sm-3">Leave Type </span>  <div class="col-sm-9"> <div id="divLeaveType" class="cmplitetextalign"> <span id="lbleavetype"></span></div></div> </div>
+                            <div class="row"><span class="col-sm-3">Policy Name </span>  <div class="col-sm-9"><div id="lblPolicyName" class="cmplitetextalign"><span id="lbPolicyName"></span></div></div> </div>
+                            <div class="row"><span class="col-sm-3">Policy Description  </span>  <div class="col-sm-9"> <span id="lblDesc" class="cmplitetextalign"><span id="lbDesc"></span></span></div> </div>
+                            <div class="row"><span class="col-sm-3">Start Date </span>  <div class="col-sm-9"> <div id="lblEffectiveStartDate" class="cmplitetextalign"><span id="lbEffectiveStartDate"></span></div></div> </div>
+                            <div class="row"><span class="col-sm-3">End Date</span>  <div class="col-sm-9"> <div id="lblEffectiveEndDate" class="cmplitetextalign"><span id="lbEffectiveEndDate"></span></div></div> </div>
+                            <div class="row"><span class="col-sm-3">Status</span>  <div class="col-sm-9"> <div id="lblEffectiveEndDate" class="cmplitetextalign"><span id="lbstatus"></span></div></div> </div>
+                            <div class="row"><span class="col-sm-3">Is Information Only</span>  <div class="col-sm-9"> <input type="checkbox" id="chkisinformationonly"  disabled="" class="form-check-input"> </div> </div>
+                        </div>
+                        <div id="DivLeavePlan">
+                            <h4>Leave Plan</h4>
+                            <div class="row"><span class="col-sm-3">Attachment Required  </span>  <div class="col-sm-9"> <div id="lblLeaveType"><input type="checkbox" disabled="" id="chkattachmentrequired" class="form- check - input"></div></div> </div>
+                            <div class="row"><span class="col-sm-3">Gender </span>  <div class="col-sm-9"> <div id="lblLeaveType" class="cmplitetextalign"><span id="gender"></span></div></div> </div>
+                            <div class="row"><span class="col-sm-3">Leave Year </span>  <div class="col-sm-9"> <div id="lblLeaveType" class="cmplitetextalign"><span id="leaveyear"></span></div></div> </div>
+
+                            <div class="row"><span class="col-sm-3">Credit Frequency </span>  <div class="col-sm-9"> <div id="lblCreditFrequency" class="cmplitetextalign"><span id="creditfrequency"></span></div></div> </div>
+                            <div class="row"><span class="col-sm-3">Credit </span>  <div class="col-sm-9"> <div id="lblCredit" class="cmplitetextalign"><span id="credit"></span></div></div> </div>
+
+                            <div class="row">
+                                <span class="col-sm-3">Leave Limits </span>  <div class="col-sm-9">
+                                    <input type="checkbox" id="chkIncludePublicHolidaysreview" disabled="" class="form-check-input">  Include Public Holidays   <br />
+                                    <input type="checkbox" id="chkIncludeWeekendsreview" disabled="" class="form-check-input">  Include Weekends <br />
+                                    <input type="checkbox" id="chkcanbeclubbedwithel" checked="" disabled="" class="form-check-input">   Can be Clubbed With  EL  <br />
+                                    <input type="checkbox" id="chkcanbeclubbedwithcl" checked="" disabled="" class="form-check-input">   Can be Clubbed With  CL <br />
+                                    <input type="checkbox" id="chkcanbehalfday" disabled="" class="form-check-input">   Can be half day <br />
+
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <span class="col-sm-3">Can Avail In</span>  <div class="col-sm-9">
+                                 <input type="checkbox" id="chkavailprobationperiad" disabled="" class="form-check-input">  Probation Period   <br />
+                                 <input type="checkbox" id="chkavailregular" disabled="" class="form-check-input">  Regular Period   <br />
+                                 <input type="checkbox" id="chkavailcontract" disabled="" class="form-check-input">  Contract Period   <br />
+                                 <input type="checkbox" id="chkavailnoticeperiad" disabled="" class="form-check-input">  Notice Period   <br />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-3"> </div>  <div class="col-sm-9">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped custom-table m-b-0 datatable" id="tblCreatePlan" style="font-size:10px;">
+                                            <tbody>
+                                                <tr> <td>Grade</td><td>Duration</td><td>UOM</td><td>Start Date</td> <td>End Date</td><td>Is loss of Pay</td>   <td> Employment Type   </td> <td> Status  </td></tr>
+                                                 
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                <div id="DivYearEndProcessing">
+                                    <h4>Year End Processing</h4>
+                                    <div class="row"><span class="col-sm-3">Allow Carryover </span>  <div class="col-sm-9"> <div class="cmplitetextalign">  Carryover Limit  :<label id="lblCarryoverLimit">4</label></div> </div></div>
+                                    <div class="row"><span class="col-sm-3">Pay at Year end </span>  <div class="col-sm-9"> <div class="cmplitetextalign"> Min. Balance Need To be Maintained  :<label id="lblpayatyearendminbal">4</label></div> </div></div>
+                                    <div class="row"><span class="col-sm-3"> </span>  <div class="col-sm-9"> <div class="cmplitetextalign"> Maximum Encashment Per Year : <label id="lblpayatyearendmaximumencashment"></label></div> </div></div>
+                                    <div class="row" style="display:none"><span class="col-sm-3">Eligible For Encashment</span>  <div class="col-sm-9"> <div class="cmplitetextalign">Encashment Limit :<label id="lbleligibleforencashmentencashmentlimit">4</label></div> </div> </div>
+                                    <div class="row" style="display:none"> <span class="col-sm-3"> </span>  <div class="col-sm-9"><div class="cmplitetextalign">Min. Balance Need To be Maintained :<label id="lbleligibleforencashmentminbal">4</label></div> </div></div>
+                                    <div class="row"><div class="col-sm-3">Carry Forward to EL </div>  <div class="col-sm-9"> <div class="cmplitetextalign">Carry forward Limit:<label id="CarrayForYear">2</label></div> </div></div>
+
+                                </div>
+                            </div>
+
+</form>
+            </div>
+        </div>
+    </div>
+</div>

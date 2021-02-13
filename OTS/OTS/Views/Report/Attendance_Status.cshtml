@@ -1,0 +1,293 @@
+﻿<style type="text/css">
+    .ui-datepicker-calendar {
+        display: none;
+    }
+
+    .container {
+        width: 1070px;
+    }
+
+    table.newTable {
+        width: 100%;
+        margin-left: 50px;
+    }
+
+        table.newTable tr td.color-swatch div {
+            cursor: pointer;
+            width: 50px;
+            height: 27px;
+            border-radius: 3px;
+        }
+
+    table.myclass {
+        border-radius: 3px;
+    }
+
+    table.newTable tr td.color-name {
+        width: 240px;
+        padding-left: 1.5em;
+    }
+
+    table.newTable tr td {
+        font-family: "proxima-nova-soft", "Proxima Nova Soft", Helvetica, Arial, sans-serif;
+        line-height: 1.618;
+        font-style: normal;
+        font-weight: 700;
+        color: #3f3844;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 14px;
+        font-size: 0.875rem;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/Attendance_Status" + '"]').addClass('active');
+        var minOffset = -1, maxOffset = 2;
+        var thisYear = new Date().getFullYear();
+        var select = $('#year');
+        for (var i = 0; i <= maxOffset; i++) {
+            var year = thisYear - i;
+            $('<option>', { value: year, text: year }).appendTo(select);
+        }
+        $(document).on('click', "#btnsearch", function (e) {
+           
+            var month = $("#month ").val();
+            var year = $("#year").val();
+            if (month != null && year != null) {
+                $.ajax({
+                    url: '/Report/GetAttendence_Status',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    data: JSON.stringify(
+                        {
+                            'Month': month, 'Year': year
+                        }),
+                    success: function (data) {
+                        var len = Object.keys(data).length;
+                        if (len > 0) {
+                            $('#tab1 tbody').empty();
+                            var html = '';
+                            //Append each row to html table
+                            for (var i = 0; i < len; i++) {
+                                //$('#tab1 tbody').append("<tr><td id='e_code'>" + data[i].Emp_code + "</td><td id='e_name'>" + data[i].Employees + "</td><td><a class='timesheet' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].Status + "'>" + data[i].Status + "</a ></td><td><a class='expense' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].ExpenseStatus +"'>" + data[i].ExpenseStatus + "</a></td></tr > ");
+                                html += "<tr>";
+                                html += "<td id='e_code'>" + data[i].emp_code + "</td><td id='e_name'>" + data[i].emp_name + "</td>";
+
+                                if (data[i].Status == 'No Entry') {
+                                    html += "<td style='background-color:#ca49ea;'><a class='timesheet' style='color:black;' href='javascript:void(0);' data_id='" + data[i].emp_id + "' data_value='" + data[i].Status + "'>" + data[i].Status + "</a ></td>";
+                                }
+
+                                else {
+                                    html += "<td style='background-color:#5fdc5f;'><a class='timesheet' style='color:black;' href='javascript:void(0);' data_id='" + data[i].emp_id + "' data_value='" + data[i].Status + "'>" + data[i].Status + "</a ></td>";
+                                }
+
+                                html += "</tr>";
+                            }
+                            $('#tab1 tbody').append(html);
+                            $('#tab1').show();
+                            $('.newTable').show();
+                            $('#btnExportSt').prop('disabled', false);
+                            $('label[for=Lblmsg]').hide();
+                        }
+                        else {
+                            $('#btnExportSt').prop('disabled', true);
+                            $('#tab1').hide();
+                            $('.newTable').hide();
+                            alert("No Data Found.");
+                        }
+
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                    }
+                });
+            }
+            else {
+                alert(" Please select Month And Year!");
+            }
+
+        })
+        $(document).on('click', ".timesheet", function (e) {
+           
+            var month = $("#month").val();
+            var year = $("#year").val();
+
+            var $buttonClicked = $(this);
+            var emp_code = $buttonClicked.closest('tr').find('td#e_code').html();
+            var emp_name = $buttonClicked.closest('tr').find('td#e_name').html();
+            var emp_id = $buttonClicked.attr("data_id");
+            var status = $buttonClicked.attr("data_value");
+
+            if (status == "Submitted" || status == "Approved" || status == "Final" || status == "Entry")
+            {
+                var Attendance_Model = {};
+                Attendance_Model.Month = month;
+                Attendance_Model.Year = year;
+                Attendance_Model.Emp_id = emp_id;
+                Attendance_Model.Emp_name = emp_name;
+                Attendance_Model.Emp_code = emp_code;
+
+                var AttendanceModel = {
+                    "am": Attendance_Model
+                };
+
+                $.ajax({
+                    url: '/Report/EmployeeInoutDetail',
+                    type: 'POST',
+                    contenttype: "application/json; charset=utf-8",
+                    data: AttendanceModel,
+                    datatype: 'json',
+                    success: function (data) {
+                       
+                        var result = JSON.parse(data);
+                        if (result.length > 0) {
+                            var html = "";
+                            $('#status_view').empty();
+                            $.each(result, function (txt, val) {
+                                html += "<tr>";
+                                html += "<td >" + val.Emp_name + "</td><td>" + val.worktype_name + "</td><td>" + val.customer_name + "</td>"
+                                html += "<td>" + val.project_name + "</td><td>" + val.check_in_date + "</td><td>"
+                                html += "<td>" + val.check_out_date + "</td><td>" + val.location + "</td><td>" + val.Chk_in_lat +","+ val.chk_in_long+ "</td>"
+                                html += "<td>" + val.chk_out_lat + "," + chk_out_long + "</td>"
+                                html += "</tr>"
+                            });
+                            $('#tblstatusdetail').append(html);
+                            $('#status_view').modal('show');
+                        }
+                    }
+
+                })
+
+       
+            }
+        })
+    })
+</script>
+<div class="container">
+    <br />
+    <div class="panel panel-default">
+        <div class="panel-heading">Summary Details</div>
+        <br />
+        <div class="row">
+            <form class="form-horizontal">
+                <div class="form-group">
+
+                    <div class="col-sm-2">
+                        <select name="year" id="year" style="height:30px; border-radius:18px; margin-left: 60px;">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-2">
+                        <select name="month" id="month" style="height:30px; border-radius: 18px;">
+                            <option value="0">Select Month </option>
+                            <option value="1">Jan</option>
+                            <option value="2">Feb</option>
+                            <option value="3">Mar</option>
+                            <option value="4">Apr</option>
+                            <option value="5">May</option>
+                            <option value="6">Jun</option>
+                            <option value="7">Jul</option>
+                            <option value="8">Aug</option>
+                            <option value="9">Sep</option>
+                            <option value="10">Oct</option>
+                            <option value="11">Nov</option>
+                            <option value="12">Dec</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-2">
+                        <button type='button' id='btnsearch' class="btn btn-primary" style=" border-radius:43px;">Search</button>
+                    </div>
+                    <label class="control-label col-sm-1"></label>
+                    <div class="col-sm-6">
+                        <button type='button' id='btnExportSt' class="btn btn-primary" style="margin-top: -8px; border-radius:43px;">Export To Excel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <br />
+        <div class="panel-body" id="tab1">
+            <table class="table table-striped table-bordered table-hover table-condensed myclass" id="datatableList">
+                <thead>
+                    <tr >
+                        <th>
+                            Employee Code
+                        </th>
+                        <th>
+                            Employee Name
+                        </th>
+                        <th>
+                            Attendence Status
+                        </th>
+
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id='myModal' class='modal'>
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div id='myModalContent'></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="myModal1" role="dialog" style="padding-top:50px;">
+            <div class="modal-dialog modal-sm" style="width:80%;">
+                <div class="modal-content" style="font-size:11px;">
+                    <div class="modal-header" style="background-color:cadetblue;">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Map</h4>
+                    </div>
+                    <br />
+                    <div class="modal-body">
+                        <div class="map">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="status_view" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" id="btn_edit_close" class="close">&times;</button>
+        <div class="modal-content modal-lg">
+
+            <div class="panel" id="pnl_header">
+                <div class="panel-body">
+                    <div class="modal-header"><h4 class="modal-title">Attendance Summary</h4></div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="table-responsive">
+                                    <table class="table table-striped custom-table text-left" style="font-size:11px;" id="datatableList">
+                                        <thead>
+                                            <tr>
+                                                <th class="th-sm">Employee Name</th>
+                                                <th>Work Type</th>
+                                                <th>Customer</th>
+                                                <th>Project</th>
+                                                <th>Date/Time(In)</th>
+                                                <th>Date/Time(Out)</th>
+                                                <th>Address</th>
+                                                <th>Lat/Long(In)</th>
+                                                <th>Lat/Long(Out)</th>
+                                                <th>Map</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tblstatusdetail"></tbody>
+                                   </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

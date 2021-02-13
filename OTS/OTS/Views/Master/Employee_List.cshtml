@@ -1,0 +1,187 @@
+﻿@model IEnumerable<OTS.Models.MastersModel>
+@{
+    ViewBag.Title = "Employee_List";
+}
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="~/Scripts/datatables.min.js"></script>
+<link href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/material.min.css" rel="stylesheet" />
+<link href="~/Content/datatables.min.css" rel="stylesheet" type="text/css" />
+<script src="//code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+<script src="~/Scripts/material.min.js"></script>
+<script src="~/Scripts/json-to-table.js"></script>
+<html>
+<head>
+    <title></title>
+    <script type="text/javascript">
+           $(document).ready(function () {
+               $('ul.list-unstyled  li a[href$="' + "/Employee_List" + '"]').addClass('active');
+               $('#datatableList').DataTable({
+                   "order": [[0, 'desc']]
+               });
+           });
+    </script>
+    <style type="text/css">
+        .container {
+            width: 1300px;
+        }
+
+        #datatableList_filter input {
+            width: 157px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <br />
+        <div class="panel panel-default" style="width: 83%;">
+            <div class="panel-heading" style="background-color:#00bff9;">Employee Summary</div>
+            <br />
+            <div class="panel-body" id="tab1">
+                <table class="table table-striped" id="datatableList" style="font-size:11px;">
+                    <thead>
+                        <tr>
+                            <th>Employee Code</th>
+                            <th>Employee Name</th>
+                            <th>Department Name</th>
+                            <th>Designation</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th></th>
+                            @*<th></th>*@
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.Emp_code)</td>
+                                <td>@Html.DisplayFor(modelItem => item.First_Name)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Department_Name)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Designation)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Show_Role)</td>
+                                <td>
+                                @if (item.Show_Status == "Active")
+                                {<label class="badge bg-success">@Html.DisplayFor(modelItem => item.Show_Status)</label>
+                                }
+                                else
+                                {
+                                    <label class="badge bg-warning">@Html.DisplayFor(modelItem => item.Show_Status)</label>
+                                }
+                                
+                                </td>
+                                <td>
+                                    <p title="edit employee">
+                                        <a class="btn-edit" href="javascript:void(0);" data-empid="@item.Emp_Id"><img src="~/Content/themes/base/images/edit-task.png" style="height:16px;width:16px;" /></a>
+                                    </p>
+                                </td>
+                                @*<td>
+                                        <p title="delete employee">
+                                            <a class="btn-edit" href="javascript:void(0);" data-empid="@item.Emp_Id"><img src="~/Content/themes/base/images/user.png" style="height:16px;width:16px;" /></a>
+                                        </p>
+                                    </td>*@
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal fade" id="myModal" role="dialog" style="padding-top:50px;">
+            <div class="modal-dialog modal-sm" style="width:80%;">
+                <div class="modal-content" style="font-size:11px;">
+                    <div class="modal-header" style="background-color:cadetblue;">
+                        <button type="button" id="btnclose" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Edit Employee</h4>
+                    </div>
+                    <br />
+                    <div class="modal-body">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-1">Employee Code:</label>
+                                        <div class="mycontrol">
+                                            <input type="text" id="Emp_Code" class="Myform-control myInput" disabled />
+                                        </div>
+                                        <label class="control-label col-sm-1">First Name:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            <input type="text" id="First_name" class="Myform-control myInput" />
+                                        </div>
+                                        <label class="control-label col-sm-1">Middle Name:</label>
+                                        <div class="mycontrol">
+                                            <input type="text" id="Middle_name" class="Myform-control myInput" />
+                                        </div>
+                                        <label class="control-label col-sm-1">Last Name:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            <input type="text" id="Last_name" class="Myform-control myInput" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-1">Email:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            <input type="text" id="Email" class="Myform-control myInput" />
+                                        </div>
+                                        <label class="control-label col-sm-1">Dob:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            <input type="text" id="dob" class="Myform-control myInput" />
+                                        </div>
+                                        <label class="control-label col-sm-1">Doj:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            <input type="text" id="doj" class="Myform-control myInput" />
+                                        </div>
+                                        <label class="control-label col-sm-1">Designation:</label>
+                                        <div class="mycontrol">
+                                            <input type="text" id="Designation" class="Myform-control myInput" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-1">Employee Type:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            @Html.DropDownList("Emp_Type", (IEnumerable<SelectListItem>)ViewBag.emptype, "Select", new { @class = "Myform-control myDropdown", @style = "font-size:11px;" })
+                                        </div>
+                                        <label class="control-label col-sm-1">Employee Role:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            @Html.DropDownList("Role", (IEnumerable<SelectListItem>)ViewBag.role, "Select", new { @class = "Myform-control myDropdown", @style = "font-size:11px;" })
+                                        </div>
+                                        <label class="control-label col-sm-1" for="Description">Department:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            @Html.DropDownList("Department_Id", (IEnumerable<SelectListItem>)ViewBag.dept, "Select", new { @class = "Myform-control myDropdown", @style = "font-size:11px;" })
+                                        </div>
+                                        <label class="control-label col-sm-1" for="Remark">Manager:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            @Html.DropDownList("Manager_Id", (IEnumerable<SelectListItem>)ViewBag.emp, "Select", new { @class = "Myform-control myDropdown", @style = "font-size:11px;" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-1">Contact:</label>
+                                        <div class="mycontrol">
+                                            <input type="text" id="contact" class="Myform-control myInput" />
+                                        </div>
+                                        <label class="control-label col-sm-1">Status:<span class="required">*</span></label>
+                                        <div class="mycontrol">
+                                            @Html.DropDownList("Status", (IEnumerable<SelectListItem>)ViewBag.Status, "Select", new { @class = "Myform-control myDropdown", onchange = "StatusChange(this);", @style = "font-size:11px;" })
+                                        </div>
+                                        <label class="control-label col-sm-1">Last Working Day:</label>
+                                        <div class="mycontrol">
+                                            <input type="text" class="Myform-control myInput" id="L_Wday" />
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" id="emp_id" />
+                        <button type='button' id='btnUpdate' class="btn btn-primary">Update</button>
+                        <button type='button' id='btnCancel' class="btn btn-danger cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+
+
+

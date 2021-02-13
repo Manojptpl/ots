@@ -1,0 +1,432 @@
+﻿
+@{
+    ViewBag.Title = "bootstrapTable";
+}
+<!DOCTYPE html>
+<html>
+     <head>
+         <title></title>
+         @*<link href="css/addons/datatables.min.css" rel="stylesheet">         
+         <script href="js/addons/datatables.min.js" rel="stylesheet"></script>         
+         <link href="css/addons/datatables-select.min.css" rel="stylesheet">         
+         <script href="js/addons/datatables-select.min.js" rel="stylesheet"></script>
+         <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>*@
+         <style type="text/css">
+             .highlite{  
+                        font-weight: bold;
+                        color: #0a9600 !important; 
+                      }
+         </style>
+         <script type="text/javascript">
+             $(document).ready(function () {
+                 $(".myadddCustomer").on("click", function () {
+                     debugger;
+                     var markup;
+                     markup += "<tr class='retriveData'>";
+                     markup += "<td>" + $("#tbltxtCustomerName").val() + "</td>";
+                     markup += "<td>" + $("#tbltxtCustomerCode").val() + "</td>";
+                     markup += "<td>" + $("#tbltxtCity").val() + "</td>";
+                     markup += "<td>" + $("#tbltxtState").val() + "</td>";
+                     markup += "<td>" + $("#tbltxtCountry").val() + "</td>";
+                     markup += "<td>" + $("#tbltxtZipCode").val() + "</td>";
+                     markup += "<td>" + $("#tbltxtAddress").val() + "</td>";                     
+                     if ($("#tbltxtStatus").is(":checked")) {
+                         markup += "<td>" + 1 + "</td>";
+                     }
+                     else {
+                         markup += "<td>" + 0 + "</td>";
+                     }
+                     markup += "<td><a href='javascript:void(0)' class='text-danger font-18' title='Remove'><i class='fa fa-trash-o' aria-hidden='true'></i></a></td>";
+                     markup += "</tr>";
+                     $("#tblCustomer tbody").find("tr.tablerheader").after(markup);
+                     tblInputClearText();
+                 });                                 
+                 $(document).on('click', '.fa-trash-o', function (e) {
+                     $(this).closest('tr').remove();
+                 });
+                 $("#btn_BulkSubmit").on('click', function () {
+                     var DSAS = new Array();
+                     $("#tblCustomer tbody tr").each(function (i) {
+                         var DSA = {};
+                         if (i > 0) {                             
+                             DSA.Customer_Code = $(this).find("td").eq(0).html();
+                             DSA.Customer_Name = $(this).find("td").eq(1).html();
+                             DSA.City = $(this).find("td").eq(2).html();
+                             DSA.State = $(this).find("td").eq(3).html();
+                             DSA.Country = $(this).find("td").eq(4).html();
+                             DSA.Zip_Code = $(this).find("td").eq(5).html();
+                             DSA.Address = $(this).find("td").eq(6).html();
+                             DSA.Status = $(this).find("td").eq(7).html();
+                             DSAS.push(DSA);
+                         }
+                     });                     
+
+                     $.ajax({
+                         type: 'POST',
+                         url: '/Team/CreateBulkCustomer',
+                         contentType: 'application/json; charset=utf-8',
+                         data: JSON.stringify(DSAS),
+                         dataType: 'json',
+                         success: function (data) {
+                             var succ = data.SuccessMsg;
+                             var err = data.ErrorMsg;
+                             if (succ != null && err == null) {
+                                 alert(succ);                                                                
+                                 window.location.reload(true);
+                             }
+                             else {
+                                 alert(err);                                 
+                             }
+                         },
+                         error: function (data) {
+                             alert(data.responseText);
+                         }
+                     });
+                 })
+                 $("#btn_SimpleSubmit").on('click', function () {
+                     var status = 0;
+                     if ($('#Status').is(":checked")) {
+                         status = 1;
+                     }
+                     else {
+                         status = 0;
+                     }
+                     var cust_code = $('#Customer_Code').val();
+                     var str = $('#Customer_Name').val();
+                     str = str.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                         return letter.toUpperCase();
+                     });
+                     var cust_name = str;
+                     var str1 = $('#Address').val();
+                     str1 = str1.toLowerCase().replace(/\b[""a-z]/g, function (letter) {
+                         return letter.toUpperCase();
+                     });
+                     var address = str1;
+                     var str2 = $('#City').val();
+                     str2 = str2.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                         return letter.toUpperCase();
+                     });
+                     var city = str2;
+                     var str3 = $('#State').val();
+                     str3 = str3.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                         return letter.toUpperCase();
+                     });
+                     var state = str3;
+                     var str4 = $('#Country').val();
+                     str4 = str4.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                         return letter.toUpperCase();
+                     });
+                     var country = str4;
+                     var zip_code = $('#Zip_Code').val();
+                     var TmpCusModel = {
+                         'Customer_Code': cust_code,
+                         'Customer_Name': cust_name,
+                         'Address': address,
+                         'City': city,
+                         'State': state,
+                         'Country': country,
+                         'Zip_Code': zip_code,
+                         'Status': status
+                     };
+                     $.ajax({
+                         type: 'POST',
+                         url: '/Team/CreateSimpleTempCustomer/',
+                         contentType: "application/json; charset=utf-8",
+                         data: JSON.stringify(TmpCusModel
+                             //or
+                             //{
+                             //    'Customer_Code': cust_code, 'Customer_Name': cust_name, 'Address': address, 'City': city, 'State': state, 'Country': country, 'Zip_Code': zip_code, 'Status': status
+                             //}
+                         ),
+                         
+                         dataType: 'json',
+                         success: function (data) {
+                             var a = data.SuccessMsg;
+                             var b = data.ErrorMsg;
+                             if (data != null && a != null) {
+                                 alert(a);
+                                 ClearText();
+                             }
+                             else {
+                                 alert(b);
+                             }
+                         },
+                         error: function (data) {
+
+                         }
+                     });
+
+                 });
+                 GetCustomerDetails();
+
+             });
+             function CreateCustomer() {                 
+                 var status = 0;
+                 if ($('#Status').is(":checked")) {
+                     status = 1;
+                 }
+                 else {
+                     status = 0;
+                 }
+                 var cust_code = $('#Customer_Code').val();
+                 var str = $('#Customer_Name').val();
+                 str = str.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                     return letter.toUpperCase();
+                 });
+                 var cust_name = str;
+                 var str1 = $('#Address').val();
+                 str1 = str1.toLowerCase().replace(/\b[""a-z]/g, function (letter) {
+                     return letter.toUpperCase();
+                 });
+                 var address = str1;
+                 var str2 = $('#City').val();
+                 str2 = str2.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                     return letter.toUpperCase();
+                 });
+                 var city = str2;
+                 var str3 = $('#State').val();
+                 str3 = str3.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                     return letter.toUpperCase();
+                 });
+                 var state = str3;
+                 var str4 = $('#Country').val();
+                 str4 = str4.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                     return letter.toUpperCase();
+                 });
+                 var country = str4;
+                 var zip_code = $('#Zip_Code').val();                 
+                 var TmpCusModel = {
+                     'Customer_Code': cust_code,
+                     'Customer_Name': cust_name,
+                     'Address': address,
+                     'City': city,
+                     'State': state,
+                     'Country': country,
+                     'Zip_Code': zip_code,
+                     'Status': status
+                 };
+                 
+                 if (cust_code != "" && cust_name != "" && address != "") {
+                     $.ajax({
+                         type: 'POST',
+                         url: '/Team/CreateTempCustomer/',
+                         contentType: "application/json; charset=utf-8",
+                         data: JSON.stringify(TmpCusModel),
+                           
+                         dataType: 'json',
+                         success: function (data) {
+                             var a = data.SuccessMsg;
+                             var b = data.ErrorMsg;
+                             if (data != null && a != null) {
+                                 alert(a);                                 
+                             }
+                             else {
+                                 alertify.alert(b).setHeader('<em> Message </em> ');
+                             }
+                         },
+                         error: function (data) {
+
+                         }
+                     });
+                 }
+                 else if (cust_name == "") {
+                     alert("Customer Name Can't be blank.");
+                     setTimeout(function () { $('#Customer_Name').focus(); });
+                 }
+                 else if (cust_code == "") {
+                     alert("Customer Code Can't be blank.");
+                     setTimeout(function () { $('#Customer_Code').focus(); });
+                 }
+                 else {
+                     alert("Address Can't be blank.");
+                     setTimeout(function () { $('#Address').focus(); });
+                 }
+             }
+             function tblInputClearText() {
+                 $("#tbltxtCustomerName").val('');
+                 $("#tbltxtCustomerCode").val('');
+                 $("#tbltxtCity").val('');
+                 $("#tbltxtState").val('');
+                 $("#tbltxtCountry").val('');
+                 $("#tbltxtZipCode").val('');
+                 $('#tbltxtAddress').val('');
+                 $('#tbltxtStatus').val('');
+             }
+             function GetCustomerDetails() {
+                 debugger;
+                 $.ajax({
+                     type: "GET",
+                     url: "/Team/Get_TempCustomerDetails",
+                     data: {},
+                     contentType: 'application/json; charset=utf-8',
+                     dataType: 'json',
+                     success: function (data) {
+                         //$("#tblCustomer1").dataTable().fnDestroy();
+                         //$('#tblCustomer1 tbody').empty();
+                         var html = "";
+                         $.each(data, function (txt, val) {
+                             html += "<tr>";
+                             html += "<td>" + val.Customer_Id + "</td>";
+                             html += "<td>" + val.Customer_Name + "</td>";
+                             html += "<td>" + val.Customer_Code + "</td>";
+                             html += "<td>" + val.City + "</td>";
+                             html += "<td>" + val.State + "</td>";
+                             html += "<td>" + val.Country + "</td>";
+                             html += "<td>" + val.Zip_Code + "</td>";
+                             html += "<td>" + val.Address + "</td>";
+                             html += "<td>" + val.Status + "</td>";
+                             html += "</tr>";
+                         });
+                         $('#tblCustomer1').append(html);
+                         var table = $("#tblCustomer1").DataTable(
+                             {
+                                 "columnDefs": [
+                                     { "targets": [3, 4], "orderable": false }
+                                 ],
+                                 "language": {
+                                     "search": "",
+                                     "searchPlaceholder": "Search"
+                                 }
+                             });
+                     },
+                     error: function (data) {
+                         alert("Session is expired, Please login again.");
+                         location.href = location.href;
+                     }
+                 });
+             }
+         </script>
+     </head>
+     <body>
+         <div class="container">
+             <div class="row">
+                 <div class="panel">
+                     <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">Create Customer</h4></div>
+                     <div class="panel-body" style="width: 1049px;">
+                         <div class="row">
+                             <div class="col-sm-3">
+                                 <div class="form-group">
+                                     <label>Customer Name:<span class="required">*</span></label>
+                                     <input type="text" class="form-control" id="Customer_Name" maxlength="50" autocomplete="off">
+                                 </div>
+                             </div>
+
+                             <div class="col-sm-3">
+                                 <div class="form-group">
+                                     <label>Customer Code:<span class="required">*</span></label>
+                                     <input type="text" class="form-control" id="Customer_Code" maxlength="20" autocomplete="off">
+                                 </div>
+                             </div>
+
+                             <div class="col-sm-3">
+                                 <div class="form-group">
+                                     <label>City:</label>
+                                     <input type="text" class="form-control" id="City" maxlength="25" autocomplete="off">
+                                 </div>
+                             </div>
+
+                             <div class="col-sm-3">
+                                 <div class="form-group">
+                                     <label>State:</label>
+                                     <input type="text" class="form-control" id="State" maxlength="25" autocomplete="off">
+                                 </div>
+                             </div>
+
+                             <div class="col-sm-3">
+                                 <div class="form-group">
+                                     <label>Country:</label>
+                                     <input type="text" class="form-control" id="Country" maxlength="25" autocomplete="off">
+                                 </div>
+                             </div>
+
+                             <div class="col-sm-3">
+                                 <div class="form-group">
+                                     <label>Zip Code:</label>
+                                     <input type="text" class="form-control" id="Zip_Code" maxlength="6"  autocomplete="off">
+                                 </div>
+                             </div>
+                             <div class="col-sm-3">
+                                 <div class="form-group">
+                                     <label>Address:<span class="required">*</span></label>
+                                     <textarea type="text" rows="2" class="form-control" id="Address" maxlength="100" autocomplete="off"></textarea>
+                                 </div>
+                             </div>
+                             <div class="col-sm-3">
+                                 <div class="form-group">
+                                     <label>Status:</label>
+                                     <input type="checkbox" class="myCheckbox" id="Status" value="" checked="checked" />Active
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="row">
+
+                             <table id="tblCustomer1" style="display:inline" class="table table-striped">
+                                 <thead>
+                                     <tr>
+                                         <th>Sr. No.</th>
+                                         <th>Customer Name</th>
+                                         <th>Customer Code</th>
+                                         <th>City</th>
+                                         <th>State</th>
+                                         <th>Country</th>
+                                         <th>Zip Code</th>
+                                         <th>Address</th>
+                                         <th>Status</th>                                         
+                                     </tr>
+                                 </thead>                                 
+                             </table>
+                         </div>
+                         
+                         <div class="row">
+                             
+                             <table id="tblCustomer" style="display:inline" class="table table-striped" >
+                                 <thead>
+                                     <tr>
+                                         <th>Customer Name</th>
+                                         <th>Customer Code</th>
+                                         <th>City</th>
+                                         <th>State</th>
+                                         <th>Country</th>
+                                         <th>Zip Code</th>
+                                         <th>Address</th>
+                                         <th>Status</th>
+                                         <th></th>
+                                     </tr>
+                                 </thead>
+                                 <tbody>
+                                     <tr class="tablerheader">
+                                         <td><div><input class="form-control" tabindex="1" type="text" id="tbltxtCustomerName"></div></td>
+                                         <td><input type="text" tabindex="2" class="form-control" id="tbltxtCustomerCode" /></td>
+                                         <td><div><input tabindex="3" class="form-control" type="text" id="tbltxtCity"></div></td>
+                                         <td><input tabindex="4" type="text" class="form-control" id="tbltxtState"/></td>
+                                         <td><input tabindex="5" type="text" id="tbltxtCountry" class="form-control"/></td>
+                                         <td><input type="text" tabindex="6" id="tbltxtZipCode" class="form-control myDecimal"/></td>
+                                         <td><input tabindex="7" class="form-control" type="text" id="tbltxtAddress" /></td>
+                                         <td><input tabindex="8" class="form-control" type="checkbox" id="tbltxtStatus"checked style="height: 34px;"/></td>                                         
+                                         <td><a href="javascript:void(0)" class="text-success font-18" title="Add" tabindex="2"><i class="fa fa-plus myadddCustomer"></i></a></td>
+                                     </tr>
+                                 </tbody>
+                             </table>
+                         </div>                         
+                         <div class="row">
+                             <div class="col-sm-3">
+                                 <div class="form-group">                                                                         
+                                 </div>
+                             </div>
+                             <div class="col-sm-6">
+                                 <div class="form-group">
+                                     <button type="button" class="btn btn-primary" id="btn_Submit" onclick="CreateCustomer()">SR Submit</button>
+                                     <button type="button" class="btn btn-primary" id="btn_BulkSubmit">MR Submit</button>
+                                     <button type="button" class="btn btn-primary" id="btn_SimpleSubmit">S Submit</button>
+                                     @*<button type="button" class="btn btn-primary" onclick="ClearText()">Reset</button>
+                                     <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>*@
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+
+             </div>                                      
+         </div>         
+     </body>
+</html>

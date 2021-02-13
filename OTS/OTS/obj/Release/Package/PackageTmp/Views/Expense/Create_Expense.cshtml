@@ -1,0 +1,1303 @@
+﻿<html>
+<head>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('ul.list-unstyled  li a[href$="' + "/Create_Expense" + '"]').addClass('active');
+            var currentTime = new Date()
+            var minDate = new Date(currentTime.getFullYear(), currentTime.getMonth() - 1);
+
+            $("#txt_ExpenseDate").datepicker({ dateFormat: "dd-M-yy", maxDate: "+0m +0w", minDate: minDate, firstDay: 1 }).datepicker('setDate', 'today').attr('readonly', true);
+
+            $('#div_file').hide();
+
+            $('#Update_div').hide();
+
+            $('#div_empty').hide();
+
+            $(document).ajaxStart(function () {
+                $('.overlay').css("display", "block");
+            });
+
+            $(document).ajaxComplete(function () {
+                $('.overlay').css("display", "none");
+            });
+
+            BindHistory();
+
+            $('#ddl_ExpenseType').on('change', function () {
+                var expense_type = $('#ddl_ExpenseType').val();
+                if (expense_type == 1)
+                {
+                    $("div.Conveyanceselfield").show();
+                }
+                else
+                {
+                    $("div.Conveyanceselfield").hide();
+                    $('#ddl_TravelMode').val("0");
+                    $('#txt_From').val("");
+                    $('#txt_To').val("");
+                    $('#txt_KM').val("");
+                    $('#txt_Amount').prop('disabled', false).css("background-color", "white");
+                }
+            });
+
+            $('#ddl_TravelMode').on('change', function () {
+                var travel_mode = $(this).val();
+                $('#txt_Km').val("");
+                $('#txt_Amount').val("");
+                if (travel_mode == 1 || travel_mode == 2)
+                {
+                    $('#Amount').prop('disabled', true).css("background-color", "white");
+                }
+                if (travel_mode == 3 || travel_mode == 4 || travel_mode == 5 || travel_mode == 6 || travel_mode == 7 || travel_mode == 8 || travel_mode == 9)
+                {
+                    $("div.Modefield").hide();
+                    $('#Amount').prop('disabled', false).css("background-color", "white");
+                }
+                else
+                {
+                    $("div.Modefield").show();
+                }
+            });
+
+            $('#btn_Submit').on('click', function ()
+            {
+                var expense_date = $('#txt_ExpenseDate').val();
+                var expensetype_id = $('#ddl_ExpenseType option:selected').val();
+                var transport_id = $('#ddl_TravelMode option:selected').val();
+                var project_id = $('#ddl_Project option:selected').val();
+                var from = $('#txt_From').val();
+                var to = $('#txt_To').val();
+                var km = $('#txt_KM').val();
+                var amt = $('#txt_Amount').val();
+                var detail = $('#txt_Description').val();
+                var currt = new Date;
+                var currentdate = DateFormatter(currt);
+                if (DateFormatter(expense_date) <= currentdate)
+                {
+                    if (expensetype_id != 1)
+                    {
+                        if (expense_date != "" && project_id != "0" && expensetype_id != "0" && amt != "" && detail != "") {
+                            $.ajax({
+                                url: '/Expense/ExpenseDuplicateRecord',
+                                type: 'POST',
+                                contentType: 'application/json; charset=utf-8',
+                                data: JSON.stringify(
+                                    {
+                                        'Date': expense_date, 'Project_id': project_id, 'Expense_id': expensetype_id
+                                    }),
+                                dataType: 'json',
+                                success: function (data)
+                                {
+                                    var a = data.SuccessMsg;
+                                    if (data != null && a != "") {
+                                        var r = confirm(a + "\nDo You Want To Continue Press Ok Otherwise Press Cancel.")
+                                        if (r == true) {
+                                            SubmitExpenseData(expense_date, expensetype_id, transport_id, project_id, from, to, km, amt, detail);
+                                            $('#btn_Submit').prop('disabled', false);
+                                        }
+                                        else
+                                        {
+                                            $('#btn_Submit').prop('disabled', false);
+                                        }
+                                    }
+                                    else {
+                                        SubmitExpenseData(expense_date, expensetype_id, transport_id, project_id, from, to, km, amt, detail);
+                                        $('#btn_Submit').prop('disabled', false);
+                                    }
+                                },
+                                error: function (data) {
+                                    alert(data.responseText);
+                                }
+                            });
+                        }
+                        else if (expense_date == "")
+                        {
+                            alert("Expense Date Can't be blank.");
+                            setTimeout(function () { $('#txt_ExpenseDate').focus(); }, 1);
+                            return false;
+                        }
+                        else if (project_id == "0")
+                        {
+                            alert("Project Can't ba blank.");
+                            setTimeout(function () { $('#ddl_Project').focus(); }, 1);
+                            return false;
+                        }
+                        else if (expensetype_id == "0") {
+                            alert("Expense Type Can't be blank.");
+                            setTimeout(function () { $('#ddl_ExpenseType').focus(); }, 1);
+                            return false;
+                        }
+                        else if (amt == "")
+                        {
+                            alert("Expense Amount Can't be blank.");
+                            setTimeout(function () { $('#txt_Amount').focus(); }, 1);
+                            return false;
+                        }
+                        else if (detail == "") {
+                            alert("Expense Description Can't be blank.");
+                            setTimeout(function () { $('#txt_Description').focus(); }, 1);
+                            return false;
+                        }
+                    }
+                    else
+                    {                       
+                        if (transport_id == 1 || transport_id == 2)
+                        {
+                            if (transport_id == 0) {
+                                alert("Please Select Travel Mode.");
+                                setTimeout(function () { $('#ddl_TravelMode').focus(); }, 1);
+                                return false;
+                            }
+                            else if (from == "") {
+                                alert("From Location Can't be blank.");
+                                setTimeout(function () { $('#txt_From').focus(); }, 1);
+                                return false;
+                            }
+                            else if (to == "") {
+                                alert("To Location Can't be blank.");
+                                setTimeout(function () { $('#txt_To').focus(); }, 1);
+                                return false;
+                            }
+                            else if (km == "") {
+                                alert("Km Can't be blank.");
+                                setTimeout(function () { $('#txt_KM').focus(); }, 1);
+                                return false;
+                            }
+                            else if (amt == "") {
+                                alert("Expense Amount Can't be blank.");
+                                setTimeout(function () { $('#txt_Amount').focus(); }, 1);
+                                return false;
+                            }
+                            else if (detail == "") {
+                                alert("Expense Description Can't be blank.");
+                                setTimeout(function () { $('#txt_Description').focus(); }, 1);
+                                return false;
+                            }
+                            else if (transport_id != "0" && from != "" && to != "" && amt != "" && detail != "") {
+                                $.ajax({
+                                    url: '/Expense/ExpenseDuplicateRecord',
+                                    type: 'POST',
+                                    contentType: 'application/json; charset=utf-8',
+                                    data: JSON.stringify(
+                                        {
+                                            'Date': expense_date, 'Project_id': project_id, 'Expense_id': expensetype_id
+                                        }),
+                                    dataType: 'json',
+                                    success: function (data)
+                                    {
+                                        var a = data.SuccessMsg;
+                                        if (data != null && a != "") {
+                                            var r = confirm(a + "\nDo You Want To Continue Press Ok Otherwise Press Cancel.")
+                                            if (r == true) {
+                                                SubmitExpenseData(expense_date, expensetype_id, transport_id, project_id, from, to, km, amt, detail);
+                                                $('#btn_Submit').prop('disabled', false);
+                                            }
+                                            else {
+                                                //alert("Transaction Canceled.")
+                                                $('#btn_Submit').prop('disabled', false);
+                                            }
+                                        }
+                                        else {
+                                            SubmitExpenseData(expense_date, expensetype_id, transport_id, project_id, from, to, km, amt, detail);
+                                            $('#btn_Submit').prop('disabled', false);
+                                        }
+                                    },
+                                    error: function (data) {
+                                        alert(data.responseText);
+                                    }
+                                });
+                            }
+                            else if (transport_id == 0)
+                            {
+                                alert("Please Select Travel Mode.");
+                                setTimeout(function () { $('#ddl_TravelMode').focus(); }, 1);
+                                return false;
+                            }
+                            else if (from == "") {
+                                alert("From Location Can't be blank.");
+                                setTimeout(function () { $('#txt_From').focus(); }, 1);
+                                return false;
+                            }
+                            else if (to == "") {
+                                alert("To Location Can't be blank.");
+                                setTimeout(function () { $('#txt_To').focus(); }, 1);
+                                return false;
+                            }
+                            else if (amt == "") {
+                                alert("Expense Amount Can't be blank.");
+                                setTimeout(function () { $('#txt_Amount').focus(); }, 1);
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            if (transport_id == 0) {
+                                alert("Please Select Travel Mode.");
+                                setTimeout(function () { $('#ddl_TravelMode').focus(); }, 1);
+                                return false;
+                            }
+                            if (from == "") {
+                                alert("From Location Can't be blank.");
+                                setTimeout(function () { $('#txt_From').focus(); }, 1);
+                                return false;
+                            }
+                            else if (to == "") {
+                                alert("To Location Can't be blank.");
+                                setTimeout(function () { $('#txt_To').focus(); }, 1);
+                                return false;
+                            }
+                            else if (amt == "") {
+                                alert("Expense Amount Can't be blank.");
+                                setTimeout(function () { $('#txt_Amount').focus(); }, 1);
+                                return false;
+                            }
+                            else if (detail == "") {
+                                alert("Expense Description Can't be blank.");
+                                setTimeout(function () { $('#txt_Description').focus(); }, 1);
+                                return false;
+                            }
+                            else if (transport_id != "0" && from != "" && to != "" && amt != "" && detail != "")
+                            {
+                                $.ajax({
+                                    url: '/Expense/ExpenseDuplicateRecord',
+                                    type: 'POST',
+                                    contentType: 'application/json; charset=utf-8',
+                                    data: JSON.stringify(
+                                        {
+                                            'Date': expense_date, 'Project_id': project_id, 'Expense_id': expensetype_id
+                                        }),
+                                    dataType: 'json',
+                                    success: function (data)
+                                    {
+                                        var a = data.SuccessMsg;
+                                        if (data != null && a != "") {
+                                            var r = confirm(a + "\nDo You Want To Continue Press Ok Otherwise Press Cancel.")
+                                            if (r == true) {
+                                                SubmitExpenseData(expense_date, expensetype_id, transport_id, project_id, from, to, km, amt, detail);
+                                                $('#btn_Submit').prop('disabled', false);
+                                            }
+                                            else {
+                                                alert("Transaction Canceled.")
+                                                $('#btn_Submit').prop('disabled', false);
+                                            }
+                                        }
+                                        else {
+                                            SubmitExpenseData(expense_date, expensetype_id, transport_id, project_id, from, to, km, amt, detail);
+                                            $('#btn_Submit').prop('disabled', false);
+                                        }
+                                    },
+                                    error: function (data) {
+                                        alert(data.responseText);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    alert("Expense Date Can't Greater Then Current Date.");
+                    setTimeout(function () { $('#txt_ExpenseDate').focus(); }, 1);
+                    return false;
+                }
+            });
+
+            $('#btn_Reset').on('click', function () {
+                ClearTextData();
+            });
+
+            $('#btn_Cancel').on('click', function ()
+            {
+                DeleteImage();
+                window.location.href = "/Home/Dashboard";                
+            });
+
+            $(document).on('click', '.lnkActionEdit', function () {
+                if ($(this).attr('data_id')) {
+                    $.ajax({
+                        type: "GET",
+                        url: "/Expense/GetExpenseDetails",
+                        data: { "Expense_Id": $(this).attr('data_id') },
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        success: function (data) {
+                            var result = JSON.parse(data.expense);
+                            var result1 = JSON.parse(data.files);
+                            var markup = ""
+                            var Expense_id = "";
+                            if (result.length > 0) {
+                                $.each(result, function (txt, val) {
+                                    Expense_id = val.ID;
+                                    $('#txt_ExpenseDate').val(val.EXPENSE_DATE).prop('disabled', true);
+                                    $('#ddl_ExpenseType').val(val.EXPENSE_TYPE_ID);
+                                    $('#ddl_TravelMode').val(val.TRAVEL_MODE_ID);
+                                    $('#ddl_Project').val(val.PROJECT_ID);
+                                    $('#txt_From').val(val.TRAVEL_FROM);
+                                    $('#txt_To').val(val.TRAVEL_TO);
+                                    $('#txt_KM').val(val.TRAVEL_DISTANCE);
+                                    $('#txt_Amount').val(val.EXPENSE_AMOUNT);
+                                    $('#txt_Description').val(val.DESCRIPTION);
+                                });
+                                $("#ListofFiles tbody").empty();
+                                // Binding the file name
+                                if (result1.length > 0) {
+                                    $.each(result1, function (txt, val) {
+                                        markup += "<tr>";
+                                        markup += "<td>" + val.filename + "</td>";
+                                        markup += "<td><a href='javascript:void(0);' data_id='" + val.id + "' data_file='" + val.filename + "' id='btn_delete'><span class='glyphicon glyphicon-remove red'></span></a></td>";
+                                        markup += "</tr>";
+
+                                    });
+                                    $("#ListofFiles tbody").append(markup);
+
+
+                                    $('#ListofFiles').show();
+                                    $('#div_file').show();
+                                }
+                                else {
+                                    $('#ListofFiles').hide();
+                                    $('#div_file').hide();
+                                }
+
+                                if ($('#ddl_ExpenseType').val() == 1) {
+                                    $("div.Conveyanceselfield").show();
+                                }
+                                else
+                                {
+                                    $("div.Conveyanceselfield").hide();
+                                    $('#ddl_TravelMode').val("0");
+                                    $('#txt_From').val("");
+                                    $('#txt_To').val("");
+                                    $('#txt_KM').val("");
+                                    $('#txt_Amount').prop('disabled', false).css("background-color", "white");
+                                }
+
+                                if ($('#ddl_TravelMode').val() == 1 || $('#ddl_TravelMode').val() == 2) {
+                                    $("div.Modefield").show();
+                                    $('#txt_Amount').prop('disabled', true);
+                                }
+
+                                $('#hdn_ExpenseID').val(Expense_id);
+                                $('#div_submit').hide();
+                                $('#div_reset').hide();
+                                $('#div_empty').show();
+                                $('#Update_div').show();
+                            }
+                        }
+                    });
+                }
+            });
+
+            $(document).on('click', '.lnkActionView', function () {
+                if ($(this).attr('data_id')) {
+                    $.ajax({
+                        type: "GET",
+                        url: "/Expense/GetExpenseDetails",
+                        data: { "Expense_Id": $(this).attr('data_id') },
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        success: function (data) {
+                            var result = JSON.parse(data.expense);
+                            var result1 = JSON.parse(data.files);
+                            var markup = "";
+                            var Expense_Type_Id = "";
+                            var Travel_Mode_Id = "";
+                            if (result.length > 0) {
+                                $.each(result, function (txt, val) {
+                                    Expense_Type_Id = val.EXPENSE_TYPE_ID;
+                                    Travel_Mode_Id = val.TRAVEL_MODE_ID;
+                                    $('#txt_VExpenseDate').val(val.EXPENSE_DATE).prop('disabled', true);
+                                    $('#txt_VExpenseType').val(val.EXPENSE_TYPE_NAME);
+                                    $('#txt_VTravelMode').val(val.TRAVEL_MODE);
+                                    $('#txt_VProject').val(val.PROJECT_NAME);
+                                    $('#txt_VFrom').val(val.TRAVEL_FROM);
+                                    $('#txt_VTo').val(val.TRAVEL_TO);
+                                    $('#txt_VKM').val(val.TRAVEL_DISTANCE);
+                                    $('#txt_VAmount').val(val.EXPENSE_AMOUNT);
+                                    $('#txt_VDescription').val(val.DESCRIPTION);
+                                });
+                                // Empty File Table
+                                $("#VListofFiles tbody").empty();
+                                // Binding the file name
+                                if (result1.length > 0) {
+
+                                    $.each(result1, function (txt, val) {
+                                        markup += "<tr>";
+                                        markup += "<td>" + val.filename + "</td>";
+                                        markup += "</tr>";
+
+                                    });
+                                    $("#VListofFiles tbody").append(markup);
+
+                                    $('#VListofFiles').show();
+                                    $('#Vdiv_file').show();
+                                }
+                                else {
+                                    $('#VListofFiles').hide();
+                                    $('#Vdiv_file').hide();
+                                }
+
+                                if (Expense_Type_Id == 1) {
+                                    $("div.VConveyanceselfield").show();
+                                }
+                                else {
+                                    $("div.VConveyanceselfield").hide();
+                                    $('#txt_VTravelMode').val("0");
+                                    $('#txt_VFrom').val("");
+                                    $('#txt_VTo').val("");
+                                    $('#txt_VKM').val("");
+                                }
+
+                                if (Travel_Mode_Id == 1 || Travel_Mode_Id == 2) {
+                                    $("div.VModefield").show();
+
+                                }
+                                else {
+                                    $("div.VModefield").hide();
+
+                                }
+
+                                $('#view_expense').modal();
+                            }
+                        }
+                    });
+                }
+            })
+
+        });
+
+        function BindHistory() {
+            $.ajax({
+                type: "GET",
+                url: "/Expense/GetExpenseReport",
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (data) {
+                    var result = JSON.parse(data);
+                    if (result) {
+                        $('#tblBody').empty();
+                        var html = "";
+                        $.each(result, function (txt, val) {
+                            html += "<tr>";
+                            html += "<td>" + val.EXPENSE_DATE + "</td>";
+                            html += "<td>" + val.PROJECT_NAME + "</td>";
+                            html += "<td>" + val.EXPENSE_TYPE_NAME + "</td>";
+                            html += "<td>" + val.EXPENSE_AMOUNT + "</td>";
+                            html += "<td>" + val.DESCRIPTION + "</td>";
+                            if (val.EXPENSE_STATUS == 'Submitted' || val.EXPENSE_STATUS == 'Approved' || val.EXPENSE_STATUS == 'Approved')
+                            {
+                                html += "<td><label class='badge bg-warning'>&nbsp;&nbsp;" + val.EXPENSE_STATUS + "&nbsp;&nbsp;</label></td>";
+                                html += "<td>";
+                                html += "<a href= 'javascript:void(0);' class='lnkActionView' data_id=" + val.ID + " ><i class='fa fa-eye m-r-5'></i ></a>";
+                                html += "</td>";
+                            }
+                            else if (val.EXPENSE_STATUS == "Rejected")
+                            {
+                                html += "<td><label class='badge bg-danger'>&nbsp;&nbsp;" + val.EXPENSE_STATUS + "&nbsp;&nbsp;</label></td>";
+                                html += "<td>";
+                                html += "<a href= 'javascript:void(0);' class='lnkActionEdit' data_id=" + val.ID + " ><i class='fa fa-pencil m-r-5'></i ></a>";
+                                html += "<a href= 'javascript:void(0);' class='lnkActionView' data_id=" + val.ID + " ><i class='fa fa-eye m-r-5'></i ></a>";
+                                html += "</td>";
+                            }
+                            else
+                            {
+                                html += "<td><label class='badge bg-success'>&nbsp;&nbsp;" + val.EXPENSE_STATUS + "&nbsp;&nbsp;</label></td>";
+                                html += "<td>";
+                                html += "<a href= 'javascript:void(0);' class='lnkActionEdit' data_id=" + val.ID + " ><i class='fa fa-pencil m-r-5'></i ></a>";
+                                html += "<a href= 'javascript:void(0);' class='lnkActionView' data_id=" + val.ID + " ><i class='fa fa-eye m-r-5'></i ></a>";
+                                html += "</td>";
+                            }
+                            html += "</tr>";
+                        });
+                        $('#tblBody').append(html);
+                       
+                    }
+                }
+            });
+        }
+
+        function onlyAlphabets(e, t) {
+            try {
+                if (window.event) {
+                    var charCode = window.event.keyCode;
+                }
+                else if (e) {
+                    var charCode = e.which;
+                }
+                else { return true; }
+                if ((charCode > 64 && charCode < 91) || (charCode > 96 && charCode < 123))
+                    return true;
+                else
+                    return false;
+            }
+            catch (err) {
+                alert(err.Description);
+            }
+        }
+
+        function DateFormatter(currentdate) {
+            var d = new Date(currentdate);
+            var day = d.getDate();
+            var month = d.getMonth() + 1;
+            var year = d.getFullYear();
+            if (day < 10) {
+                day = "0" + day;
+            }
+            if (month < 10) {
+                month = "0" + month;
+            }
+            var date = year + "-" + month + "-" + day;
+            return date;
+        }
+
+        function SubmitExpenseData(expense_date, expense_type_id, transport_id, project_id, from, to, km, amt, detail)
+        {
+            var tbody = $("#ListofFiles tbody");
+            var table_length = tbody.children().length;
+            if (table_length > 0) {
+                var table_data = GetTableData();
+            }
+            else
+            {
+                var files = $("#Files").get(0).files;
+                if (files.length > 0)
+                {
+                    alert("First Upload File.");
+                    setTimeout(function () { $('#UploadBtn').focus(); }, 1);
+                    return false;
+                }
+            }
+
+            var EXPENSE_MODEL = {};
+            EXPENSE_MODEL.EXPENSE_ID = 0;
+            EXPENSE_MODEL.EXPENSE_DATE = expense_date;
+            EXPENSE_MODEL.EXPENSE_TYPE_ID = expense_type_id;            
+            EXPENSE_MODEL.TRAVEL_MODE = transport_id;
+            EXPENSE_MODEL.PROJECT_ID = project_id;
+            EXPENSE_MODEL.TRAVEL_FROM = from;
+            EXPENSE_MODEL.TRAVEL_TO = to;
+            EXPENSE_MODEL.TRAVEL_DISTANCE = km;
+            EXPENSE_MODEL.EXPENSE_AMOUNT = amt;
+            EXPENSE_MODEL.DESCRIPTION = detail;
+
+            var ExpenseModel = {
+                'CreateExpense': EXPENSE_MODEL,
+                'Files': table_data
+            };
+            var currt = new Date;
+            var currentdate = DateFormatter(currt);
+            if (DateFormatter(expense_date) <= currentdate) {
+                if (expense_type_id != 1)
+                {
+                    if (expense_date != "" && project_id != "o" && expense_type_id != "0" && amt != "" && detail != "") {
+                        $.ajax({
+                            url: '/Expense/SubmitExpense',
+                            type: 'POST',
+                            contentType: 'application/json; charset=utf-8',
+                            data: JSON.stringify({ ExpenseModel }),
+                            dataType: 'json',
+                            success: function (data) {
+                                var a = data.SuccessMsg;
+                                var b = data.ErrorMsg;
+                                if (data != null && a != null) {
+                                    alert(a);
+                                    ClearTextData();
+                                    reloadPage();
+                                }
+                                else {
+                                    alert(b);
+                                }
+                            },
+                            error: function (data) {
+                                alert(data.responseText);
+                            }
+                        });
+                    }
+                    else if (expense_date == "") {
+                        alert("Expense Date Can't blank.");
+                        setTimeout(function () { $('#txt_ExpenseDate').focus(); }, 1);
+                        return false;
+                    }
+                    else if (project_id == "0") {
+                        alert("Project Can't be blank.");
+                        setTimeout(function () { $('#ddl_Project').focus(); }, 1);
+                        return false;
+                    }
+                    else if (expense_type_id == "0") {
+                        alert("Expense Type Can't be blank.");
+                        setTimeout(function () { $('#ddl_ExpenseType').focus(); }, 1);
+                        return false;
+                    }
+                    else if (amt == "") {
+                        alert("Expense Amount Can't be blank.");
+                        setTimeout(function () { $('#txt_Amount').focus(); }, 1);
+                        return false;
+                    }
+                    else if (detail == "") {
+                        alert("Expense Description Can't be blank.");
+                        setTimeout(function () { $('#txt_Description').focus(); }, 1);
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (transport_id == 1 && transport_id == 2)
+                    {
+                        if (transport_id == 0) {
+                            alert("Travel Mode Can't be blank.");
+                            setTimeout(function () { $('#ddl_TravelMode').focus(); }, 1);
+                            return false;
+                        }
+                        else if (from == "") {
+                            alert("From Location Can't be blank.");
+                            setTimeout(function () { $('#txt_From').focus(); }, 1);
+                            return false;
+                        }
+                        else if (to == "") {
+                            alert("To Location Can't be blank.");
+                            setTimeout(function () { $('#txt_To').focus(); }, 1);
+                            return false;
+                        }
+                        else if (km == "") {
+                            alert("Km Can't be blank.");
+                            setTimeout(function () { $('#txt_Km').focus(); }, 1);
+                            return false;
+                        }
+                        else if (detail == "") {
+                            alert("Expense Description Can't be blank.");
+                            setTimeout(function () { $('#txt_Description').focus(); }, 1);
+                            return false;
+                        }
+                        else if (transport_id != "0" && from != "" && to != "" && amt != "" && detail != "")
+                        {
+                            $.ajax({
+                                url: '/Expense/SubmitExpense',
+                                type: 'POST',
+                                contentType: 'application/json; charset=utf-8',
+                                data: JSON.stringify({ ExpenseModel }),
+                                dataType: 'json',
+                                success: function (data) {
+                                    var a = data.SuccessMsg;
+                                    var b = data.ErrorMsg;
+                                    if (data != null && a != null) {
+                                        alert(a);
+                                        ClearTextData();
+                                        reloadPage();
+                                    }
+                                    else {
+                                        alert(b);
+                                    }
+                                },
+                                error: function (data) {
+                                    alert(data.responseText);
+                                }
+                            });
+                        }
+                        else if (transport_id == "0") {
+                            alert("Travel Mode Can't be blank.");
+                            setTimeout(function () { $('#ddl_TravelMode').focus(); }, 1);
+                            return false;
+                        }
+                        else if (from == "") {
+                            alert("From Location Can't be blank.");
+                            setTimeout(function () { $('#txt_From').focus(); }, 1);
+                            return false;
+                        }
+                        else if (to == "") {
+                            alert("To Location Can't be blank.");
+                            setTimeout(function () { $('#txt_To').focus(); }, 1);
+                            return false;
+                        }
+                        else if (amt == "") {
+                            alert("Expense Amount Can't be blank.");
+                            setTimeout(function () { $('#txt_Amount').focus(); }, 1);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (from == "") {
+                            alert("From Location Can't be blank.");
+                            setTimeout(function () { $('#txt_From').focus(); }, 1);
+                            return false;
+                        }
+                        else if (to == "") {
+                            alert("To Location Can't be blank.");
+                            setTimeout(function () { $('#txt_To').focus(); }, 1);
+                            return false;
+                        }
+                        else if (amt == "") {
+                            alert("Expense Amount Can't be blank.");
+                            setTimeout(function () { $('#txt_Amount').focus(); }, 1);
+                            return false;
+                        }
+                        else if (detail == "") {
+                            alert("Expense Description Can't be blank.");
+                            setTimeout(function () { $('#txt_Description').focus(); }, 1);
+                            return false;
+                        }
+                        else {
+                            $.ajax({
+                                url: '/Expense/SubmitExpense',
+                                type: 'POST',
+                                contentType: 'application/json; charset=utf-8',
+                                data: JSON.stringify({ ExpenseModel }),
+                                dataType: 'json',
+                                success: function (data) {
+                                    var a = data.SuccessMsg;
+                                    var b = data.ErrorMsg;
+                                    if (data != null && a != null) {
+                                        alert(a);
+                                        ClearTextData();
+                                        reloadPage();
+                                    }
+                                    else {
+                                        alert(b);
+                                    }
+                                },
+                                error: function (data) {
+                                    alert(data.responseText);
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+            else
+            {
+                alert("Expense Entry Date Can't Greater Then Current Date.");
+                setTimeout(function () { $('#txt_ExpenseDate').focus(); }, 1);
+                return false;
+            }
+        }
+
+        function GetTableData() {
+            var expense_files = new Array();
+
+            $('#ListofFiles tbody tr').each(function () {
+                var expense_file = {};
+                expense_file.file_name = $(this).eq(0).find('td').html();
+                expense_files.push(expense_file);
+            });
+
+            console.log(expense_files);
+            return expense_files;
+        }
+
+        function ClearTextData()
+        {
+            var dt = new Date();
+            $('#txt_ExpenseDate').val($.datepicker.formatDate('dd-M-yy', dt));
+            $('#ddl_Project').val("0");
+            $('#ddl_ExpenseType').val("0");
+            $('#ddl_TravelMode').val("0");
+            $('#txt_From').val("");
+            $('#txt_To').val("");
+            $('#txt_Km').val("");
+            $('#txt_Amount').val("");
+            $('#txt_Description').val("");
+            $('#Files').val("");
+            $('#ListofFiles tbody').empty();
+            $('#ListofFiles').hide();
+            $("div.Conveyanceselfield").hide();
+            $("div.Modefield").hide();
+        }
+
+        function CalculateAmount() {
+            var travel_mode = $('#ddl_TravelMode').val();
+            var EmpType = $('#Role').val();
+            var km = $('#txt_KM').val();
+            if (travel_mode == 1) {
+                var amt = (km * 3).toFixed(2);
+                $('#txt_Amount').val(amt);
+            }
+            else if (travel_mode == 2) {
+                var amt = 0;
+                if (EmpType == 3) {
+                    amt = (km * 4).toFixed(2);
+                }
+                else {
+                    amt = (km * 7).toFixed(2);
+                }
+                $('#txt_Amount').val(amt);
+            }
+        }
+
+        function reloadPage() {
+            location.reload(true);
+        }
+
+        function DeleteImage()
+        {
+            var data = new FormData();
+            var files = $("#Files").get(0).files;
+            for (var i = 0; i < files.length; i++) {
+                data.append(files[i].name, files[i]);
+            }
+            if (files.length > 0) {
+                $('#UploadBtn').prop('disabled', true);
+                $.ajax({
+                    url: '/Expense/DeleteExpenseFiles',
+                    type: "POST",
+                    processData: false,
+                    data: data,
+                    dataType: 'json',
+                    contentType: false,
+                    success: function (response) {
+                    },
+                    error: function (er) {
+                    }
+                });
+            }
+        }
+
+        function loadcontent() {
+            if (navigator.userAgent.match(/Android/i)
+                || navigator.userAgent.match(/webOS/i)
+                || navigator.userAgent.match(/iPhone/i)
+                || navigator.userAgent.match(/iPad/i)
+                || navigator.userAgent.match(/iPod/i)
+                || navigator.userAgent.match(/BlackBerry/i)
+                || navigator.userAgent.match(/Windows Phone/i)
+            ) {
+                $('.desc').hide();
+            }
+            else {
+                $('.desc').show();
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+        var specialKeys = new Array();
+
+        specialKeys.push(8); //Backspace
+
+        function numericOnly(elementRef) {
+
+            var keyCodeEntered = (event.which) ? event.which : (window.event.keyCode) ? window.event.keyCode : -1;
+
+            if ((keyCodeEntered >= 48) && (keyCodeEntered <= 57)) {
+
+                return true;
+            }
+            else if (keyCodeEntered == 46) {
+
+                if ((elementRef.value) && (elementRef.value.indexOf('.') >= 0))
+                    return false;
+                else
+                    return true;
+            }
+            return false;
+        }
+        function numericTwoDecimal(elementRef, len, precision) {
+
+
+            var txtvalue = elementRef.value;
+            var keyCodeEntered = (event.which) ? event.which : (window.event.keyCode) ? window.event.keyCode : -1;
+
+            if ((keyCodeEntered >= 48) && (keyCodeEntered <= 57)) {
+
+                return true;
+            }
+            else if (keyCodeEntered == 46) {
+
+                if ((elementRef.value) && (elementRef.value.indexOf('.') >= 0))
+                    return false;
+                else
+                    return true;
+            }
+            return false;
+        }
+    </script>
+
+    <script type="text/javascript">
+        $(document).ready(function ()
+        {
+            $('#UploadBtn').click(function () {
+                var data = new FormData();
+                var files = $("#Files").get(0).files;
+                if (files.length > 0) {
+                    if (files.length <= 3) {
+                        var filenamelist = [];
+                        for (var i = 0; i < files.length; i++) {
+                            filenamelist.push(files[i].name);
+                            data.append(files[i].name, files[i]);
+                            var isize = (files[i].size / 1024);
+                            isize = (Math.round((isize / 1024) * 100) / 100);
+                            if (isize > 2) {
+                                alert("File must be less than 2MB");
+                                return false;
+                            }
+                        }
+                        for (var i = 0; i < filenamelist.length; i++) {
+                            var extension = filenamelist[i].split('.').pop().toUpperCase();
+                            if (extension != "DOC" && extension != "DOCX" && extension != "XLS" && extension != "XLSX" && extension != "PPT" && extension != "PPTX" && extension != "PPS" && extension != "PPSX" && extension != "PDF" && extension != "TXT" && extension != "PNG" && extension != "JPG" && extension != "BMP" && extension != "RTF" && extension != "JPEG" && extension != "ZIP") {
+                                alert("Invalid file format." + "(." + extension.toLowerCase() + ")");
+                                $("#Files").val('');
+                                return false;
+                            }
+
+                        }
+                        $('#btn_Submit').prop("disabled", true);
+                        $('#btn_Reset').prop("disabled", true);
+                        $('#btn_Cancel').prop("disabled", true);
+                        $('#UploadBtn').prop("disabled", true);
+
+                        $.ajax({
+                            url: '/expense/UploadExpense_Files',
+                            type: "POST",
+                            processData: false,
+                            data: data,
+                            dataType: 'json',
+                            contentType: false,
+                            async: false,
+                            success: function (result) {
+                                var len = Object.keys(result).length;
+                                if (result != "") {
+                                    for (var i = 0; i < len; i++) {
+                                        $('#FileBrowse').find("*").prop("disabled", true);
+                                        LoadProgressBar(result[i]); //calling LoadProgressBar function to load the progress bar.
+                                    }
+                                    $('#ListofFiles').show();
+                                    $('#div_file').show();
+                                }
+                            },
+                            error: function (err) {
+                                alert(err.responseText);
+                            }
+                        });
+                    }
+                    else {
+                        alert("No Of Files 3 can be Uploaded at a Time.")
+                        // setTimeout(function () { $('#uploadfile').focus(); });
+                        $("#Files").val('');
+                    }
+                }
+                else {
+                    alert("Please Check files to upload.")
+                    setTimeout(function () { $('#Files').focus(); });
+                    $("#Files").val('');
+                }
+            });
+
+            $(document).on('click', '#btn_delete', function (e) {
+                var FileName = $(this).attr('data_file');
+                var res = '';
+                if (FileName != "") {
+                    $.ajax({
+                        url: '/expense/DeleteFile',
+                        type: "POST",
+                        contentType: 'application/json;charset=utf-8',
+                        data: JSON.stringify({ 'Filename': FileName }),
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response != null || response != '') {
+                                res = response;
+                                alert(response);
+                            }
+                        },
+                        error: function (er) {
+                            alert(er.statusText);
+                        }
+                    });
+                }
+                else {
+                    alert('Error While Deleting.');
+                }
+                if (res != null || res != '') {
+                    $(this).closest("tr").remove();
+                }
+
+            });
+        });
+
+        function LoadProgressBar(result) {
+            var markup = "<tr><td>" + result + "</td><td><a href='javascript:void(0);' data_file='" + result + "' id='btn_delete'><span class='glyphicon glyphicon-remove red'></span></a></td></tr>"; // Binding the file name
+            $("#ListofFiles tbody").append(markup);
+            $('.glyphicon-remove').prop('disabled', true);
+            var progressbar = $("#progressbar-5");
+            var progressLabel = $(".progress-label");
+            progressbar.show();
+            $("#progressbar-5").progressbar({
+                //value: false,
+                change: function () {
+                    progressLabel.text(
+                        progressbar.progressbar("value") + "%");  // Showing the progress increment value in progress bar
+                },
+                complete: function () {
+                    progressLabel.text("Loading Completed!");
+                    progressbar.progressbar("value", 0);  //Reinitialize the progress bar value 0
+                    progressLabel.text("");
+                    progressbar.hide(); //Hiding the progress bar
+                    $('#Files').val('');
+                    $('#FileBrowse').find("*").prop("disabled", false);
+                    $('#btn_Submit').prop("disabled", false);
+                    $('.glyphicon-remove').prop('disabled', false);
+                    $('#btn_Reset').prop("disabled", false);
+                    $('#btn_Cancel').prop("disabled", false);
+                    $('#UploadBtn').prop("disabled", false);
+                }
+            });
+            function progress() {
+                var val = progressbar.progressbar("value") || 0;
+                progressbar.progressbar("value", val + 1);
+                if (val < 99) {
+                    setTimeout(progress, 25);
+                }
+            }
+            setTimeout(progress, 100);
+        }
+
+    </script>
+
+    <style type="text/css">
+        .ui-datepicker {
+            width: 234px;
+        }
+    </style>
+</head>
+<body onload="loadcontent();">
+
+    <form id="inputform" autocomplete="off">
+        <div class="panel">
+            <div class="panel-heading" style="background-color:#00bff9;">Create Expense</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Date:<span class="text-danger">*</span></label>
+                                    <div class="cal-icon">
+                                        <input type="text" id="txt_ExpenseDate" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Project:<span class="text-danger">*</span></label>
+                                    @Html.DropDownList("ddl_Project", (IEnumerable<SelectListItem>)ViewBag.projectlist, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Expense Type:<span class="text-danger">*</span></label>
+                                    @Html.DropDownList("ddl_ExpenseType", (IEnumerable<SelectListItem>)ViewBag.expenseType, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-sm-3 Conveyanceselfield" style="display:none;">
+                                <div class="form-group">
+                                    <label>Travel Mode:<span class="text-danger">*</span></label>
+                                    @Html.DropDownList("ddl_TravelMode", (IEnumerable<SelectListItem>)ViewBag.ByModule, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-sm-3 Conveyanceselfield" style="display:none;">
+                                <div class="form-group">
+                                    <label>From:<span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" id="txt_From">
+                                </div>
+                            </div>
+                            <div class="col-sm-3 Conveyanceselfield" style="display:none;">
+                                <div class="form-group">
+                                    <label>To:<span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" id="txt_To">
+                                </div>
+                            </div>
+                            <div class="col-sm-3 Modefield" style="display:none;">
+                                <div class="form-group">
+                                    <label>KM:<span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" id="txt_KM" maxlength="5" onkeypress="return numericOnly(this);" onchange="return CalculateAmount();">
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Amount:<span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" id="txt_Amount" maxlength="10" onkeypress="return numericOnly(this);" ondrop="return false;">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label>Description:<span class="text-danger">*</span></label>
+                                    <textarea id="txt_Description" class="form-control"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label class="col-form-label">File</label>
+                                    <input type="file" name="img[]" class="file-upload-default form-control" id="Files" multiple="">
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div id="progressbar-5">
+                                            <div class="progress-label">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="row" id="div_file">
+                                    <div class="col-sm-12">
+                                        <table class="table table-striped custom-table" id="ListofFiles">
+                                            <thead>
+                                                <tr style="background-color:white;">
+                                                    <th>Files</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <br />
+                            </div>
+                            <div class="col-sm-2">
+                                <div class="form-group">
+                                    <label style="visibility:hidden;">Button<span class="text-danger">*</span></label>
+                                    <button type="button" id="UploadBtn" style="margin-left:-53px;margin-top:17%;" class="btn btn-primary">Upload</button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="Role" value="@ViewBag.emptype" />
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-3 col-sm-2" id="div_submit">
+                                <button type="button" class="btn btn-primary" id="btn_Submit">Submit</button>
+                                <input type="hidden" id="Page_Id" />
+                                <input type="hidden" id="hdn_ExpenseID" />
+                            </div>
+                            <div class="col-sm-2" id="div_reset">
+                                <button type="button" class="btn btn-primary" id="btn_Reset">Reset</button>
+                            </div>
+                            <div class="ccol-sm-offset-3 col-sm-4" id="div_empty">
+                            </div>
+                            <div class="col-sm-2" id="Update_div">
+                                <button type="button" class="btn btn-primary" id="btn_Update">Update</button>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" class="btn btn-primary" id="btn_Cancel">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-heading" style="background-color:#00bff9;">History</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="table-responsive">
+                            <table class="table table-striped custom-table tbl_ExpenseHistory">
+                                <thead>
+                                    <tr>
+                                        <th style="width:10%;">Expense Date</th>
+                                        <th>Project Name</th>
+                                        <th>Expense Type</th>
+                                        <th>Amount</th>
+                                        <th>Description</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tblBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="overlay" style="display:none;">
+        <div id="wait" class="col-sm-12" style="top:30%;left:30%;"><img src="~/assets/img/giphy.gif" /><br></div>
+    </div>
+
+    <div id="view_expense" class="modal custom-modal fade" role="dialog">
+        <div class="modal-dialog">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <div class="modal-content modal-lg">
+                <div class="modal-header"><h4 class="modal-title">Expense Details View</h4></div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Date:<span class="text-danger">*</span></label>
+                                    <div class="cal-icon">
+                                        <input type="text" id="txt_VExpenseDate" class="form-control" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Project:<span class="text-danger">*</span></label>
+                                    <input type="text" id="txt_VProject" class="form-control" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Expense Type:<span class="text-danger">*</span></label>
+                                    <input type="text" id="txt_VExpenseType" class="form-control" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-3 VConveyanceselfield" style="display:none;">
+                                <div class="form-group">
+                                    <label>Travel Mode:<span class="text-danger">*</span></label>
+                                    <input type="text" id="txt_VTravelMode" class="form-control" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-3 VConveyanceselfield" style="display:none;">
+                                <div class="form-group">
+                                    <label>From:<span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" id="txt_VFrom" readonly>
+                                </div>
+                            </div>
+                            <div class="col-sm-3 VConveyanceselfield" style="display:none;">
+                                <div class="form-group">
+                                    <label>To:<span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" id="txt_VTo" readonly>
+                                </div>
+                            </div>
+                            <div class="col-sm-3 VModefield" style="display:none;">
+                                <div class="form-group">
+                                    <label>KM:<span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" id="txt_VKM" readonly>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Amount:<span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" id="txt_VAmount" readonly>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label>Description:<span class="text-danger">*</span></label>
+                                    <textarea id="txt_VDescription" class="form-control" readonly></textarea>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="row" id="Vdiv_file">
+                                    <div class="col-sm-12">
+                                        <table class="table table-striped custom-table" id="VListofFiles" style="background-color:lightgray;">
+                                            <thead>
+                                                <tr>
+                                                    <th>File Name</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <br />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

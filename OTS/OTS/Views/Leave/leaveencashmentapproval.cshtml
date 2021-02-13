@@ -1,0 +1,430 @@
+﻿@using System.Data;
+
+<style>
+    .table.custom-table > thead > tr > th {
+        padding:9px 10px;
+    }
+    .test {
+        padding: 6px 42px;
+        border-radius: 15px;
+        
+    }
+    .testreg {
+        padding: 6px 42px;
+        border-radius: 15px;
+        
+    }
+
+    /*.sweet-alert {
+        width: 41% !important;
+        text-align:center;
+    }*/   
+      
+</style>
+
+@*<style>
+    @@media (min-width: 992px) {
+        .modal-lg {
+            width: 1038px;
+        }
+    }
+</style>*@
+<script>
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/c" + '"]').addClass('active');
+
+        var role_id = $('#hdn_roleId').val();
+        var manager_id = $('#hdn_managerId').val();
+        //if (role_id == 2) {
+        //    $("#ddlemployeeapplce").prop("disabled", false);
+        //    $("#ddlemployeeapplye").prop("disabled", false);
+
+        //} else {
+        //    $("#ddlemployeeapplce").prop("disabled", true);
+        //    $("#ddlemployeeapplye").prop("disabled", true);
+        //}
+        $('#txtleavebalance').val('3');
+        //$(".tbl_leavetype #checkall").click(function () {
+        //    if ($(".tbl_leavetype #checkall").is(':checked')) {
+        //        $(".tbl_leavetype input[type=checkbox]").each(function () {
+        //            $(this).prop("checked", true);
+        //        });
+
+        //    } else {
+        //        $(".tbl_leavetype input[type=checkbox]").each(function () {
+        //            $(this).prop("checked", false);
+        //        });
+        //    }
+        //});
+        //var table = $(".tbl_leavetype").DataTable(
+        //    {
+        //        "columnDefs": [
+        //            { "targets": [0,7], "orderable": false }
+        //        ],
+        //        "language": {
+        //            "search": "",
+        //            "searchPlaceholder": "Search"
+        //        }
+        //    }
+        //);
+        //$(".tbl_leavetype th:first-child").removeClass();
+
+
+        $(".tbl_leavecancelhistory #checkall").click(function () {
+            if ($(".tbl_leavecancelhistory #checkall").is(':checked')) {
+                $(".tbl_leavecancelhistory input[type=checkbox]").each(function () {
+                    $(this).closest('tr').find('.checkthis').prop("checked", true);
+                });
+
+            } else {
+                $(".tbl_leavecancelhistory input[type=checkbox]").each(function () {
+                    $(this).prop("checked", false);
+                });
+            }
+        });
+        var table = $(".tbl_leavecancelhistory").DataTable(
+            {
+                "columnDefs": [
+                    { "targets": [0, 6], "orderable": false }
+                ],
+
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search"
+                }
+            }
+        );
+    
+  
+
+       
+ 
+        $("#btn_approved").on("click", function () {
+            var data = [], applydate = [], remarks = "", status = "", mydata = "";
+            status = $(this).attr("data-value");
+            if (status == "approve") {
+                $("#text").val('');
+            } else if (status == "reject") {
+                remarks = $("#text").val();
+            }
+            $('#leavecancelapply tbody tr').each(function (i, row) {
+                var $actualrow = $(row);
+
+                $checkbox = $actualrow.find(':checkbox:checked');
+                if ($checkbox.val() > 0) {
+
+                    var strval = {
+                        "ID": $checkbox.val(),
+                        "Status": $actualrow.find(':checkbox:checked').attr('data-status'),
+                        "Approval_Level": $actualrow.find(':checkbox:checked').attr('data-approval-level'),
+                        "Remarks": remarks,
+                        "Max_Level": $actualrow.find(':checkbox:checked').attr('data-level')
+                    }
+                    data.push(strval);
+
+
+                    var str = {
+                        "EMP_ID": $actualrow.find('td').eq(1).attr('emp_id'),
+                        "From_Date": $actualrow.find('td').eq(3).html(),
+                        "To_Date": $actualrow.find('td').eq(4).html(),
+                        "Type": ""
+                    }
+                    applydate.push(str);
+                }
+
+                });
+        
+            if (data.length <= 0) { 
+                alert('Please Select At-least One Record !');
+                return false;
+            } else {
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/leave/leaveencashmentapproveal',
+                    contentType: 'application/json;charset=utf-8',
+                    data: JSON.stringify({ data, status: status, "emp_apply_date": applydate }),
+                    dataType: 'json',
+                    success: function (response) {
+                        var succ = response.SuccessMsg;
+                        var err = response.ErrorMsg;
+                        if (succ != "" && err == "") {
+                            alert(succ);
+                        }
+                        else {
+                            alert(err);
+                        } 
+                        Bind_History_List("pending");
+                    }
+                });
+            }
+        });
+
+        $("#btn_reject").on("click", function () {
+          
+            var data = [], applydate = [],  remarks = "", status = "", mydata = "";
+            status = $(this).attr("data-value");  
+            swal({  
+                title: "<p  style='font-size:15px !important; float:left !important'>Remarks</p>",
+                text: "<textarea class='form-control' style='border-radius: 3px;' id='text'></textarea>",
+                // --------------^-- define html element with id
+                html: true,
+                showCancelButton: true,
+                cancelButtonText: 'Cancel ',
+                confirmButtonText: 'Ok ',
+                cancelButtonClass: 'btn btn-sm btn-danger',
+                confirmButtonClass: 'btn btn-sm btn-primary',
+            }, function (inputValue) {
+
+                if (inputValue == true) {
+
+                    if (status == "approve") {
+                        $("#text").val('');
+                    } else if (status == "reject") {
+                        remarks = $("#text").val();
+                    }
+                    $('#leavecancelapply tbody tr').each(function (i, row) {
+                        var $actualrow = $(row);
+
+                        $checkbox = $actualrow.find(':checkbox:checked');
+                        if ($checkbox.val() > 0) {
+
+                            var strval = {
+                                "ID": $checkbox.val(),
+                                "Status": $actualrow.find(':checkbox:checked').attr('data-status'),
+                                "Approval_Level": $actualrow.find(':checkbox:checked').attr('data-approval-level'),
+                                "Remarks": remarks,
+                                "Max_Level": $actualrow.find(':checkbox:checked').attr('data-level')
+                            }
+                            data.push(strval);
+
+
+                            var str = {
+                                "EMP_ID": $actualrow.find('td').eq(1).attr('emp_id'),
+                                "From_Date": $actualrow.find('td').eq(3).html(),
+                                "To_Date": $actualrow.find('td').eq(4).html(),
+                                "Type": ""
+                            }
+                            applydate.push(str);
+                        }
+
+                    });
+                    if (data.length <= 0) {
+                        alert('Please Select At-least One Record !');
+                        return false;
+                    } else { 
+                        $.ajax({
+                            type: 'POST',
+                            url: '/leave/leaveencashmentapproveal',
+                            contentType: 'application/json;charset=utf-8',
+                            data: JSON.stringify({ data, status: status, "emp_apply_date": applydate }),
+                            dataType: 'json',
+                            success: function (response) {
+                                var succ = response.SuccessMsg;
+                                var err = response.ErrorMsg;
+                                if (succ != "" && err == "") {
+                                    alert(succ);
+                                }
+                                else {
+                                    alert(err);
+                                }
+                                Bind_History_List("pending");
+                            },
+                            error: function () {
+                                Bind_History_List("pending");
+                            }
+                        });
+                    }
+
+                    $("#text").val('');
+                } else
+                {
+                    $("#text").val('');
+                }
+            }); 
+            
+        });  
+        
+
+
+        Bind_History_List("pending");
+        $("#ddlapproval_status").on("change", function () {
+            if ($(this).val() == "done") {
+                $("#checkall").css("display", 'none');
+            } else {
+
+                $("#checkall").css("display", 'block');
+            }
+            $("#tblexpence").DataTable().rows().remove().draw();
+
+            Bind_History_List($(this).val());
+
+        });     
+       
+        
+    });
+    
+
+    function myDateFormatter(dateObject) {
+        var d = new Date(moment(dateObject, '"DD-MMM-YYYY').format());
+        var day = d.getDate();
+        var month = d.getMonth() + 1;
+        var year = d.getFullYear();
+        if (day < 10) {
+            day = "0" + day;
+        }
+        if (month < 10) {
+            month = "0" + month;
+        }
+        var date = year + "/" + month + "/" + day;
+
+        return date;
+    };
+
+    function Bind_History_List(Value) {
+        $("#ddlapproval_status").prop("disabled", true);
+        $("#myloader").css("visibility", 'visible');
+        var table = $("#leavecancelapply").DataTable();
+        $("#btn_approved").prop("disabled", true);
+        $("#btn_reject").prop("disabled", true);
+        table.rows().remove().draw();
+        $.ajax({
+            type: 'POST',
+            url: '/Leave/GET_LeaveEncashmentApproval',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ 'status': Value }),
+            dataType: 'json',
+            success: function (response) {
+                var msg = JSON.parse(response);
+                if (msg.length > 0) {
+                    $.each(msg, function (index, val) {
+                        var html = "";
+                        var mystatus = "";
+                        if (Value == 'done') {
+                            mystatus = val.STATUS;
+                        } else {
+                            mystatus = val.Status;
+                        }
+
+                        if (Value == 'done') {
+                            html += "<tr><td data_id=" + val.ID + "></td>";
+
+                        } else {
+                            html += "<tr><td  data_id=" + val.ID + "><input    type='checkbox' value=" + val.ID + "  data-status='" + mystatus + "' data-Level=" + val.Max_Level + " data-approval-level=" + val.H_MAX_LEVEL + "   class='checkthis' /></td>";
+
+                        }
+                        
+                        html += "<td emp_id='" + val.Person_ID +"'>" + ((index) + 1) + "</td>";
+                        html += "<td width='15%'>" + val.EmPloyee_name + "</td>";
+                        html += "<td width='15%'>" + val.DESIGNATION + "</td>";
+                        html += "<td width='15%'>" + val.DEPARTMENT_NAME + "</td>";
+                        html += "<td width='15%'>" + val.LEAVE_FROM_DATE + "</td>";
+                        html += "<td width='15%'>" + val.Number_OF_days + "</td>";
+                        html += "<td width='15%'>" + val.el_closing_bal + "</td>";
+                        html += "<td width='15%'  >" + val.Basic_Pay + "</td>";
+                        
+                        if (mystatus == "Approved" ) {
+                            html += "<td >   <label class='badge btn-success'>" + mystatus+ "</label ></td>";
+                        } else if (mystatus == "Rejected") {
+                            html += "<td >   <label style='background-color:red; color: white;' class='badge'>" + mystatus  + "</label ></td>";
+                        }
+                        else {
+                            html += "<td >   <label class='badge btn-warning'>" + mystatus+ "</label ></td>";
+                        }
+                      //  html += "<td  class='text-center '><a href='javascript:void(0);' class='btn_view'  title='View' id='btn_view' data_id='" + val.EXPENSE_ID + "'><i class='glyphicon glyphicon-eye-open'></i></a></td>";
+                        // $("#tblexpence tbody").append(html);
+
+                        table.row.add($(html)).draw();
+                    })
+                }
+
+                $("#myloader").css("visibility", 'hidden');
+                $("#ddlapproval_status").prop("disabled", false);
+                $("#btn_approved").prop("disabled", false);
+                $("#btn_reject").prop("disabled", false);
+            },
+            error: function () {
+                alert('error');
+                $("#myloader").css("visibility", 'hidden');
+                $("#ddlapproval_status").prop("disabled", false);
+                $("#btn_approved").prop("disabled", false);
+                $("#btn_reject").prop("disabled", false);
+            }
+        });
+    }
+
+
+     
+</script>
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title">Leave  Encashment  Approval</h4>
+    </div>
+
+    <div class="col-sm-1 text-right m-b-30">
+         
+    </div>
+    <div class="col-sm-3 text-right m-b-30" id="buttons">
+    </div>
+</div>
+ 
+ 
+    <div class="row ">
+ 
+        <div class="col-sm-6">
+            <input class="btn btn-success buttonsubmit" type="button" id="btn_approved" data-value="approve" value="Approve" />
+            <input class="btn  buttonsubmit " style="background-color:red;color:white;" data-value="reject"  type="button" value="Reject" id="btn_reject">
+            <input type="hidden" id="hdn_roleId" value="@Session["role_id"]" />
+            <input type="hidden" id="hdn_managerId" value="@Session["manager_id"]" />
+        </div>
+     
+
+        <div class="col-sm-4 text-right"><br /><label>Approval Status :</label></div>
+        <div class="col-sm-2 text-right">
+
+            @Html.DropDownList("ddlapproval_status", new SelectList(new List<SelectListItem> { new SelectListItem { Text = "Pending", Value = "pending" }, new SelectListItem { Text = "Approved", Value = "done" } }, "Value", "Text"), new { @class = "form-control myclass" })
+            <div id="myloader" class="myloader">Loading<span class="loader__dot">.</span><span class="loader__dot">.</span><span class="loader__dot">.</span></div>
+
+        </div>
+    </div>
+    <br />
+    <!--Leave Approval List-->
+    <div class="row">
+        <div>
+            <div class="col-md-12">
+                <div  class="table-responsive">
+
+                    <table id="leavecancelapply" class="table table-striped custom-table m-b-0 tbl_leavecancelhistory">
+                        <thead>
+                            <tr>
+                                <th><input style='@(ViewBag.done != "done" ? "display:block" : "display:none")' type="checkbox"   id="checkall" /></th>
+                                <th width="55px">Sr.No</th>
+                                <th>Employee </th>
+                                <th>Designation </th>
+                                <th>Department </th>
+                                <th width="100px">Applied Date</th>
+                                <th >No. Of Days</th>
+                                <th  >EL Closing Bal.</th>
+                                <th>Encashment Amount</th>  
+                                @*<th>Basic Pay</th>*@ 
+                                <th class="text-center" width="113px" >Status</th>
+                            
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                      
+
+                        </tbody>
+                  
+                    </table>
+              
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+
+ 

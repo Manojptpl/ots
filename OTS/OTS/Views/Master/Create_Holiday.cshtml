@@ -1,0 +1,160 @@
+﻿
+@model OTS.Models.MastersModel
+
+<style type="text/css">
+    .required {
+        color: red;
+    }
+
+    .error {
+        color: red;
+    }
+    /* For convert First letter capital*/
+    .myclass {
+        text-transform: capitalize;
+    }
+    .form-control {
+        box-shadow: none;
+        height: 43px;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/Create_Holiday" + '"]').addClass('active');
+        $('#divupdate').hide();
+        $('#divempty').hide();
+        //$('#Holiday_Date').datepicker({ dateFormat: "dd-M-yy", firstDay: 1, changeMonth: true, changeYear: true, yearRange: '2019:+1' }).attr('readonly', true);
+
+        var dt = new Date();
+        var currentdate = new Date(myDateFormatter(dt));
+        $('#Holiday_Date').datepicker("destroy");
+        $('#Holiday_Date').datepicker({
+            dateFormat: "dd-M-yy", closeText: 'Clear', showButtonPanel: true, changeMonth: true, minDate: new Date(currentdate), onClose: function () {
+                var event = arguments.callee.caller.caller.arguments[0];
+                if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+                    $(this).val('');
+                }
+            }
+        }).attr('readonly', true).css('background-color', 'White');
+    });
+    function SubmitRecord() {
+
+        var holiday_name = $('#Holiday_Name').val();
+        var holiday_date = $('#Holiday_Date').val();
+        var holiday_typeID = $('#HolidayType_Id').val();
+        var status = 0;
+        if ($('#Status').is(":checked")) {
+            status = 1;
+        }
+        else {
+            status = 0;
+        }
+        if (holiday_name != "" && holiday_date != "" && holiday_typeID != "") {
+            var posting = $.post('/Master/CreateHoliday', { 'Holiday_Name': holiday_name, 'Holiday_Date': holiday_date, 'HolidayType_Id': holiday_typeID, 'Status': status });
+            posting.done(function (data) {
+                var a = data.SuccessMsg;
+                var b = data.ErrorMsg;
+                if (data != null && a != null) {
+                    alert(a);
+                    ClearPage();
+                }
+                else {
+                    alertify.alert(b).setHeader('<em> Message </em> ');
+                }
+            });
+        }
+        else if (holiday_name == "") {
+            alert("Holiday Name Can't be blank.");
+            setTimeout(function () { $('#Holiday_Name').focus(); });
+        }
+        else if (holiday_date == "") {
+            alert("Holiday Date Can't be blank.");
+            setTimeout(function () { $('#Holiday_Date').focus(); });
+        }
+        else if (holiday_typeID == "") {
+            alert("Holiday Type Can't be blank.");
+            setTimeout(function () { $('#HolidayType_Id').focus(); });
+        }
+    }
+    function ClearPage() {
+        $('#Holiday_Name').val("");
+        $('#Holiday_Date').val("");
+        $('#HolidayType_Id').val("0");
+        $('#btnsubmit').show();
+        $('#divupdate').hide();
+        $('#divempty').hide();
+    }
+    function CancelOnClick() {
+        window.location.href = '/Home/Dashboard';
+    }
+    function myDateFormatter(dateObject) {
+        var d = new Date(moment(dateObject, '"DD-MMM-YYYY').format());
+        var day = d.getDate();
+        var month = d.getMonth() + 1;
+        var year = d.getFullYear();
+        if (day < 10) {
+            day = "0" + day;
+        }
+        if (month < 10) {
+            month = "0" + month;
+        }
+        var date = year + "/" + month + "/" + day;
+
+        return date;
+    };
+
+
+</script>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;">Create Holiday</div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Holiday Name:<span class="required">*</span></label>
+                        <input type="text" class="form-control" id="Holiday_Name" maxlength="30" tabindex="1">
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Holiday Date:<span class="required">*</span></label>
+                        <div class="cal-icon">
+                            <input type="text" class="form-control mycal" id="Holiday_Date" tabindex="2" style="background-color: #ffffff" placeholder="dd-M-yy">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Holiday Type:<span class="required">*</span></label>
+                        @Html.DropDownList("HolidayType_Id", (IEnumerable<SelectListItem>)ViewBag.holiday, new { @class = "form-control", @tabindex = "3" })
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <input type="checkbox" class="myCheckbox" id="Status" value="" checked="checked" />Active
+                    </div>
+                </div>
+              
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary" id="btnsubmit" tabindex="17" onclick="SubmitRecord()">Submit</button>
+                        <button type="button" class="btn btn-primary" tabindex="19" onclick="ClearPage()">Reset</button>
+                        <button type="button" class="btn btn-primary" tabindex="20" onclick="CancelOnClick()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

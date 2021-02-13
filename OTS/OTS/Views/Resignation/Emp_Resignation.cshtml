@@ -1,0 +1,196 @@
+﻿@model IEnumerable<OTS.Models.ResignationModel>
+
+
+<style type="text/css">
+    .required {
+        color: red;
+    }
+
+    .myclass {
+        text-transform: capitalize;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function ()
+    {
+        $('ul.list-unstyled  li a[href$="' + "/Emp_Resignation" + '"]').addClass('active');
+        $("#txt_ResignationDate").on("change", function () {
+            var date = new Date($("#txt_ResignationDate").val()),
+                days = parseInt(60, 10);
+
+            if (!isNaN(date.getTime())) {
+                date.setDate(date.getDate() + days);
+
+                $("#txt_LastWorkingDate").val(date.toInputFormat());
+            } else {
+                alert("Invalid Date");
+            }
+        });
+        Date.prototype.toInputFormat = function () {
+            var yyyy = this.getFullYear().toString();
+            var mm = (this.getMonth() + 1).toString(); // getMonth() is zero-based
+            var dd = this.getDate().toString();
+            //return yyyy + "-" + (mm[1] ? mm : "0" + mm[0]) + "-" + (dd[1] ? dd : "0" + dd[0]); // padding
+            return (dd[1] ? dd : "0" + dd[0]) + "-" + (mm[1] ? mm : "0" + mm[0]) + "-" + yyyy; // padding
+        };
+        if ($("#hdn_Role_id").val() ==3) {            
+            $("#ddl_statusType").prop('disabled',true);    
+        }
+        else {
+            $("#ddl_statusType").prop('disabled',false);
+        }
+        $("#btn_Submit").on('click', function () {                     
+            var Emp_id = @Session["EMP_ID"];                       
+            var Emp_Name = $('#txt_Name').val();
+            var Reporting_Manager = $('#txt_ReportingManager').val();
+            var Department_Name = $('#txt_Department').val();
+            var Resignation_Date = $('#txt_ResignationDate').val();
+            var LastWorking_Date = $('#txt_LastWorkingDate').val();
+            var Status = $('#ddl_statusType option:selected').val();
+            var ObjResignationModel = {
+                'EMP_ID': Emp_id,
+                'NAME': Emp_Name,
+                'REPORTING_MANAGER': Reporting_Manager,
+                'DEPARTMENT': Department_Name,
+                'RESIGNATION_DATE': Resignation_Date,
+                'LAST_WORKING_DATE': LastWorking_Date,
+                'Status':Status
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '/Resignation/CreateEmpResignation/',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(ObjResignationModel),
+
+                dataType: 'json',
+                success: function (data) {
+                    var a = data.SuccessMsg;
+                    var b = data.ErrorMsg;
+                    if (data != null && a != null) {
+                        alert(a);
+                    }
+                    else {
+                      alert(b);
+                    }
+                },
+                error: function (data) {
+
+                }
+            });
+        });        
+
+    });
+    function CancelOnClick() {
+        window.location.href = "/Home/Dashboard";
+    }
+    function CreateEmpResignatin() {
+        debugger;
+        var Emp_id = Convert.ToInt32(@Session["Emp_id"]);       
+        var Emp_Name = $('#txt_Name').val();                      
+        var Reporting_Manager = $('#txt_ReportingManager').val();        
+        var Department_Name = $('#txt_Department').val();                
+        var Resignation_Date =Date.parse($('#txt_ResignationDate').val());               
+        var LastWorking_Date =Date.parse($('#txt_LastWorkingDate').val());
+        var Status =$('#ddl_statusType option:selected').val();
+        var ObjResignationModel = {
+            'EMP_ID': Emp_id,
+            'NAME': Emp_Name,
+            'REPORTING_MANAGER': Reporting_Manager,
+            'DEPARTMENT': Department_Name,
+            'RESIGNATION_DATE': Resignation_Date,
+            'LAST_WORKING_DATE': LastWorking_Date,
+            'Status':Status
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: '/Resignation/CreateEmpResignation/',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(ObjResignationModel),
+
+            dataType: 'json',
+            success: function (data) {
+                var a = data.SuccessMsg;
+                var b = data.ErrorMsg;
+                if (data != null && a != null) {
+                    alert(a);
+                    window.location.reload(true);
+                }
+                else {
+                    alertify.alert(b).setHeader('<em> Message </em> ');
+                }
+            },
+            error: function (data) {
+
+            }
+        });
+    }
+</script>
+
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">Resignation</h4></div>
+        <div class="panel-body">
+            @foreach (var item in Model)
+            {
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Name:<span class="required">*</span></label>
+                            <input type="text" class="form-control" id="txt_Name" value="@item.NAME" readonly="readonly" />
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Reporting Manager:<span class="required">*</span></label>
+                            <input type="text" class="form-control" id="txt_ReportingManager" value="@item.REPORTING_MANAGER" readonly="readonly" />
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Department:</label>
+                            <input type="text" class="form-control" id="txt_Department" value="@item.DEPARTMENT" readonly="readonly" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Resignation Date:</label>
+                            <div class="cal-icon">
+                                <input class="form-control" placeholder="dd-mmm-yyyy" type="text" id="txt_ResignationDate" value="@item.Current_Date" readonly="readonly"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Last Working Date:</label>
+                            <div class="cal-icon">
+                                <input class="form-control" placeholder="dd-mmm-yyyy" type="text" id="txt_LastWorkingDate" value="@item.LastWorking_Date" readonly="readonly">
+                            </div>
+                        </div>
+                    </div>                                        
+                </div>
+            }
+            
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-3">
+        <div class="form-group">
+
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="form-group">
+            <button type="button" class="btn btn-primary" id="btn_Submit">Submit</button>            
+            <button type="button" class="btn btn-primary" id="btn_Cancel" onclick="CancelOnClick()">Cancel</button>
+            <input type="hidden" id="hdn_Role_id" value="@ViewBag.Role_idType" />                            
+        </div>
+    </div>
+</div>
+
+

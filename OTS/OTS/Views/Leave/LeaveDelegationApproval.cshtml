@@ -1,0 +1,1127 @@
+﻿@using System.Data;
+
+<style>
+    .table.custom-table > thead > tr > th {
+        padding: 9px 10px;
+    }
+
+    .test {
+        padding: 6px 42px;
+        border-radius: 15px;
+    }
+
+    .testreg {
+        padding: 6px 42px;
+        border-radius: 15px;
+    }
+
+    /*.sweet-alert {
+        width: 41% !important;
+        text-align:center;
+    }*/
+</style>
+
+@*<style>
+        @@media (min-width: 992px) {
+            .modal-lg {
+                width: 1038px;
+            }
+        }
+    </style>*@
+<script>
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/leaveDelegationapproval" + '"]').addClass('active');
+        $("#fromfirsthalf").prop("disabled", true);
+        $("#fromsecondhalf").prop("disabled", true);
+        $("#tofirsthalf").prop("disabled", true);
+        $("#tosecondhalf").prop("disabled", true);
+        var role_id = $('#hdn_roleId').val();
+        var manager_id = $('#hdn_managerId').val();
+        //if (role_id == 2) {
+        //    $("#ddlemployeeapplce").prop("disabled", false);
+        //    $("#ddlemployeeapplye").prop("disabled", false);
+
+        //} else {
+        //    $("#ddlemployeeapplce").prop("disabled", true);
+        //    $("#ddlemployeeapplye").prop("disabled", true);
+        //}
+        $('#txtleavebalance').val('3');
+        //$(".tbl_leavetype #checkall").click(function () {
+        //    if ($(".tbl_leavetype #checkall").is(':checked')) {
+        //        $(".tbl_leavetype input[type=checkbox]").each(function () {
+        //            $(this).prop("checked", true);
+        //        });
+
+        //    } else {
+        //        $(".tbl_leavetype input[type=checkbox]").each(function () {
+        //            $(this).prop("checked", false);
+        //        });
+        //    }
+        //});
+        //var table = $(".tbl_leavetype").DataTable(
+        //    {
+        //        "columnDefs": [
+        //            { "targets": [0,7], "orderable": false }
+        //        ],
+        //        "language": {
+        //            "search": "",
+        //            "searchPlaceholder": "Search"
+        //        }
+        //    }
+        //);
+        //$(".tbl_leavetype th:first-child").removeClass();
+
+
+        $(".tbl_leavecancelhistory #checkall").click(function () {
+            if ($(".tbl_leavecancelhistory #checkall").is(':checked')) {
+                $(".tbl_leavecancelhistory input[type=checkbox]").each(function () {
+                    $(this).closest('tr').find('.checkthis').prop("checked", true);
+                });
+
+            } else {
+                $(".tbl_leavecancelhistory input[type=checkbox]").each(function () {
+                    $(this).prop("checked", false);
+                });
+            }
+        });
+        var table = $(".tbl_leavecancelhistory").DataTable(
+            {
+                "columnDefs": [
+                    { "targets": [0, 8], "orderable": false }
+                ],
+
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search"
+                }
+            }
+        );
+        $(".tbl_leavecancelhistory th:first-child").removeClass();
+        //$('.close').on('click', function () {
+        //    window.location.reload();
+        //});
+
+        //var datefrom = new Date(myDateFormatter($('#txt_cfromDate').val()));
+        //var dateto = new Date(myDateFormatter($('#txt_cfromDate').val()));
+        ////var Leavebal = $("#txt_eddays").val() == "" ? 0 : parseInt($("#txt_eddays").val());
+        ////dateto.setDate(dateto.getDate() + Leavebal - 1);
+        //$('#txt_ctoDate').datepicker("destroy");
+        //$('#txt_ctoDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+        //var applymindate = $('#txt_fffromDate').val();
+        //var applymaxdate = $('#txt_tttoDate').val();
+
+        $('#txt_cfromDate').datepicker("destroy");
+        $('#txt_ctoDate').datepicker("destroy");
+        var applyfromdate = new Date(myDateFormatter($('#txt_fffromDate').val()));
+        var applytodate = new Date(myDateFormatter($('#txt_tttoDate').val()));
+        var applyfromdatecancelation = new Date(myDateFormatter($('#txt_cfromDate').val()));
+        $('#txt_cfromDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(applyfromdate), maxDate: new Date(applytodate) }).attr('readonly', true).css('background-color', 'White');
+        $('#txt_ctoDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(applyfromdatecancelation), maxDate: new Date(applytodate) }).attr('readonly', true).css('background-color', 'White');
+
+
+        $('#txt_cfromDate').on('change', function () {
+            var datefrom = new Date(myDateFormatter($('#txt_cfromDate').val()));
+            var dateto = new Date(myDateFormatter($('#txt_tttoDate').val()));
+            $("input[name='optradiocancelto']").prop('disabled', false).prop('checked', false);
+            $("input[name='optradiocancelfrom']").prop("checked", false);
+            $("#txt_ctotalDate").val('');
+            $('#txt_ctoDate').val("").prop('disabled', false);
+            $('#txt_ctoDate').datepicker("destroy");
+            $('#txt_ctoDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+
+            if ($("#hiddenis_half_day").val() == 1) {
+                $("input[name='optradiocancelfrome']").prop("disabled", true).prop('checked', false);
+                $("input[name='optradiocanceltoe']").prop('disabled', true).prop('checked', false);
+            } else {
+                $("input[name='optradiocancelfrome']").prop("disabled", false);
+                $("input[name='optradiocanceltoe']").prop('disabled', false);
+            }
+
+        });
+        $('#txt_ctoDate').on('change', function () {
+
+            $("input[name='optradiocancelto']").prop("disabled", false);
+
+            //var maxdate = $('#txt_ctoDate').val();
+            //var mindate = $('#txt_cfromDate').val();
+            //var leftover = (new Date(maxdate) - new Date(mindate)) / 1000;
+            //var days = Math.floor(leftover / 86400) + 1;
+            //$('#txt_ctotalDate').val(days);
+
+            var start_dt = myDateFormatter($('#txt_cfromDate').val());
+            var end_dt = myDateFormatter($('#txt_ctoDate').val());
+            if (start_dt > end_dt) {
+                alert("End Date can't less then start date.");
+                $('#txt_ctoDate').val("");
+                setTimeout(function () { $('#txt_ctoDate').focus(); })
+            } else {
+                var leftover = (new Date(end_dt) - new Date(start_dt)) / 1000;
+                var days = Math.floor(leftover / 86400) + 1;
+                $('#txt_ctotalDate').val(days);
+            }
+
+
+        });
+
+
+
+        $('#txt_from_Date').on('change', function () {
+            if ($('#ddlleavetypeapply').val() == "0") {
+                alert('Please Select Leave Type !');
+                $('#txt_from_Date').val('');
+                $('#ddlleavetypeapply').focus();
+            } else if ($("#ddlLeaveDays").val() == "0") {
+                alert('Please Select Leave Day !');
+                $('#txt_from_Date').val('');
+                $('#ddlLeaveDays').focus();
+            } else {
+                var start_dt = myDateFormatter($('#txt_from_Date').val());
+                var end_dt = myDateFormatter($('#txt_toDate').val());
+
+
+                if ($("#ddlLeaveDays").val() == "Half Day") {
+                    $('#txt_toDate').val($('#txt_from_Date').val());
+                    $('#txt_days').val("0.5");
+                }
+
+                else if ($("#ddlLeaveDays").val() != "0") {
+                    $('#txt_toDate').prop('disabled', false);
+                    $('#txt_toDate').val('');
+                    $('#txt_days').val('');
+                    var datefrom = new Date(myDateFormatter($('#txt_from_Date').val()));
+                    var dateto = new Date(myDateFormatter($('#txt_from_Date').val()));
+                    var Leavebal = $("#txtleavebalance").val() == "" ? 0 : parseInt($("#txtleavebalance").val());
+                    dateto.setDate(dateto.getDate() + Leavebal - 1);
+                    $('#txt_toDate').datepicker("destroy");
+                    $('#txt_toDate').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+                    if ($('#txt_toDate').val() != '') {
+
+                        //var dt = new Date(selected.date.valueOf());
+                        var maxdate = myDateFormatter($('#txt_toDate').val());
+                        var mindate1 = myDateFormatter($('#txt_from_Date').val());
+                        var leftover = (new Date(maxdate) - new Date(mindate1)) / 1000;
+                        var days = Math.floor(leftover / 86400) + 1;
+                        $('#txt_days').val(days);
+                    }
+
+                }
+            }
+        });
+        $('#txt_toDate').on('change', function () {
+
+            var start_dt = myDateFormatter($('#txt_from_Date').val());
+            var end_dt = myDateFormatter($('#txt_toDate').val());
+            if (start_dt > end_dt) {
+                alert("End Date can't less then start date.");
+                $('#txt_toDate').val("");
+                setTimeout(function () { $('#txt_toDate').focus(); })
+            } else {
+                var leftover = (new Date(end_dt) - new Date(start_dt)) / 1000;
+                var days = Math.floor(leftover / 86400) + 1;
+                $('#txt_days').val(days);
+            }
+        });
+
+
+
+        $("input[name='optradiocancelfrom']").change(function () {
+            if ($('#txt_cfromDate').val() == $('#txt_ctoDate').val()) {
+                $("input[name='optradiocancelto']").prop('disabled', true);
+                //var oldval = $('#txt_ctotalDate').val();
+                //var newval = (parseFloat(oldval) - 0.5);
+                //$('#txt_ctotalDate').val(newval);
+                    var maxdate = $('#txt_cfromDate').val();
+                    var mindate = $('#txt_ctoDate').val();
+                    var leftover = (new Date(maxdate) - new Date(mindate)) / 1000;
+                    var days = (Math.floor(leftover / 86400) + 1) - 0.5;
+                    $('#txt_ctotalDate').val(days);
+            }
+
+        });
+
+        $("input[name='optradiocancelto']").change(function () {
+            //var text = $("input[name='optradiocancelto']:checked").val();
+            //alert(text);
+        });
+
+        $("#btn_approved").on("click", function () {
+ 
+
+            var data = [], applydate = [], remarks = "", status = "", mydata = "";
+            status = $(this).attr("data-value");
+            if (status == "approve") {
+                $("#text").val('');
+            } else if (status == "reject") {
+                remarks = $("#text").val();
+            }
+            $('#leavecancelapply tbody tr').each(function (i, row) {
+                var $actualrow = $(row);
+
+                $checkbox = $actualrow.find(':checkbox:checked');
+                if ($checkbox.val() > 0) {
+
+                    var strval = {
+                        "ID": $checkbox.val(),
+                        "Status": $actualrow.find(':checkbox:checked').attr('data-status'),
+                        "Approval_Level": $actualrow.find(':checkbox:checked').attr('data-approval-level'),
+                        "Remarks": remarks,
+                        "Max_Level": $actualrow.find(':checkbox:checked').attr('data-level')
+                    }
+                    data.push(strval);
+
+                    var str = {
+                        "EMP_ID": $actualrow.find('td').eq(1).attr('emp_id'),
+                        "From_Date": $actualrow.find('td').eq(4).html(),
+                        "To_Date": $actualrow.find('td').eq(5).html(),
+                        "Type": $actualrow.find('td').eq(3).html()
+                    }
+                    applydate.push(str);
+
+
+                }
+
+            });
+
+
+            if (data.length <= 0) {
+                alert('Please Select At-least One Record !');
+                return false;
+            } else {
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/leave/leaveapproveal',
+                    contentType: 'application/json;charset=utf-8',
+                    data: JSON.stringify({ data, status: status, "emp_apply_date": applydate }),
+                    dataType: 'json',
+                    success: function (response) {
+                        var succ = response.SuccessMsg;
+                        var err = response.ErrorMsg;
+                        if (succ != "" && err == "") {
+                            alert(succ);
+                        }
+                        else {
+                            alert(err);
+                        }
+                        location.reload(true);
+                    }
+                });
+            }
+        });
+
+        $("#btn_reject").on("click", function () {
+         
+            var data = [], applydate = [], remarks = "", status = "", mydata = "";
+            status = $(this).attr("data-value");
+            //if (status == "approve") {
+            //    $("#text").val('');
+            //} else if (status == "reject") {
+            //    remarks = $("#text").val();
+            //}
+
+
+            swal({
+
+
+                title: "<p  style='font-size:15px !important; float:left !important'>Remarks</p>",
+                text: "<textarea class='form-control' style='border-radius: 3px;' id='text'></textarea>",
+                // --------------^-- define html element with id
+                html: true,
+                showCancelButton: true,
+                cancelButtonText: 'Cancel ',
+                confirmButtonText: 'Ok ',
+                cancelButtonClass: 'btn btn-sm btn-danger',
+                confirmButtonClass: 'btn btn-sm btn-primary',
+            }, function (inputValue) {
+
+                if (inputValue == true) {
+
+                    if (status == "approve") {
+                        $("#text").val('');
+                    } else {
+                        remarks = $("#text").val();
+                    }
+                    $('#leavecancelapply tbody tr').each(function (i, row) {
+                        var $actualrow = $(row);
+
+                        $checkbox = $actualrow.find(':checkbox:checked');
+                        if ($checkbox.val() > 0) {
+
+                            var strval = {
+                                "ID": $checkbox.val(),
+                                "Status": $actualrow.find(':checkbox:checked').attr('data-status'),
+                                "Approval_Level": $actualrow.find(':checkbox:checked').attr('data-approval-level'),
+                                "Remarks": remarks,
+                                "Max_Level": $actualrow.find(':checkbox:checked').attr('data-level')
+                            }
+                            data.push(strval);
+
+                            var str = {
+                                "EMP_ID": $actualrow.find('td').eq(1).attr('emp_id'),
+                                "From_Date": $actualrow.find('td').eq(4).html(),
+                                "To_Date": $actualrow.find('td').eq(5).html(),
+                                "Type": $actualrow.find('td').eq(3).html()
+                            }
+                            applydate.push(str);
+                        }
+
+                    });
+                    if (data.length <= 0) {
+                        alert('Please Select At-least One Record !');
+                        return false;
+                    }
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/leave/leaveapproveal',
+                        contentType: 'application/json;charset=utf-8',
+                        data: JSON.stringify({ data, status: status, "emp_apply_date": applydate }),
+                        dataType: 'json',
+                        success: function (response) {
+                            var succ = response.SuccessMsg;
+                            var err = response.ErrorMsg;
+                            if (succ != "" && err == "") {
+                                alert(succ);
+                            }
+                            else {
+                                alert(err);
+                            }
+                            location.reload(true);
+                        }
+                    });
+
+                    $("#text").val('');
+                } else {
+                    $("#text").val('');
+                }
+            });
+
+        });  
+
+
+        $('#txt_from_Dateapplye').on('change', function () {
+            $('#txt_toDateapplye').val('');
+            $('#txt_daysapplye').val('');
+            if ($("#ddlLeaveDaysapplye").val() == "Half Day") {
+                $('#txt_toDateapplye').val($('#txt_from_Dateapplye').val());
+                $('#txt_daysapplye').val("0.5");
+            }
+            else if ($("#ddlleavetypeapplye").val() == 1) {
+
+                sandwichleave();
+                $('#txt_toDateapplye').prop('disabled', false);
+                var datefrom = new Date(myDateFormatter($('#txt_from_Dateapplye').val()));
+                var dateto = new Date(myDateFormatter($('#txt_from_Dateapplye').val()));
+                dateto.setDate(dateto.getDate()+ 13);
+                $('#txt_toDateapplye').datepicker("destroy");
+                $('#txt_toDateapplye').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+
+            } else if ($("#ddlleavetypeapplye").val() != "0" && ($("#ddlleavetypeapplye").val() == 2 || $("#ddlleavetypeapplye").val() == 3)) {
+                sandwichleave();
+                $('#txt_toDateapplye').prop('disabled', false);
+                var datefrom = new Date(myDateFormatter($('#txt_from_Dateapplye').val()));
+                var dateto = new Date(myDateFormatter($('#txt_from_Dateapplye').val()));
+                var maxdate = myDateFormatter($('#txt_toDateapplye').val());
+                var mindate1 = myDateFormatter($('#txt_from_Dateapplye').val());
+                var Leavebal = $("#txtleavebalapplye").val() == "" ? 0 : parseInt($("#txtleavebalapplye").val());
+                dateto.setDate(dateto.getDate() + Leavebal - 1);
+                $('#txt_toDateapplye').datepicker("destroy");
+                $('#txt_toDateapplye').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+
+            }
+            else {
+                sandwichleave();
+                var datefrom = new Date(myDateFormatter($('#txt_from_Dateapplye').val()));
+                var dateto = new Date(myDateFormatter($('#txt_from_Dateapplye').val()));
+                var Leavebal1 = $("#hiddenapplyleavebalday").val() == "" ? 0 : parseInt($("#hiddenapplyleavebalday").val());
+                dateto.setDate(dateto.getDate() + Leavebal1 - 1);
+                $('#txt_toDateapplye').datepicker("destroy");
+                $('#txt_toDateapplye').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+
+            }
+            if ($("#ddlleavetypeapply").val() == 1) {
+                sandwichleave();
+                $('#txt_toDateapplye').prop('disabled', false);
+                var datefrom = new Date(myDateFormatter($('#txt_from_Dateapplye').val()));
+                var dateto = new Date(myDateFormatter($('#txt_from_Dateapplye').val()));
+                dateto.setDate(dateto.getDate() + 13);
+                $('#txt_toDateapplye').datepicker("destroy");
+                $('#txt_toDateapplye').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+                //if ($('#txt_toDateapplye').val() != '') {
+                //    //var dt = new Date(selected.date.valueOf());
+                //    var maxdate = myDateFormatter($('#txt_toDate').val());
+                //    var mindate1 = myDateFormatter($('#txt_fromDate').val());
+                //    var leftover = (new Date(maxdate) - new Date(mindate1)) / 1000;
+                //    var days = Math.floor(leftover / 86400) + 1;
+                //    $('#txt_daysapplye').val(days);
+                //}
+            }
+        });
+
+        $('#txt_toDateapplye').on('change', function () {
+
+            var start_dt = myDateFormatter($('#txt_from_Dateapplye').val());
+            var end_dt = myDateFormatter($('#txt_toDateapplye').val());
+            if (start_dt > end_dt) {
+                alert("End Date can't less then start date.");
+                $('#txt_toDateapplye').val("");
+                setTimeout(function () { $('#txt_toDateapplye').focus(); })
+            } else {
+                sandwichleave();
+
+                var leftover = (new Date(end_dt) - new Date(start_dt)) / 1000;
+                var days = Math.floor(leftover / 86400) + 1;
+                var sandwichval = "";
+                if ($("#ddlleavetypeapplye").val() != 3) {
+
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/leave/leavebalanceshowsandwith',
+                        contentType: 'application/json;charset=utf-8',
+                        data: JSON.stringify({
+                            'employee_id': $("#ddlemployeeapplye").val(), 'leave_type': $("#ddlleavetypeapplye").val(), 'fromdate': $("#txt_from_Dateapplye").val(), 'todate': $("#txt_toDateapplye").val()
+                        }),
+                        dataType: 'json',
+                        success: function (mydata) {
+                            sandwichval = mydata
+                           
+                            $('#txt_daysapplye').val(days - parseFloat(sandwichval));
+                        }
+                    });
+                }
+
+                $('#txt_daysapplye').val(days);
+            }
+        });
+
+        $('#btnupdateapply').on("click", function () {
+            if ($("#ddlLeaveDaysapplye  option:selected").val() == "0") {
+                  alert("Please Select  Leave Day !");
+                  $("#ddlLeaveDaysapplye").focus();
+                  return false;
+            }
+            if ($("#txt_daysapplye").val() == "") {
+                alert("Please Select  From Date And To Date !");
+                $("#txt_from_Dateapplye").focus();
+                return false;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '/leave/updateapplyleavedetails',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({
+                    "id": $("#applyhiddenid").val(),
+                    "leaveday": $("#ddlLeaveDaysapplye  option:selected").val(),
+                    "leavehalfday": $("input:radio[name='optradio']:checked").length==0?"": $("input:radio[name='optradio']:checked").val(),
+                    "fromdate": $("#txt_from_Dateapplye").val(),
+                    "todate": $("#txt_toDateapplye").val(),
+                    "noofdays": $("#txt_daysapplye").val(),
+                    "sandwich": $("#hdforsandwich").val()
+
+                }),
+                dataType: 'json',
+                success: function (response) {
+                    var data = [];
+                    data = response.msg.split(',');
+                    if (data[0] == "Success") {
+                        alert(response.msg);
+                        location.reload(true);
+                    } else
+                    {
+                        alert(response.msg);
+                    }
+
+                }
+            });
+
+        });
+        $('#btnresetapply').on("click", function () {
+            FunctionView($("#applyhiddenid").val());
+        });
+
+        $('#btnupdatecancellation').on("click", function () {
+            if ($("#txt_ctotalDatece").val() == "") {
+                alert("Please Select  From Date And To Date !");
+                $("#txt_ctotalDatece").focus();
+                return false;
+            }
+            $.ajax({
+                type: 'POST',
+                url: '/leave/updateapplycancelleavedetails',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({
+                    "id": $("#cancelapplyhiddenid").val(),
+                    "cancelfrom": $("#txt_cfromDatece").val(),
+                    "cancelfromleavehalfday": $("input:radio[name='optradiocancelfrome']:checked").length == 0 ? "" : $("input:radio[name='optradiocancelfrome']:checked").val(),
+                    "cancelto": $("#txt_ctoDatece").val(),
+                    "canceltoleavehalfday": $("input:radio[name='optradiocanceltoe']:checked").length == 0 ? "" : $("input:radio[name='optradiocanceltoe']:checked").val(),
+                    "noofdays": $("#txt_ctotalDatece").val(),
+                    "Remarks": $("#txtcancelremarks").val()
+
+                }),
+                dataType: 'json',
+                success: function (response) {
+                    var data = [];
+                    data = response.msg.split(',');
+                    if (data[0] == "Success") {
+                        alert(response.msg);
+                        location.reload(true);
+                    } else {
+                        alert(response.msg);
+                    }
+
+                }
+            });
+
+        });
+
+        //$('#btnapplycancelreset').on("click", function () {
+        //    FunctionView($("#cancelapplyhiddenid").val(), 'C', 'E');
+        //});
+
+
+
+
+        $('#txt_cfromDatece').datepicker("destroy");
+        $('#txt_ctoDatece').datepicker("destroy");
+        var applyfromdate = new Date(myDateFormatter($('#txt_fromDatece').val()));
+        var applytodate = new Date(myDateFormatter($('#txt_toDatece').val()));
+        $('#txt_cfromDatece').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(applyfromdate), maxDate: new Date(applytodate) }).attr('readonly', true).css('background-color', 'White');
+        $('#txt_ctoDatece').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(applyfromdate), maxDate: new Date(applytodate) }).attr('readonly', true).css('background-color', 'White');
+        $('#txt_cfromDatece').on('change', function () {
+
+            var datefrom = new Date(myDateFormatter($('#txt_cfromDatece').val()));
+            var dateto = new Date(myDateFormatter($('#txt_toDatece').val()));
+            $("input[name='optradiocanceltoe']").prop('disabled', false).prop('checked', false);
+            $("input[name='optradiocancelfrome']").prop("checked", false);
+            $("#txt_ctotalDatece").val('');
+            $('#txt_ctoDatece').val("").prop('disabled', false);
+            $('#txt_ctoDatece').datepicker("destroy");
+            $('#txt_ctoDatece').datepicker({ dateFormat: "dd-M-yy", changeMonth: true, minDate: new Date(datefrom), maxDate: new Date(dateto) }).attr('readonly', true).css('background-color', 'White');
+
+        });
+
+
+        $('#txt_ctoDatece').on('change', function () {
+            if ($('#txt_cfromDatece').val() == '') {
+                alert("Start Date Can't be blank !");
+                $('#txt_ctoDatece').val("");
+            } else {
+                var start_dt = myDateFormatter($('#txt_cfromDatece').val());
+                var end_dt = myDateFormatter($('#txt_ctoDatece').val());
+                if ($("#hiddenis_half_day").val() == 1) {
+                    $("input[name='optradiocancelfrome']").prop("disabled", true).prop('checked', false);
+                    $("input[name='optradiocanceltoe']").prop('disabled', true).prop('checked', false);
+                    var leftover = (new Date(end_dt) - new Date(start_dt)) / 1000;
+                    var days = Math.floor(leftover / 86400) + 1;
+                    $('#txt_ctotalDatece').val(days);
+                } else {
+                    $("input[name='optradiocancelfrome']").prop("disabled", false);
+                    $("input[name='optradiocanceltoe']").prop('disabled', false);
+
+
+                    if (start_dt > end_dt) {
+                        alert("End Date can't less then start date.");
+                        $('#txt_ctoDatece').val("");
+                        $('#txt_ctotalDatece').val('');
+                        setTimeout(function () { $('#txt_ctoDatece').focus(); })
+                    } else {
+                        if (start_dt == end_dt) {
+                            $("input[name='optradiocanceltoe']").attr('disabled', 'disabled');
+                            $("input[name='optradiocanceltoe']").prop("checked", false);
+                            if ($("input[name='optradiocancelfrome']").is(':checked') == true) {
+                                $('#txt_ctotalDate').val(0.5);
+                            } else {
+                                var leftover = (new Date(end_dt) - new Date(start_dt)) / 1000;
+                                var days = Math.floor(leftover / 86400) + 1;
+                                $('#txt_ctotalDatece').val(days);
+                            }
+                        } else {
+                            $("input[name='optradiocanceltoe']").prop('disabled', false);
+                            $("input[name='optradiocanceltoe']").prop("checked", false);
+                            $("#rdcancelfirsthalftto").prop('disabled', false);
+                            $("#rdcancelSecondhalftto").attr('disabled', 'disabled');
+                            var leftover = (new Date(end_dt) - new Date(start_dt)) / 1000;
+                            var days = "";
+                            if ($("#rdcancelSecondhalftfrom").is(":checked") == true) {
+                                days = Math.floor(leftover / 86400) + 1 - 0.5;
+                            } else {
+                                days = Math.floor(leftover / 86400) + 1;
+                            }
+                            $('#txt_ctotalDatece').val(days);
+                        }
+                    }
+                }
+            }
+        });
+        $('input[name="optradiocancelfrome"]').change(function () {
+            $("#txt_ctoDatece").val('');
+            if ($("#txt_cfromDatece").val() == "") {
+                alert("Start date can't be blank !");
+                $("#txt_cfromDatece").focus();
+                $('input[name="optradiocancelfrome"]').prop("checked", false);
+                return false;
+            } else {
+                $("#txt_ctotalDatece").val(0.5);
+                if ($(this).val() == "First Half") {
+                    $("#txt_ctoDatece").val($("#txt_cfromDatece").val()).css("background-color", "#eee").attr('disabled', 'disabled');
+                    $("input[name='optradiocanceltoe']").attr('disabled', 'disabled');
+                    $("input[name='optradiocanceltoe']").prop("checked", false);
+                }
+                if ($(this).val() == "Second Half") {
+                    var start_dt = myDateFormatter($('#txt_cfromDatece').val());
+                    var end_dt = myDateFormatter($('#txt_ctoDatece').val());
+                    $("#txt_ctoDatece").prop("disabled", false).css("background-color", "#fffff");
+                    if (start_dt == end_dt) {
+                        $("input[name='optradiocanceltoe']").prop('disabled', true);
+                        $("input[name='optradiocanceltoe']").prop("checked", false);
+                    } else {
+                        $("input[name='optradiocanceltoe']").prop('disabled', false);
+                        $("input[name='optradiocanceltoe']").prop("checked", false);
+                        $("#rdcancelfirsthalftto").prop('disabled', false);
+                        $("#rdcancelSecondhalftto").attr('disabled', 'disabled');
+                    }
+                }
+            }
+        });
+        $('input[name="optradiocanceltoe"]').change(function () {
+            if ($('#txt_ctoDatece').val() == "" || $('#txt_cfromDatece').val() == "") {
+                alert("Start date & End date can't be blank !");
+                $("#txt_ctotalDatece").val('');
+                $("#rdcancelfirsthalftto").prop("checked", false);
+            } else {
+                var start_dt = myDateFormatter($('#txt_cfromDatece').val());
+                var end_dt = myDateFormatter($('#txt_ctoDatece').val());
+                if ($('input[name="optradiocancelfrome"]').is(":checked") == true) {
+                    if ($(this).is(":checked") == true) {
+                        var leftover = (new Date(end_dt) - new Date(start_dt)) / 1000;
+                        var days = Math.floor(leftover / 86400);
+                        $('#txt_ctotalDatece').val(days);
+                    }
+
+                } else if ($('input[name="optradiocancelfrome"]').is(":checked") != true) {
+                    if ($(this).is(":checked") == true) {
+                        var leftover = (new Date(end_dt) - new Date(start_dt)) / 1000;
+                        var days = Math.floor(leftover / 86400) + 1 - 0.5;
+                        $('#txt_ctotalDatece').val(days);
+                    }
+                }
+            }
+
+        });
+    });
+    function LeaveSelect() {
+
+        if ($("#ddlLeaveDaysapplye").val() == "Half Day") {
+            $("#firsthalfapplye").prop('disabled', false);
+            $("#secondhalfapplye").prop('disabled', false);
+            $('#txt_daysapplye').val("");
+            $('#txt_from_Dateapplye').val("");
+            $('#txt_toDateapplye').val("").prop('disabled', true);
+            $('#txt_toDateapplye').css('background-color', '#eee');
+            $('#txt_from_Dateapplye').val("").prop('disabled', false);
+            $('#txt_from_Dateapplye').datetimepicker('remove');
+            $('#txt_toDateapplye').datetimepicker('remove');
+
+
+            $('#txt_toDateapplye').val($('#txt_from_Dateapplye').val()).prop('disabled', true);
+            $('#txt_toDateapplye').css('background-color', '#eee');
+            var nofday = parseFloat($('#txt_daysapplye').val() == '' ? 0 : $('#txt_daysapplye').val()) + 0.5;
+            $('#txt_daysapplye').val(nofday);
+
+        } else {
+
+            $("input[name='optradio']").prop('checked', false);
+            $('#txt_toDateapplye').css('background-color', '#ffffff');
+            $('#txt_toDateapplye').prop('disabled', false);
+            $("#firsthalfapplye").prop('disabled', true);
+            $("#secondhalfapplye").prop('disabled', true);
+            $('#txt_daysapplye').val("");
+            $('#txt_from_Dateapplye').val("");
+            $('#txt_toDateapplye').val("");
+            //$('#txt_from_Date').datetimepicker('remove');
+            //$('#txt_toDate').datetimepicker('remove');
+            $('#txt_toDateapplye').val("").prop('disabled', false);
+            $('#txt_from_Dateapplye').val("").prop('disabled', false);
+
+        }
+    }
+
+    function sandwichleave() {
+        if ($("#ddlleavetypeapplye").val() !=2) {
+            $.ajax({
+                type: 'POST',
+                url: '/leave/applyleavetypeforsandwich',
+                contentType: 'application/json;charset=utf-8',
+                data: JSON.stringify({
+                    'empid': $("#ddlemployeeapplye").val(), 'leavetypeid': $("#ddlleavetypeapplye").val(), 'fromdate': $("#txt_from_Dateapplye").val(), 'todate': $("#txt_toDateapplye").val()
+                }),
+                dataType: 'json',
+                success: function (mydata) {
+                    var data = [];
+                    data = mydata.split(',');
+                    if (data[0] == 'H') {
+                        //if (confirm("Are you sure you want to Sandwith Leave ?")) {
+                        if (true) {
+                            $("#hdforsandwich").val(1);
+                            //var sandwichdate = new Date(myDateFormatter(data[1]));
+                            //sandwichdate.setDate(sandwichdate.getDate() + 1);
+                            //var maxdate = myDateFormatter($('#txt_from_Dateapplye').val());
+
+                            //var leftover = (new Date(maxdate) - new Date(sandwichdate)) / 1000;
+                            //var days = Math.floor(leftover / 86400) + 1;
+                            //if (days <= parseInt($("#txtleavebalapplye").val())) {
+                            //    $('#txt_from_Dateapplye').val($.datepicker.formatDate('dd-M-yy', new Date(sandwichdate)));
+                            //} else {
+                            //    alert("You have not apply leave with sandwith day .");
+                            //    $("#txt_from_Dateapplye").val("");
+                            //}
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+
+    function myDateFormatter(dateObject) {
+        var d = new Date(moment(dateObject, '"DD-MMM-YYYY').format());
+        var day = d.getDate();
+        var month = d.getMonth() + 1;
+        var year = d.getFullYear();
+        if (day < 10) {
+            day = "0" + day;
+        }
+        if (month < 10) {
+            month = "0" + month;
+        }
+        var date = year + "/" + month + "/" + day;
+
+        return date;
+    };
+
+
+
+    function FunctionView(ID) {
+        $("#applyhiddenid").val(ID);
+        
+        $.ajax({
+            type: 'POST',
+            url: '/leave/viewapplyleavedetails',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ "tbl_id": ID, flag: 'A' }),
+            dataType: 'json',
+            success: function (response) {
+
+                $("#lblempcode").html(response[0].EmployeeID);
+                $('#lblleavetype').html(response[0].LeaveType_Name);
+                $('#lblempname').html( response[0].Employee_Name);
+                var fromday = response[0].LeaveHalfDay == "" ? "" : " (" + response[0].LeaveHalfDay + ")";
+                $('#lblfrom_date').html(response[0].FromDate + fromday);
+                var today = response[0].LeaveDay == "" ? "" : " (" + response[0].LeaveDay + ")";
+                $("#lblto_date").html(response[0].ToDate + today);
+                $("#lblnoofdays").html(response[0].NumberOfDays);
+
+                $("#lblleavebalance").text(response[0].LeaveBalance);
+                $("#lblremarks").text(response[0].Remarks);
+                $("#lblrejectedremark").text(response[0].REJECT_REMARK);
+
+                if (response[0].Attachment == "") {
+                    $("#applyview").show();
+                    $("#applyviewa").hide();
+                } else {
+                    $("#applyview").hide();
+                    $("#applyviewa").attr("href", "/UploadFile/" + response[0].Attachment).text(response[0].Attachment).show();
+
+                }
+
+
+            }
+        });   
+    }
+
+</script>
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title">Leave Delegation Approval</h4>
+    </div>
+
+    <div class="col-sm-1 text-right m-b-30">
+
+    </div>
+    <div class="col-sm-3 text-right m-b-30" id="buttons">
+    </div>
+</div>
+
+<div class="row ">
+
+    <div class="col-sm-6">
+        <input class="btn btn-success buttonsubmit" type="button" id="btn_approved" data-value="approve" value="Approve" />
+        <input class="btn  buttonsubmit " style="background-color:red;color:white;" data-value="reject" type="button" value="Reject" id="btn_reject">
+        <input type="hidden" id="hdn_roleId" value="@Session["role_id"]" />
+        <input type="hidden" id="hdn_managerId" value="@Session["manager_id"]" />
+    </div>
+
+</div>
+<br />
+<!--Leave Approval List-->
+<div class="row">
+    <div>
+        <div class="col-md-12">
+            <div class="table-responsive">
+
+                <table id="leavecancelapply" class="table table-striped custom-table m-b-0 tbl_leavecancelhistory">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="checkall" /></th>
+                            <th width="45px">Sr.</th>
+                            <th>Employee </th>
+                            <th>Leave Type</th>
+                            <th>From Date</th>
+                            <th>To Date</th>
+                            <th class="Noofdays">No. Of Days</th>
+
+
+                            @*<th>Remarks</th>*@
+                            <th class="text-center" width="10px">Status</th>
+                            <th>Action</th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @{
+                            int sno = 0;
+                        }
+                        @foreach (var item in Model.Tables[0].Rows)
+                        {
+                            if (item["EMPLOYEE_NAME"] == "")
+                            {
+
+                            }
+                            else
+                            {
+                            <tr>
+                                <td>
+                                    <input type="checkbox" value="@item["ID"]" data-status="@item["STATUS"]" data-Level="@item["Max_Level"]" data-approval-level="@item["H_MAX_LEVEL"]" class="checkthis" />
+                                </td>
+                                <td emp_id="@item["Person_ID"]">
+                                    @{ sno++; }
+                                    @sno
+                                </td>
+                                <td><span>@item["EMPLOYEE_NAME"]</span>@*<br /><span>@item["EMPLOYEE_CODE"]</span>*@</td>
+                                <td>@item["LEAVE_TYPE_NAME"]</td>
+                                <td>@item["LEAVE_FROM_DATE"]</td>
+                                <td>@item["LEAVE_TO_DATE"]</td>
+                                <td class="text-center">@item["NUMBER_OF_DAYS"]</td>
+                                @*<td>@item["DESCRIPTION"]</td>*@
+                                <td class="text-center" width="10px">
+                                    <label class="badge bg-warning" style="white-space: pre-line">   @item["STATUS"] </label>
+                                </td>
+                                <td>
+                                   
+                                        @if (ViewBag.event_permission.View == 1)
+                                        {
+                                            <a href="#" title="View" data-toggle="modal" onclick="FunctionView(@item["ID"] )" data-target="#Apply_Leave_view"><i class="glyphicon glyphicon-eye-open"></i></a>
+                                        }
+                                    
+
+                                    </td>
+                                </tr>
+                                            }
+
+                                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Apply_Leave_view" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg">
+
+            <div class="modal-header">
+                <h4 class="modal-title" id="txtModelTitle">View Apply Leave Details</h4>
+                <div class="form-group">
+                    <h5></h5>
+                    <br />
+                    <div class="box-color">
+                        <table class="table m-b-0">
+                            <tbody id="viewUserDetail">
+                                <tr>
+                                    <td style="border-top:none;"><strong>Employee Name</strong></td>
+                                    <td style="border-top:none;">:</td>
+                                    <td style="border-top:none;"><span id="lblempname"> 	</span></td>
+
+                                    <td style="border-top:none;"><strong>Employee Code</strong></td>
+                                    <td style="border-top:none;">:</td>
+                                    <td style="border-top:none;"><span id="lblempcode"></span></td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>Leave Type</strong></td>
+                                    <td>:</td>
+                                    <td><span id="lblleavetype">	 </span></td>
+
+                                    <td><strong>Leave Balance</strong></td>
+                                    <td>:</td>
+                                    <td><span id="lblleavebalance">3</span></td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>From Date</strong></td>
+                                    <td>:</td>
+                                    <td><span id="lblfrom_date"></span></td>
+
+                                    <td><strong>To Date</strong></td>
+                                    <td>:</td>
+                                    <td><span id="lblto_date"></span></td>
+                                </tr>
+
+
+                                <tr>
+                                    <td><strong>No Of Days</strong></td>
+                                    <td>:</td>
+                                    <td><span id="lblnoofdays"></span></td>
+
+                                    <td><strong>Attachment</strong></td>
+                                    <td>:</td>
+                                    <td><span id="applyview">No Attachment Selected</span><a id="applyviewa" href="" download=""> </a></td>
+                                </tr>
+
+
+                                <tr>
+                                    <td><strong>Remarks</strong></td>
+                                    <td>:</td>
+                                    <td><span id="lblremarks"></span></td>
+
+                                    <td><strong>Rejected Remarks</strong></td>
+                                    <td>:</td>
+                                    <td><span id="lblrejectedremark"></span></td>
+                                </tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+@*<div id="Apply_Leave_Edit" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Apply Leave</h4>
+            </div>
+            <div class="modal-body">
+                <form class="m-b-30">
+                    <div class="row">
+                        <input type="hidden" id="applyhiddenid" name="name" value="" />
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Employee <span class="text-danger">*</span></label>
+                                @Html.DropDownList("ddlemployeeapplye", (IEnumerable<SelectListItem>)ViewBag.DDEMPLOYEE, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Type <span class="text-danger">*</span></label>
+
+                                @Html.DropDownList("ddlleavetypeapplye", (IEnumerable<SelectListItem>)ViewBag.LeaveType, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Balance <span class="text-danger">*</span></label>
+                                <input type="text" id="txtleavebalapplye" value="15" readonly="readonly" class="form-control ">
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Leave Day <span class="text-danger">*</span></label>
+                                <br />
+                                <label class="radio-inline">
+                                    <input type="radio" id="firsthalfapplye" value="First Half" name="optradio">First Half
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" id="secondhalfapplye" value="Second Half" name="optradio">Second Half
+                                </label>
+                                @Html.DropDownList("ddlLeaveDaysapplye", (IEnumerable<SelectListItem>)ViewBag.LeaveDay, new { @class = "form-control", @onchange = "LeaveSelect();" })
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">From Date <span class="text-danger">*</span></label>
+                                <br />
+                                <br />
+                                <div class="cal-icon"><input type="text" autocomplete="off" id="txt_from_Dateapplye" placeholder="dd-mmm-yyyy" value="10-Oct-2018" class="form-control mycal" onclose="test();"></div>
+                                <br />
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">To Date <span class="text-danger">*</span></label>
+                                <br />
+                                <br />
+                                <div class="cal-icon"><input type="text" autocomplete="off" placeholder="dd-mmm-yyyy" class="form-control mycal " value="20-Oct-2018" id="txt_toDateapplye"></div>
+                                <br />
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Number of Days  </label>
+                                <input type="text" id="txt_daysapplye" class="form-control" value="11" disabled="disabled">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label">Remarks </label>
+
+                                <textarea placeholder="Contact Address  " id="txtremarksapplye" readonly class="form-control ">Personal Work</textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+
+                                <label class="control-label">Attachment </label>
+                                <br />
+                                <span id="applyedit">No Attachment Selected</span>
+
+                                <a id="applyedita" href="" download=""> </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="m-t-20 text-center">
+                        <input class="btn btn-primary" value="Update" type="button" id="btnupdateapply" />
+                        <input class="btn btn-primary" value="Reset " type="button" id="btnresetapply" />
+                        <input type="hidden" id="hdforsandwich" value="0" />
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>*@
+<!---Leave Cancel View-->
+ 

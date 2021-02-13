@@ -1,0 +1,74 @@
+﻿@model IEnumerable<OTS.Models.MastersModel>
+
+    <script type="text/javascript">
+           $(document).ready(function () {
+               $('ul.list-unstyled  li a[href$="' + "/Project_List" + '"]').addClass('active');
+               $('#datatableList').DataTable({
+                   "order": [[0, 'desc']]
+               });
+           });
+    </script>
+
+    <style type="text/css">
+        #datatableList_filter input {
+            width: 157px;
+        }
+    </style>
+    <div class="row">
+        <div class="col-sm-6">
+            <h4 class="page-title">Project List</h4>
+        </div>
+        <div class="col-sm-4 text-right m-b-30">
+
+        </div>
+        <div class="col-sm-2 text-right m-b-30">
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="row">
+                <div class="col-sm-12" id="tab1">
+                    <table class="table table-striped custom-table m-b-0" id="datatableList" style="font-size:11px;">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Project Code</th>
+                                <th>Project Description</th>
+                                <th>Project Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Project_Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Project_Code)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Project_Desc)
+                                    </td>
+                                    <td>
+                                        @if (item.Show_Status == "Active")
+                                        {
+                                            <label class="badge bg-success">@Html.DisplayFor(modelItem => item.Show_Status)</label>
+                                        }
+                                        else
+                                        {
+                                            <label class="badge bg-warning">@Html.DisplayFor(modelItem => item.Show_Status)</label>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+

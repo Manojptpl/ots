@@ -1,0 +1,308 @@
+﻿
+@{
+    ViewBag.Title = "MasterCheckBox";
+}
+<style type="text/css">
+    .state-icon {
+    left: -5px;
+}
+.list-group-item-primary {
+    color: rgb(255, 255, 255);
+    background-color: rgb(66, 139, 202);
+}
+.well .list-group {
+    margin-bottom: 0px;
+}
+</style>
+<script type="text/javascript">
+    $(function () {
+        $('.list-group.checked-list-box .list-group-item').each(function () {
+
+            // Settings
+            var $widget = $(this),
+                $checkbox = $('<input type="checkbox" class="hidden" />'),
+                color = ($widget.data('color') ? $widget.data('color') : "primary"),
+                style = ($widget.data('style') == "button" ? "btn-" : "list-group-item-"),
+                settings = {
+                    on: {
+                        icon: 'glyphicon glyphicon-check'
+                    },
+                    off: {
+                        icon: 'glyphicon glyphicon-unchecked'
+                    }
+                };
+
+            $widget.css('cursor', 'pointer')
+            $widget.append($checkbox);
+
+            // Event Handlers
+            $widget.on('click', function () {
+                $checkbox.prop('checked', !$checkbox.is(':checked'));
+                $checkbox.triggerHandler('change');
+                updateDisplay();
+            });
+            $checkbox.on('change', function () {
+                updateDisplay();
+            });
+
+
+            // Actions
+            function updateDisplay() {
+                var isChecked = $checkbox.is(':checked');
+
+                // Set the button's state
+                $widget.data('state', (isChecked) ? "on" : "off");
+
+                // Set the button's icon
+                $widget.find('.state-icon')
+                    .removeClass()
+                    .addClass('state-icon ' + settings[$widget.data('state')].icon);
+
+                // Update the button's color
+                if (isChecked) {
+                    $widget.addClass(style + color + ' active');
+                } else {
+                    $widget.removeClass(style + color + ' active');
+                }
+            }
+
+            // Initialization
+            function init() {
+
+                if ($widget.data('checked') == true) {
+                    $checkbox.prop('checked', !$checkbox.is(':checked'));
+                }
+
+                updateDisplay();
+
+                // Inject the icon if applicable
+                if ($widget.find('.state-icon').length == 0) {
+                    $widget.prepend('<span class="state-icon ' + settings[$widget.data('state')].icon + '"></span>');
+                }
+            }
+            init();
+        });
+
+        $('#get-checked-data').on('click', function (event) {
+            event.preventDefault();
+            var checkedItems = {}, counter = 0;
+            $("#check-list-box li.active").each(function (idx, li) {
+                checkedItems[counter] = $(li).text();
+                counter++;
+            });
+            $('#display-json').html(JSON.stringify(checkedItems, null, '\t'));
+        });
+        $("#chkbox").on('click',function () {
+            if (!this.checked) {
+                $("#tbl").fadeIN('slow');
+            }
+            else {
+                $("#tbl").fadeOut('slow');
+            }
+        })
+    });
+
+</script>
+<div class="row">
+    <div class="col-xs-3">
+        <h6 class="text-center">Master</h6>
+        <div class="well" style="max-height: 300px;overflow: auto;">
+            <ul class="list-group checked-list-box">
+                <li class="list-group-item">AB &nbsp;&nbsp;<button type="button" class="btn btn-primary" id="btnAddNew">Add New</button></li>
+                <li class="list-group-item" data-checked="true">AK</li>
+                <li class="list-group-item">AC</li>
+                <li class="list-group-item">AD</li>
+                <li class="list-group-item">AE</li>
+                <li class="list-group-item">AF</li>
+                <li class="list-group-item">AG</li>
+                <li class="list-group-item">AH</li>
+                <li class="list-group-item">AI</li>
+                <li class="list-group-item">AJ</li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-xs-4">
+        <h6 class="text-center">Job Category</h6>
+        <div class="well" style="max-height: 300px;overflow: auto;">
+            <ul id="check-list-box" class="list-group checked-list-box">
+                <li class="list-group-item">R&D others tasks &nbsp;&nbsp;<button type="button" class="btn btn-primary" id="btnEdit">Edit</button></li>
+                <li class="list-group-item" data-color="success">WPC,Douteki,Gihyo,Evaluation</li>
+                <li class="list-group-item" data-color="info">Buget Control</li>
+                <li class="list-group-item" data-color="warning">Document Making/Handling</li>
+                <li class="list-group-item" data-color="danger">IT Work</li>
+                <li class="list-group-item" data-color="danger">Hehai/Parts Arrangement</li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-xs-4">
+        <h6 class="text-center">Job Item</h6>
+        <div class="well" style="max-height: 300px;overflow: auto;">
+            <ul id="check-list-box" class="list-group checked-list-box">
+                <li class="list-group-item" data-color="success">2Way</li>
+                <li class="list-group-item" data-color="success">5S</li>
+                <li class="list-group-item" data-color="info">All Staff Meeting</li>
+                <li class="list-group-item" data-color="warning">Buget Compilation</li>
+                <li class="list-group-item" data-color="danger">Business Trip</li>
+                <li class="list-group-item">Company Event Participation</li>
+                <li class="list-group-item" data-color="success">Course/Training</li>
+                <li class="list-group-item" data-color="info">Department Meeting</li>
+                <li class="list-group-item" data-color="warning">Discussion other than Technical</li>
+                <li class="list-group-item" data-color="danger">Equipment Maintenance</li>
+                <li class="list-group-item">Health Diagnose/Check</li>
+                <li class="list-group-item" data-color="success">lki-lki Event Meeting</li>
+                <li class="list-group-item" data-color="info">Information sharing with other Ge</li>
+                <li class="list-group-item" data-color="warning">Internal Comittee Work</li>
+                <li class="list-group-item" data-color="danger">Interview</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-xs-4">
+                    <h3 class="text-center">Master</h3>
+                    <table class="table table-border">
+                        <thead>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox"/></td>
+                                <td>Cras justo odio</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>                           
+                        </thead>
+                    </table>                    
+                </div>
+                <div class="col-xs-4">
+                    <h3 class="text-center">Job Category</h3>
+                    <table class="table table-border" id="tbl">
+                        <thead>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Cras justo odio</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div class="col-xs-4">
+                    <h3 class="text-center">Item Type</h3>
+                    <table class="table table-border">
+                        <thead>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Cras justo odio</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="chkbox" /></td>
+                                <td>Dapibus ac facilisis in</td>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table class="table table-striped table-responsive custom-table m-b-0" id="datatableList" style="font-size:11px;">
+            <thead>
+                <tr>
+                    <th>check ID</th>
+                    <th>Master Check</th>
+                    <th>Job Category</th>
+                    <th>Items</th>                    
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        1
+                    </td>
+                    <td>
+                        EK
+                    </td>
+                    <td>
+                        Job Category
+                    </td>
+                    <td>
+                        Items
+                    </td>                   
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div><br />
+<div class="row">
+    <div class="col-sm-3">
+        <div class="form-group">
+
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group form-group-toggle" data-toggle="buttons">
+            <button type="button" class="btn btn-primary" id="btn_Submit">Submit</button>
+            <button type="button" class="btn btn-primary" id="btnReset" onclick="ClearText()">Reset</button>
+            <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+            <input type="hidden" id="hdn_Appraisal_id" value="@ViewBag.Exit_idType" />
+        </div>
+    </div>
+</div>
+

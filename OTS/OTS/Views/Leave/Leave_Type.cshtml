@@ -1,0 +1,100 @@
+﻿@model IEnumerable<OTS.Models.LeaveType>
+
+<script>
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/Leave_Type" + '"]').addClass('active');
+        var table= $(".tbl_leavetype").DataTable(
+            {
+                //"columnDefs": [
+                //    { "targets": [6], "orderable": false }
+                //],
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search"
+                }
+            }
+        );
+        if (@ViewBag.event_permission.Export==1) {
+            var buttons = new $.fn.dataTable.Buttons(table, {
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fa fa-file-excel-o fa-lg"></i>  ',
+                        title: 'LeaveType',
+                        titleAttr: 'Excel'
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fa fa-file-text-o fa-lg"></i>  ',
+                        title: 'LeaveType',
+                        titleAttr: 'CSV'
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fa fa-file-pdf-o fa-lg"></i>  ',
+                        title: 'LeaveType',
+                        titleAttr: 'PDF'
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fa fa-print fa-lg"></i> ',
+                        title: 'LeaveType',
+                        titleAttr: 'Print'
+                    }
+                ]
+            }).container().appendTo($('#buttons'));
+        }
+    });
+</script>
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title">Leave Type</h4>
+    </div>
+    <div class="col-sm-4 text-right m-b-30" id="buttons">        
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div>
+            <table class="table table-striped custom-table m-b-0 tbl_leavetype">
+                <thead>
+                    <tr>
+                        <th>Sr.</th>
+                        <th>Leave Type</th>
+                        <th>Short Code</th>
+                        <th class="text-left">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int sno = 0;
+                    }
+                    @foreach (var item in Model)
+                    {
+                    <tr>
+                        <td>
+                            @{ sno++; }
+                            @sno
+                        </td>
+                        <td>@Html.DisplayFor(m => item.leavetypename)</td>
+                        <td>@Html.DisplayFor(m => item.leavetypecode)</td>
+                        <td class="text-left">
+                            @if (item.status == "Active")
+                            {
+                                <label class="badge bg-success">@item.status</label>
+                            }
+                            else
+                            {
+                                <label class="badge bg-brown">@item.status</label>
+                            }
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+ 

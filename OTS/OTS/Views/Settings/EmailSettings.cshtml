@@ -1,0 +1,79 @@
+﻿@{ Html.RenderPartial("_SettingsMenu"); }
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('a[href$="' + "/emailsettings" + '"]').closest("li").addClass('active');
+    });
+</script>
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title">E-mail Setting</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <form>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>Email From Address</label>
+                        <input class="form-control" type="email" id="txt_emailFrom">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>Emails From Name</label>
+                        <input class="form-control" type="text" id="txt_emailFromName">
+                    </div>
+                </div>
+            </div>
+        </form>
+        <h4 class="page-title m-t-30">SMTP Email Settings</h4>
+        <form>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>SMTP HOST</label>
+                        <input class="form-control" type="text" id="txt_smtpHost">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>SMTP USER</label>
+                        <input class="form-control" type="text" id="txt_smtpUser">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>SMTP PASSWORD</label>
+                        <input class="form-control" type="password" id="txt_smtpPassword">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>SMTP PORT</label>
+                        <input class="form-control" type="text" id="txt_smtpPort">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>SMTP Security</label>
+                        <select class="select" id="ddl_smtpSecurity">
+                            <option>None</option>
+                            <option>SSL</option>
+                            <option>TLS</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>SMTP Authentication Domain</label>
+                        <input class="form-control" type="text" id="txt_smtpAuth">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 m-t-20 text-center">
+                <button type="button" class="btn btn-primary" id="btn_save">Save &amp; update</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,279 @@
+﻿@model OTS.Models.MastersModel
+
+<style type="text/css">
+    .required {
+        color: red;
+    }
+
+    .myclass {
+        text-transform: capitalize;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/Create_Project" + '"]').addClass('active');
+
+        $("#Start_Date").datepicker({ dateFormat: "yy-mm-dd", changeMonth: true, changeYear: true, minDate: "-2w", maxDate: "+1m +0w", firstDay: 1 }).attr('readonly', true);
+
+        $("#End_Date").datepicker({ dateFormat: "yy-mm-dd", changeMonth: true, changeYear: true, minDate: "+0m +0w", maxDate: "+9m +0w", firstDay: 1 }).attr('readonly', true);
+
+        $('#btn_Submit').on('click', function ()
+        {
+            var proj_code = $('#Project_Code').val();
+            var proj_name = $('#Project_Name').val();
+            var proj_desc = $('#Project_Desc').val();
+            var start_date = $('#Start_Date').val();
+            var end_date = $('#End_Date').val();
+            var proj_type = $('#Project_TypeId option:selected').val();
+            var proj_cost = $('#Project_Cost').val();
+            var dept_id = $('#Department_Id option:selected').val();
+            var cust_id = $('#Customer_Id option:selected').val();
+            var mng_id = $('#Manager_Id option:selected').val();
+            var status = 0;
+            if ($('#Status').is(":checked")) {
+                status = 1;
+            }
+            else {
+                status = 0;
+            }
+
+            if (proj_name == "")
+            {
+                alert("Project Name can't be blank.");
+                setTimeout(function () { $('#Project_Name').focus(); });
+                return false;
+            }
+            else if (proj_code == "")
+            {
+                alert("Project Code Can't be blank.");
+                setTimeout(function () { $('#Project_Code').focus(); });
+                return false;
+            }
+            else if (start_date == "") {
+                alert("Start Date Can't be blank.");
+                setTimeout(function () { $('#Start_Date').focus(); });
+                return false;
+            }
+            else if (dept_id == "") {
+                alert("Department can't be blank.");
+                setTimeout(function () { $('#Department_Id').focus(); });
+                return false;
+            }
+            else if (proj_type == "")
+            {
+                alert("Project Type can't be blank.");
+                setTimeout(function () { $('#Project_TypeId').focus(); });
+                return false;
+            }          
+            else if (cust_id == "")
+            {
+                alert("Customer can't be blank.");
+                setTimeout(function () { $('#Customer_Id').focus(); });
+                return false;
+            }
+            else if (mng_id == "")
+            {
+                alert("Project manager can't be blank.");
+                setTimeout(function () { $('#Manager_Id').focus(); });
+                return false;
+            }
+            if (proj_code != "" && proj_name != "" && proj_type != "" && dept_id != "" && cust_id != "" && mng_id != "") {
+                $.ajax({
+                    type: 'POST',
+                    url: '/Master/CreateProject',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify(
+                        {
+                            'Project_Code': proj_code, 'Project_Name': proj_name, 'Project_Desc': proj_desc, 'Start_Date': start_date, 'End_Date': end_date, 'Project_TypeId': proj_type,
+                            'Project_Cost': proj_cost, 'Department_Id': dept_id, 'Customer_Id': cust_id, 'Manager_Id': mng_id, 'Status': status
+                        }),
+                    dataType: 'JSON',
+                    success: function (data) {
+                        var a = data.SuccessMsg;
+                        var b = data.ErrorMsg;
+                        if (data != null && a != null) {
+                            alert(a);
+                            ClearData();
+                        }
+                        else {
+                            alertify.alert(b).setHeader('<em> Message </em> ');
+                        }
+                    },
+                    error: function (data) {
+
+                    }
+                });
+            }
+           
+        });
+    });
+
+    function ClearData() {
+        $('#Project_Id').val("");
+        $('#Project_Code').val("").prop('disabled', false).css("background-color", "");
+        $('#Project_Name').val("");
+        $('#Project_Desc').val("");
+        $('#Start_Date').val("");
+        $('#End_Date').val("");
+        $('#Project_TypeId').val("");
+        $('#Project_Cost').val("");
+        $('#Department_Id').val("");
+        $('#Customer_Id').val("");
+        $('#Manager_Id').val("");
+    }
+
+    function CancelOnClick() {
+        window.location.href = "/Home/Dashboard";
+    }
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.number').keypress(function (event) {
+            var $this = $(this);
+            if ((event.which != 46 || $this.val().indexOf('.') != -1) &&
+                ((event.which < 48 || event.which > 57) &&
+                    (event.which != 0 && event.which != 8))) {
+                event.preventDefault();
+            }
+
+            var text = $(this).val();
+            if ((event.which == 46) && (text.indexOf('.') == -1)) {
+                setTimeout(function () {
+                    if ($this.val().substring($this.val().indexOf('.')).length > 3) {
+                        $this.val($this.val().substring(0, $this.val().indexOf('.') + 3));
+                    }
+                }, 1);
+            }
+
+            if ((text.indexOf('.') != -1) &&
+                (text.substring(text.indexOf('.')).length > 2) &&
+                (event.which != 0 && event.which != 8) &&
+                ($(this)[0].selectionStart >= text.length - 2)) {
+                event.preventDefault();
+            }
+        });
+
+        $('.number').bind("paste", function (e) {
+            var text = e.originalEvent.clipboardData.getData('Text');
+            if ($.isNumeric(text)) {
+                if ((text.substring(text.indexOf('.')).length > 3) && (text.indexOf('.') > -1)) {
+                    e.preventDefault();
+                    $(this).val(text.substring(0, text.indexOf('.') + 3));
+                }
+            }
+            else {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+
+<div class="row">
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">Create Project</h4></div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label" for="Project_Name">Project Name: <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="Project_Name" maxlength="40" tabindex="1" />
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label" for="Project_Code">Project Code:<span class="required">*</span></label>
+                        <input type="text" class="form-control" id="Project_Code" maxlength="30" tabindex="2" />
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label" for="Start_Date">Start Date:<span class="required">*</span></label>
+                        <div class="cal-icon">
+                            <input type="text" class="form-control mycal" id="Start_Date" maxlength="11" tabindex="4" placeholder="dd-M-yy" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label" for="End_Date">End Date:</label>
+                        <div class="cal-icon">
+                            <input type="text" class="form-control mycal" id="End_Date" maxlength="11" tabindex="5" placeholder="dd-M-yy" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label" for="Department_Id">Department:<span class="required">*</span></label>
+                        @Html.DropDownList("Department_Id", (IEnumerable<SelectListItem>)ViewBag.dept, "Select", new { @class = "form-control", @tabindex = "6" })
+
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label" for="Project_TypeId">Project Type:<span class="required">*</span></label>
+                        @Html.DropDownList("Project_TypeId", (IEnumerable<SelectListItem>)ViewBag.Project_type, "Select", new { @class = "form-control", @tabindex = "7" })
+
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label" for="Project_Cost">Project Cost:</label>
+                        <input type="text" class="form-control number" id="Project_Cost" maxlength="10" tabindex="8" ondrop="return false;" />
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label" for="Customer_Id">Customer:<span class="required">*</span></label>
+                        @Html.DropDownList("Customer_Id", (IEnumerable<SelectListItem>)ViewBag.cust, "Select", new { @class = "form-control", @tabindex = "9" })
+
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label" for="Manager_Id">Project Manager:<span class="required">*</span></label>
+                        @Html.DropDownList("Manager_Id", (IEnumerable<SelectListItem>)ViewBag.emp, "Select", new { @class = "form-control", @tabindex = "10" })
+
+                    </div>
+                </div>
+                <div class="col-sm-8">
+                    <div class="form-group">
+                        <label class="control-label" for="Project_Desc">Project Description:</label>
+                        <textarea type="text" rows="2" class="form-control" id="Project_Desc" maxlength="100" tabindex="3"></textarea>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label col-sm-3" for="Status">Status:</label>
+                        <div class="col-sm-9">
+                            <input type="checkbox" class="myCheckbox" id="Status" value="" checked="checked" />Active
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                       
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary" id="btn_Submit" onclick="CreateProject()">SAVE</button>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group">
+                        <button type="button" id="btn_Reset" class="btn btn-primary" onclick="ClearData()">Reset</button>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

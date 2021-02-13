@@ -1,0 +1,235 @@
+﻿<style type="text/css">
+    div.dataTables_wrapper div.dataTables_filter input {
+        border-radius: 50px !important;
+        width: auto;
+    }
+</style>
+
+<script type="text/javascript" src="~/assets/js/json-to-table.js"></script>
+<script type="text/javascript" src="~/assets/js/xls.core.min.js"></script>
+<script type="text/javascript" src="~/assets/js/FileSaver.min.js"></script>
+<script type="text/javascript" src="~/assets/js/html2canvas.js"></script>
+<link rel="stylesheet" href="~/assets/css/tableexport.min.css" />
+<script type="text/javascript" src="~/assets/js/tableexport.min.js"></script>
+
+<div class="row">
+    <div class="col-sm-8">
+        <h4 class="page-title">Team Attendance</h4>
+    </div>
+    <div class="col-sm-4 text-right m-b-30" id="buttons">
+    </div>
+</div>
+<div class="row filter-row">
+    <div class="col-sm-2 col-xs-6">
+        <div class="form-group form-focus ">
+            <label style="font-size: 12px;" class="control-label">Select Month</label>
+            <select style="height: 39px;padding: 16px 11px 4px !important;" class="form-control floating myclass" id="ddl_month">
+                <option value="0">Select </option>
+                <option value="1">Jan</option>
+                <option value="2">Feb</option>
+                <option value="3">Mar</option>
+                <option value="4">Apr</option>
+                <option value="5">May</option>
+                <option value="6">Jun</option>
+                <option value="7">Jul</option>
+                <option value="8">Aug</option>
+                <option value="9">Sep</option>
+                <option value="10">Oct</option>
+                <option value="11">Nov</option>
+                <option value="12">Dec</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-sm-2 col-xs-6">
+        <div class="form-group form-focus">
+            <label style="font-size: 12px;" class="control-label">Select Year</label>
+            <select style="height: 39px;padding: 16px 11px 4px !important;" class="form-control floating myclass" id="ddl_year">
+                <option value="0">Select</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-sm-2 col-xs-6">
+        <div class="form-group form-focus">
+            <input type="button" class="btn btn-success btn-block" style="border-radius:35px;height: 39px;font-size:12px;" value="Search" id="btn_Search" />
+        </div>
+    </div>
+    <div class="col-sm-2 col-xs-6">
+        <div class="form-group form-focus">
+            <input type='button' class="btn btn-success btn-block" style="border-radius:35px;height: 39px;font-size:12px;" value="Export To Excel" id='btnExport'>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-12">
+        <div class="table-responsive">
+            <table class="table table-striped table-responsive custom-table text-left tblTimesheet" id="tblAttendance">
+                <thead>
+                    <tr>
+                        <th>Sr.No</th>
+                        <th>Employee Name</th>
+                        <th style="width:15%;">Date</th>
+                        <th>In</th>
+                        <th>Out</th>
+                        <th>Duration</th>
+                        <th>In/Out</th>
+                    </tr>
+                </thead>
+                <tbody id="tblBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" style="display:none;">
+    <div id="wait" class="col-sm-12" style="top:30%;left:30%;"><img src="~/assets/img/giphy.gif" /><br></div>
+</div>
+<script>
+
+    $(function () {
+        $("tblSalesInvoiceList_filter").hide();
+
+        $('ul.list-unstyled  li a[href$="' + "/Attendance" + '"]').addClass('active');
+
+        var minOffset = -2, maxOffset = 0;
+
+        var thisYear = new Date().getFullYear();
+        var select = $('#ddl_year');
+
+        for (var i = minOffset; i <= maxOffset; i++) {
+            var year = thisYear + i;
+            $('<option>', { value: year, text: year }).appendTo(select);
+        }
+
+        var currentTime = new Date();
+        var month = parseInt(parseInt(currentTime.getMonth()) + parseInt(1));
+        var year = thisYear;
+
+        $('#btnExport').hide();
+
+        $("#tblAttendance").DataTable(
+            {
+                "columnDefs": [
+                    { "targets": [3, 4, 5, 6], "orderable": false }
+                ],
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search"
+                }
+            });
+
+        GetData(month, year);
+
+    });
+
+    $(document).ajaxStart(function () {
+        $('.overlay').css("display", "block");
+    });
+
+    $(document).ajaxComplete(function () {
+        $('.overlay').css("display", "none");
+    });
+
+    $("#btn_Search").on("click", function () {        
+        var Month = $('#ddl_month option:selected').val();
+        var Year = $('#ddl_year option:selected').val();
+
+        if (Month == "0") {
+            alert("Please Select Month.");
+            setTimeout(function () { $('#ddl_month').focus(); }, 1);
+            return false;
+        }
+        else if (Year == "0") {
+            alert("Please Select Year.");
+            setTimeout(function () { $('#ddl_year').focus(); }, 1);
+            return false;
+        }
+        GetData(Month, Year);
+    });
+
+    $('#btnExport').click(function () {
+        var tm_month = $('#ddl_month').val();
+
+        var months = {
+            '1': 'Jan', '2': 'Feb', '3': 'Mar', '4': 'Apr', '5': "May", '6': 'Jun',
+            '7': 'Jul', '8': 'Aug', '9': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec'
+        };
+        var selectedMonthName = months[tm_month];
+        var tm_year = $('#ddl_year').val();
+        var ExportButtons = document.getElementById('tblAttendance');
+
+        var instance = new TableExport(ExportButtons, {
+            headers: true,                              // (Boolean), display table headers (th or td elements) in the <thead>, (default: true)
+            footers: true,                              // (Boolean), display table footers (th or td elements) in the <tfoot>, (default: false)
+            formats: ['csv'],                           // (String[]), filetype(s) for the export, (default: ['xls', 'csv', 'txt'])
+            filename: 'Attendance-' + selectedMonthName + '-' + tm_year,   // (id, String), filename for the downloaded file, (default: 'id')
+            bootstrap: false,                           // (Boolean), style buttons using bootstrap, (default: true)
+            exportButtons: false,                        // (Boolean), automatically generate the built-in export buttons for each of the specified formats (default: true)
+            position: 'bottom',                         // (top, bottom), position of the caption element relative to table, (default: 'bottom')
+            ignoreRows: null,                           // (Number, Number[]), row indices to exclude from the exported file(s) (default: null)
+            ignoreCols: 9,                           // (Number, Number[]), column indices to exclude from the exported file(s) (default: null)
+            trimWhitespace: true
+        });
+
+        //                                        // "id" of selector    // format
+        var exportData = instance.getExportData()['tblAttendance']['csv'];
+
+        instance.export2file(exportData.data, exportData.mimeType, exportData.filename, exportData.fileExtension);
+    });
+
+    function GetData(month, year)
+    {
+        $('#ddl_month').val(month);
+        $('#ddl_year').val(year);
+        $.ajax({
+            type: "GET",
+            url: "/Team/GetTeam_Attendance",
+            data: { "month": month, "year": year },
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (data) {
+                var result = JSON.parse(data);
+                if (result.length > 0) {
+                    $("#tblAttendance").dataTable().fnDestroy();
+                    $('#tblBody').empty();
+                    var html = "";
+                    $.each(result, function (txt, val) {
+                        html += "<tr>";
+                        html += "<td>" + val.SR_NO + "</td>";
+                        html += "<td>" + val.EMP_NAME + "</td>";
+                        html += "<td>" + val.Date + "</td>";
+                        html += "<td>" + val.IN + "</td>";
+                        html += "<td>" + val.OUT + "</td>";
+                        html += "<td>" + val.TOTAL_TIME + "</td>";
+                        html += "<td>" + val.IN_OUT + "</td>";
+                        html += "</tr>";
+                    });
+                    $('#tblBody').append(html);
+                    $("#tblAttendance").DataTable(
+                        {
+                            "columnDefs": [
+                                { "targets": [3, 4, 5, 6], "orderable": false }
+                            ],
+                            "language": {
+                                "search": "",
+                                "searchPlaceholder": "Search"
+                            }
+                        });
+                    $('#btnExport').show();
+                }
+                else
+                {
+                    alert("No Data Found.");
+                    $('#btnExport').hide();
+                }
+            },
+            error: function (data) {
+                alert("Session is expired, Please login again.");
+                location.href = location.href;
+            }
+        });
+
+    }
+
+</script>
+

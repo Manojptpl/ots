@@ -1,0 +1,194 @@
+﻿@model IEnumerable<OTS.Models.TaskModel>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/Task_History" + '"]').addClass('active');
+        $('#datatableList').DataTable({
+            "columnDefs": [
+                { "targets": [4], "orderable": false }
+            ],
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Search"
+            }
+        });
+        $(document).on('click', "#btn_edit", function (e) {            
+            var task_id = $(this).attr('data_id');
+            debugger;
+            if (task_id != "") {
+                $.ajax({
+                    type: 'POST',
+                    url: "/Master/EditTask",
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({ 'Task_ID': task_id }),
+                    dataType: 'JSON',
+                    success: function (objTM) {
+                        $("#hdn_TaskID").val(objTM.TASK_ID);
+                        $('#txt_TaskTitle').val(objTM.TaskTitle);
+                        $("#txt_Client").val(objTM.Client);
+                        $("#txt_Project").val(objTM.Project);
+                        $("#txt_DueDate").val(objTM.DueDate);
+                        $('#txt_Description').val(objTM.Description);
+                        $("#txt_empDescription").val(objTM.EmpDescription);
+                        $('#view_Task').modal('show');
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                        $('#view_Task').modal('hide');
+                    }
+                });
+
+            }
+        });
+    });
+</script>
+<style type="text/css">
+    #datatableList_filter input {
+        width: 157px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-sm-6">
+        <h4 class="page-title">Task History</h4>
+    </div>
+    <div class="col-sm-4 text-right m-b-30">
+
+    </div>
+    <div class="col-sm-2 text-right m-b-30">
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <table class="table table-striped table-responsive custom-table m-b-0" id="datatableList" style="font-size:11px;">
+            <thead>
+                <tr>
+                    <th>Task Title</th>
+                    <th>Client</th>
+                    <th>Project</th>
+                    <th>Due Date</th>
+                    <th>Description</th>
+                    <th>Emp Description</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TaskTitle)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Client)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Project)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DueDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Description)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EmpDescription)
+                        </td>
+                        <td>
+                            @if (item.Show_Status == "Active")
+                            {<label class="badge bg-success">@Html.DisplayFor(modelItem => item.Show_Status)</label>
+                            }
+                            else
+                            {
+                                <label class="badge bg-warning">@Html.DisplayFor(modelItem => item.Show_Status)</label>
+                            }
+                           
+                        </td>
+                        <td class="text-center">
+                            <a href="javascript:void(0);" title="Edit" id="btn_edit" data_id="@item.TASK_ID"><i class="fa fa-pencil m-r-5"></i>  </a>                            
+                        </td>       
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<div id="view_Task" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" class="close" id="btn_viewClose" data-dismiss="modal">&times;</button>
+        <div class="modal-content modal-lg" style="width:1060px;">
+            <div class="modal-header">
+                <h4 class="modal-title">Task</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Task Title</label>                                    
+                                    <input class="form-control" type="text" id="txt_TaskTitle"  name="Task title" readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Client</label>
+                                    <input class="form-control" type="text" id="txt_Client" name="Client" readonly="readonly" />                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Project</label>
+                                    <input class="form-control" type="text" id="txt_Project" name="Project" readonly="readonly" />
+                                </div>
+                            </div>                            
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Due Date<span class="text-danger"></span></label>
+                                    <div class="cal-icon">
+                                        <input class="form-control" placeholder="dd-mmm-yyyy" type="text" id="txt_DueDate" readonly="readonly">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class = "row">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <input class="form-control" type="text" id="txt_Description" readonly="readonly" name="Description">
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Emp Description</label>
+                                    <input class="form-control" type="text" id="txt_empDescription" readonly="readonly" />
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Status</label>                                   
+                                    @Html.DropDownList("ddl_statusType", (IEnumerable<SelectListItem>)ViewBag.Status_TYPE, "Select", new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="m-t-20 text-center">
+                        <input type="button" class="btn btn-primary" id="btnUpdateTask" value="Save change" />                        
+                        <input type="hidden" id="hdn_TaskID" />                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

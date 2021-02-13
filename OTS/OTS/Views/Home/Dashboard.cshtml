@@ -1,0 +1,784 @@
+﻿<link rel="stylesheet" type="text/css" href="~/assets/plugins/morris/morris.css">
+<script type="text/javascript" src="~/assets/plugins/raphael/raphael-min.js"></script>
+<script type="text/javascript" src="~/assets/plugins/morris/morris.min.js"></script>
+<style>
+    #pie-chart_attendence, #pie-chart_leave_by_type, #pie-chart_employment_type {
+        min-height: 250px !important;
+    }
+
+    .dash-widget-info {
+        text-align: left;
+    }
+
+    .divider {
+        border-left: 1.5px solid #c3b8a633;
+        height: 115px;
+        margin-top: 0px;
+    }
+
+        .divider h4 {
+            color: RGB(2,2,2,0.7);
+            margin-top: 10px;
+            font-weight: 700;
+            margin-left: 15px;
+            font-size: 13px;
+            line-height: 14px;
+        }
+
+    .labelstyle span {
+        line-height: 0px;
+        margin-top: 15px;
+        font-weight: 500;
+        font-size: 13px;
+        margin-left: -30px;
+    }
+
+    .divider span {
+        color: RGB(2,2,2,0.7);
+        line-height: 18px;
+        margin-top: 0px;
+        font-weight: 500;
+        font-size: 13px;
+        margin-left: 0px;
+    }
+
+    .profileinfo img {
+        /*width: 82%;*/ width: 100%;
+        margin-top: 16px;
+        border-radius: 50%;
+    }
+
+    .indicator-box {
+        height: 10px;
+        width: 15px;
+        background-color: #32cd32;
+    }
+
+    .indicator-box1 {
+        height: 10px;
+        width: 15px;
+        background-color: #0b62a4;
+    }
+
+    .indicator-box2 {
+        height: 10px;
+        width: 15px;
+        background-color: #ff9800;
+    }
+
+    .dot {
+        height: 25px;
+        width: 25px;
+        border-radius: 50%;
+        background-color: green;
+    }
+
+    @@media only screen and (min-width: 479px) {
+        .img-class {
+            text-align: center;
+            margin-bottom: 7px;
+        }
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('ul li#myli').addClass('active');
+        var dt = new Date();
+        var mon = dt.getMonth() + 1;
+        var date = dt.getDate();
+        var yr = dt.getFullYear();
+         var emp_id =@Session["emp_id"].ToString();
+        Get_EmployeeDashBoard(mon, yr);
+
+        $("#btn_total_leave_detail").on("click", function () {
+
+            $("#tbl_leavedetails tbody").empty();
+            $.ajax({
+                type: 'POST',
+                url: '/Home/get_employee_leave_bymgr',
+                contentType: 'application/json;charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({ emp_id }),
+                success: function (data) {
+                   
+                    var mydata = JSON.parse(data);
+
+                    if (mydata.length > 0) {
+                        $.each(mydata, function (index,val) {
+                            var html = ""
+
+                            html += "<tr><td>" +( ( index)+ 1)  + "</td>";
+                            html += "<td>" + val.FULL_NAME + "</td>";
+                            html += "<td>" + val.LEAVE_FROM_DATE + "</td>";
+                            html += "<td>" + val.LEAVE_TO_DATE + "</td>";
+                            html += "<td>" + val.NUMBER_OF_DAYS + "</td>";
+                            html += "<td>" + val.LEAVE_TYPE_CODE + "</td>";
+                            html += "<td>" + val.STATUS + "</td></tr>";
+
+                            $("#tbl_leavedetails tbody").append(html);
+
+                        })
+                    } else {
+                        var html = ""
+                        html += "<tr > <td colspan='7'>Record Empty</td></tr>";
+
+                        $("#tbl_leavedetails tbody").append(html);
+                    }
+
+                    $("#leavedetail_empbyes").modal('show');
+
+                },
+                error: function () {
+                    alert('error');
+                }
+            });
+
+        });
+        $("#btn_emp_atten_detail").on("click", function () {
+
+            $("#tbl_atten_details tbody").empty();
+            $.ajax({
+                type: 'POST',
+                url: '/Home/get_employee_attendetail_bymgr',
+                contentType: 'application/json;charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({ emp_id }),
+                success: function (data) {
+
+                    var mydata = JSON.parse(data);
+                   
+                    if (mydata.length > 0) {
+                        $.each(mydata, function (index, val) {
+                            var html = ""
+
+                            html += "<tr><td>" + ((index) + 1) + "</td>";
+                            html += "<td>" + val.FULL_NAME + "</td>";
+                            html += "<td>" + val.ATTENDANCE_DATE  + "</td>";
+
+                            html += "<td>" + val.STATUS+ "</td></tr>";
+
+                            $("#tbl_atten_details tbody").append(html);
+
+                        })
+                    } else {
+                        var html = ""
+                        html += "<tr >  <td colspan='4'>Record Empty</td></tr>";
+
+                        $("#tbl_atten_details tbody").append(html);
+                    }
+
+
+
+                },
+                error: function () {
+                    alert('error');
+                }
+            });
+            $("#attendencedetail_mgrbyes").modal('show');
+        });
+        $("#btn_emp_detail").on("click", function () {
+
+            $("#tbl_emp_details tbody").empty();
+            $.ajax({
+                type: 'POST',
+                url: '/Home/get_employee_bymgr',
+                contentType: 'application/json;charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({ emp_id }),
+                success: function (data) {
+
+                    var mydata = JSON.parse(data);
+
+                    if (mydata.length > 0) {
+                        $.each(mydata, function (index, val) {
+                            var html = ""
+
+                            html += "<tr><td>" + ((index) + 1) + "</td>";
+                            html += "<td>" + val.TEMP_NAME + "</td>";
+                            html += "<td>" + val.DEPARTMENT_NAME + "</td>";
+                            html += "<td>" + val.DESIGNATION_NAME + "</td>";
+                            html += "<td>" + val.SECTION_NAME + "</td>";
+                            html += "<td>" + val.GRADE_NAME + "</td>";
+                            html += "<td>" + val.REGION + "</td>";
+                            html += "<td>" + val.EMPLOYMENT_TYPE + "</td></tr>";
+
+                            $("#tbl_emp_details tbody").append(html);
+
+                        });
+                    } else {
+                        var html = ""
+                        html += "<tr >  <td colspan='8'>Record Empty</td></tr>";
+
+                        $("#tbl_emp_details tbody").append(html);
+                    }
+
+
+
+                },
+                error: function () {
+                    alert('error');
+                }
+            });
+            $("#employee_detail_mgrbyes").modal('show');
+        });
+        $(".close").on("click", function () {
+            $("#tbl_leavedetails tbody").empty();
+            $("#tbl_atten_details tbody").empty();
+            $("#tbl_emp_details tbody").empty();
+
+        })
+
+        $.ajaxSetup({
+            statusCode: {
+                403: function () {
+                    window.location.reload();
+                }
+            }
+        });
+
+
+
+    });
+    function Get_EmployeeDashBoard(mon, yr) {
+
+        $.ajax({
+            type: "POST",
+            url: "/Home/GetEmployeeDashBoard",
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ 'Month': mon, 'Year': yr }),
+            dataType: 'json',
+            success: function (data) {
+                var holiday = data.holiday!=""?JSON.parse(data.holiday):[];
+                var balance = data.balance != "" ? JSON.parse(data.balance) : [];
+                var approve_leave = data.approve_leave != "" ? JSON.parse(data.approve_leave) : [];
+                var Inprogress_leave = data.Inprogress_leave != "" ? JSON.parse(data.Inprogress_leave) : [];
+                var employee = data.employee != "" ? JSON.parse(data.employee) : [];
+                var notification = data.notification != "" ? JSON.parse(data.notification) : [];
+                var leave_all_type = data.leave_all_type != "" ? JSON.parse(data.leave_all_type) : [];
+                var Attendence_detail = data.Attendence_detail != "" ? JSON.parse(data.Attendence_detail) : [];
+                var Employment_type = data.Employment_type != "" ? JSON.parse(data.Employment_type) : [];
+                var cl_bal = 0.0;
+                var el_bal = 0.0;
+                var CLapp_leave = 0.0;
+                var CLprog_leave = 0.0;
+                var ELapp_leave = 0.0;
+                var ELprog_leave = 0.0;
+                var total_employee = 0, BL = 0.0, CL = 0.0, EL = 0.0, EOL = 0.0, ML = 0.0, MAL = 0.0, PL = 0.0;
+                var total_emp = 0, on_tour = 0.0, meating = 0.0, training = 0.0, total_atten = 0.0;
+                var Total_employee = 0, Consolidate = 0.0, Regular = 0.0, Probation = 0.0, Contract = 0.0;
+                if (holiday) {
+                    $('#tblBody').empty();
+                    var html = "";
+                    $.each(holiday, function (txt, val) {
+                        html += "<tr>";
+                        html += "<td>" + val.HOLIDAY_NAME + "</td>";
+                        html += "<td>" + val.HOLIDAY_SDATE + "</td>";
+                        html += "<td>" + val.HOLIDAY_EDATE + "</td>";
+                        html += "</tr>";
+
+                    })
+                    $('#tblBody').append(html);
+                }
+                if (balance) {
+                    $.each(balance, function (txt, val) {
+                        cl_bal = val.CL_BALANCE;
+                        el_bal = val.EL_BALANCE;
+                    });
+                }
+                if (approve_leave) {
+                    $.each(approve_leave, function (txt, val) {
+                        CLapp_leave = val.CL_APPROVED_LEAVE;
+                        CLprog_leave = val.CL_IN_PROGRESS_LEAVE;
+                    });
+                }
+                if (Inprogress_leave) {
+                    $.each(Inprogress_leave, function (txt, val) {
+                        ELapp_leave = val.EL_APPROVED_LEAVE;
+                        ELprog_leave = val.EL_IN_PROGRESS_LEAVE;
+                    });
+                }
+                if (employee) {
+                    $.each(employee, function (txt, val) {
+                        $('#lbl_emp_name').text(val.FULL_NAME);
+                        $('#lbl_emp_id').text(val.EMPLOYEE_CODE);
+                        $('#lbl_designation').text(val.DESIGNATION_NAME);
+                        $('#lbl_designation1').text(val.DESIGNATION_NAME);
+
+                        $('#lbl_department').text(val.DEPARTMENT_NAME);
+                        $('#lbl_email').text(val.EMAIL);
+                        $('#lbl_dob').text(val.DOB);
+                        $('#lbl_doj').text(val.DOJ);
+                        $('#lbl_region').text(val.LOCATION);
+                        $('#lbl_gender').text(val.GENDER);
+                        $('#lbl_type').text(val.EMPLOYMENT_TYPE);
+                        $('#lbl_grade').text(val.GRADE_NAME);
+                        $('#lbl_role').text(val.ROLE_NAME);
+                        $('#lbl_manager').text(val.MANAGER_NAME);
+                    });
+                }
+                if (leave_all_type) {
+                    $.each(leave_all_type, function (txt, val) {
+                        $("#total_leave_employee").html(val.Total_Leave + "/" + val.Total_employee);
+                        total_employee = val.Total_employee;
+                        BL = val.BL;
+                        CL = val.CL;
+                        EL = val.EL;
+                        EOL = val.EOL;
+                        ML = val.ML;
+                        MAL = val.MAL;
+                        PL = val.PL;
+
+                    });
+                }
+                if (Attendence_detail) {
+                    $.each(Attendence_detail, function (txt, val) {
+                        $("#total_atten_employee").html(val.TotalAttendance + "/" + val.TotalEmp);
+
+                        total_emp = val.TotalEmp;
+                        on_tour = val.On_Tour;
+                        meating = val.Meeting;
+                        training = val.Training;
+                        total_atten = val.TotalAttendance;
+
+
+                    });
+                }
+
+                if (Employment_type) {
+                    $.each(Employment_type, function (txt, val) {
+                        $("#total_employee").html(val.Total_employee);
+                        Total_employee = val.Total_employee;
+                        Consolidate = val.Consolidate;
+                        Regular = val.Regular;
+                        Probation = val.Probation;
+                        Contract = val.Contract;
+                    })
+                }
+                $("#tbl_noticaltion tbody").empty()
+
+                if (notification) {
+                    $.each(notification, function (txt, val) {
+                        var html = "";
+                        html += "<tr> <td>" + val.notification + "</td></tr>";
+                        $("#tbl_noticaltion tbody").append(html);
+                    });
+                }
+
+                if (cl_bal > 0) {
+                    Morris.Donut({
+                        element: 'pie-chart',
+                        data: [
+                            { label: "CL", value: cl_bal },
+                            { label: "EL", value: el_bal },
+                            { label: "SL", value: 6 }
+
+                        ],
+                        colors: ['rgb(50,205,50)', 'rgb(255, 152, 0)', '#0b62a4']
+                    });
+                } else {
+                    Morris.Donut({
+                        element: 'pie-chart',
+                        data: [
+
+                            { label: "Balance", value: 2 }
+
+                        ],
+                        colors: [ '#0b62a4']
+                        , formatter: function (y, data) { return 0 }
+                    });
+
+                }
+
+                if (el_bal > 0) {
+                    Morris.Donut({
+                        element: 'pie-chart1',
+                        data: [
+                            { label: "CL", value: CLapp_leave },
+                            { label: "EL", value: ELapp_leave },
+                            { label: "SL", value: 0 }
+                        ],
+                        colors: ['rgb(50,205,50)', 'rgb(255, 152, 0)', '#0b62a4']
+                    });
+                } else {
+                    Morris.Donut({
+                        element: 'pie-chart1',
+                        data: [
+                            { label: "Balance", value: 2 }
+                           ],
+                        colors: ['#0b62a4'],
+                        formatter: function (y, data) { return 0 }
+                    });
+                }
+
+                Morris.Donut({
+                    element: 'pie-chart_leave_by_type',
+                    data: [
+                        { label: "Total Employee", value: total_employee },
+                        { label: "BL", value: BL },
+                        { label: "CL", value: CL },
+                        { label: "EL", value: EL },
+                        { label: "EOL", value: EOL },
+                        { label: "ML", value: ML },
+                        { label: "MTL", value: MAL },
+                        { label: "PL", value: PL }
+                    ],
+                    colors: ['#0b62a4', '#0b62a4', ' #40b8ef', '#406bef', '#8bef40', '#efcc40', '#82607d','#ef9d40']
+                });
+                Morris.Donut({
+                    element: 'pie-chart_attendence',
+                    data: [
+                        { label: "Total Employee", value: total_emp },
+                        { label: "On Tour", value: on_tour },
+                        { label: "Meeting", value: meating },
+                        { label: "Training", value: training }
+                    ],
+                    colors: ['#0b62a4', 'rgb(50,205,50)', 'rgb(255, 152, 0)', '#406bef']
+                });
+
+                Morris.Donut({
+                    element: 'pie-chart_employment_type',
+                    data: [
+                        { label: "Total Employee", value: Total_employee },
+                        { label: "Consolidate", value: Consolidate },
+                        { label: "Regular", value: Regular },
+                        { label: "Probation", value: Probation },
+                        { label: "Contract", value: Contract }
+                    ],
+                    colors: ['#0b62a4', 'rgb(50,205,50)', 'rgb(255, 152, 0)', '#406bef', '#efcc40']
+                });
+            }
+        });
+    }
+</script>
+<div class="content container-fluid">
+    <div class="row card-box">
+        <div class="col-md-4">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="profileinfo">
+                        @*<img src="@Session["profile_image"]" class="responsive" alt="profile image">*@
+                        <img src="~/ProfileImg/@Session["profile_image"]" class="responsive" alt="profile image">
+                    </div>
+                </div>
+                <div class="col-sm-8" style="margin-top:15px">
+                    <span id="lbl_emp_name" style="font-weight: 700;margin-left: -10px; color:RGB(2,2,2,0.7);font-size: unset;padding-left:10px;    "></span> <br />
+                    <span id="lbl_email" style="font-weight: 500;margin-left: -10px; color:RGB(2,2,2,0.7);font-size: unset;padding-left:10px;"></span><br />
+                    <span id="lbl_designation" style="font-weight: 500;margin-left: -10px; color:RGB(2,2,2,0.7);font-size: unset;padding-left:10px;"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="divider">
+                <h4>Department : <span id="lbl_department"></span></h4>
+                <h4>D.O.B : <span id="lbl_dob"></span></h4>
+                <h4>D.O.J : <span id="lbl_doj"></span></h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="divider">
+                <h4>Region : <span id="lbl_region" style="margin-top:8px;"></span></h4>
+                <h4>Gender : <span id="lbl_gender"></span></h4>
+                <h4>Employment Type : <span id="lbl_type"></span> </h4>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="divider">
+                <h4>Grade : <span id="lbl_grade" style="margin-top:8px;"></span></h4>
+                <h4>Role : <span id="lbl_role"></span></h4>
+                <h4>Manager :  <span id="lbl_manager"></span></h4>
+            </div>
+        </div>
+        <div class="horizontaldivider"></div>
+    </div>
+
+    <!--Leave Section-->
+    <section>
+        <div class="row" style="margin-top:30px;">
+            <div class="col-md-6 col-sm-12 text-left">
+                <div class="card-box" style="overflow-x:scroll;">
+                    <h4>Leave Balance</h4>
+                    <div style="margin-left:30px;">
+                        <div class="row">
+                            <div class="col-md-1 indicator-box" style="margin-top: 6px;height: 10px;width: 15px;background-color: #32cd32;"></div>
+                            <div class="col-md-2">CL</div>
+                            <div class="col-md-1 indicator-box1" style="margin-top: 6px;height: 10px;width: 15px;background-color: #ff9800;"></div>
+                            <div class="col-md-2">EL</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-1 indicator-box2" style="margin-top: 6px;height: 10px;width: 15px;background-color: #0b62a4;"></div>
+                            <div class="col-md-2">SL</div>
+                        </div>
+                        
+                    </div>
+                    <div id="pie-chart"></div>
+                </div>
+            </div>
+            <div class="col-md-6 col-sm-12 text-left">
+                <div class="card-box" style="overflow-x:scroll; ">
+                    <h4>Leave Approved</h4>
+                    <div style="margin-left:30px;">
+                        <div class="row">
+
+                            <div class="col-md-1 indicator-box" style="margin-top: 6px;background-color: #32cd32;"></div>
+                            <div class="col-md-2">CL</div>
+                            <div class="col-md-1 indicator-box1" style="margin-top: 6px;background-color: #ff9800;"></div>
+                            <div class="col-md-2">EL</div>
+                        </div>
+                       
+                        <div class="row">
+                            <div class="col-md-6 indicator-box2" style="margin-top: 6px;background-color: #0b62a4;"></div>
+                            <div class="col-md-6">SL</div>
+                        </div>
+                    </div>
+                    <div id="pie-chart1"></div>
+                </div>
+            </div>
+            @*@*<div style="@ViewBag.mgrshow" class="col-md-4 col-sm-12 text-left">
+                <div class="card-box" style="overflow-x:scroll; ">
+                    <h4 id="btn_total_leave_detail" style="cursor: pointer;">On Leave :  <span id="total_leave_employee"></span></h4>
+                    @*<a href="javascript:void();" id="btn_total_leave_detail"><strong>Employee /On Leave :</strong>  </a> 
+
+                    <div style="margin-left:30px;">
+                        <div class="row">
+                            <div class="col-md-1 indicator-box" style="margin-top: 6px;height: 10px;width: 15px;background-color: #0b62a4;"></div>
+                            <div class="col-md-2">BL</div>
+                            <div class="col-md-1 indicator-box1" style="margin-top: 6px;height: 10px;width: 15px;background-color: #40b8ef;"></div>
+                            <div class="col-md-2">CL</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-1 indicator-box2" style="margin-top: 6px;height: 10px;width: 15px;background-color: #406bef;"></div>
+                            <div class="col-md-2">EL</div>
+                            <div class="col-md-1 indicator-box2" style="margin-top: 6px;height: 10px;width: 15px;background-color: #8bef40;"></div>
+                            <div class="col-md-2">EOL</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-1 indicator-box2" style="margin-top: 6px;height: 10px;width: 15px;background-color: #efcc40;"></div>
+                            <div class="col-md-2">ML</div>
+                            <div class="col-md-1 indicator-box" style="margin-top: 6px;height: 10px;width: 15px;background-color:#ef9d40;"></div>
+                            <div class="col-md-2">PL</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-1 indicator-box1" style="margin-top: 6px;height: 10px;width: 15px;background-color:#098c69;"></div>
+                            <div class="col-md-2">SL</div>
+                            <div class="col-md-1 indicator-box2" style="margin-top: 6px;height: 10px;width: 15px;background-color:#82607d;"></div>
+                            <div class="col-md-2">MTL</div>
+                        </div>
+                    </div>
+                    <div id="pie-chart_leave_by_type"></div>
+
+                </div>
+            </div>*@
+            @*<div style="@ViewBag.mgrshow" class="col-md-4 col-sm-12 text-left">
+                <div class="card-box" style="overflow-x:scroll;     ">
+                    <h4 id="btn_emp_atten_detail" style="cursor: pointer;">Out of Office :  <span id="total_atten_employee"></span></h4>
+                     <a href="javascript:void();" ><strong> Employee /Atten. :</strong> <span id="total_atten_employee"></span></a> 
+                    <div style="margin-left:30px; margin-bottom: 13%;">
+                        <div class="row">
+                            <div class="col-md-1 indicator-box" style="margin-top: 6px;"></div>
+                            <div class="col-md-4">On Tour</div>
+                            <div class="col-md-1 indicator-box1" style="margin-top: 6px;"></div>
+                            <div class="col-md-4">Training</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-1 indicator-box2" style="margin-top: 6px;"></div>
+                            <div class="col-md-4">Meeting</div>
+                        </div>
+                        <div class="row"></div>
+                    </div>
+                    <div id="pie-chart_attendence"></div>
+                </div>
+            </div>
+            <div style="@ViewBag.mgrshow" class="col-md-4 col-sm-12 text-left">
+                <div class="card-box" style="overflow-x:scroll; ">
+                    <h4>Employment Type Detail  </h4> 
+                    <h4 id="btn_emp_detail" style="cursor: pointer;">Section Employee Details  : <span id="total_employee"></span></h4>
+                    <a href="javascript:void();" ><strong> Employee Details :</strong></a> 
+                    <div style="margin-left:30px; margin-bottom: 13%;">
+                        <div class="row">
+                            <div class="col-md-1 indicator-box" style="margin-top: 6px;height: 10px;width: 15px;background-color: #8bef40;"></div>
+                            <div class="col-md-4">Consolidate</div>
+                            <div class="col-md-1 indicator-box1" style="margin-top: 6px;height: 10px;width: 15px;background-color: rgb(255, 152, 0);"></div>
+                            <div class="col-md-4">Regular</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-1 indicator-box2" style="margin-top: 6px;height: 10px;width: 15px;background-color: #406bef;"></div>
+                            <div class="col-md-4">Probation</div>
+                            <div class="col-md-1 indicator-box2" style="margin-top: 6px;height: 10px;width: 15px;background-color: #efcc40;"></div>
+                            <div class="col-md-4">Contract</div>
+                        </div>
+                        <div class="row"></div>
+                    </div>
+                    <div id="pie-chart_employment_type"></div>
+                </div>
+            </div>*@ 
+        </div>
+
+    </section>
+
+    <!--Holiday ,notificaiton section-->
+    <div class="row">
+        <div class="col-md-6" style="overflow-x:scroll; height:345px;">
+            <div class="panel panel-table">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Holidays</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped custom-table m-b-0">
+                            <thead>
+                                <tr>
+                                    <th> Name</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-table">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Notifications</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped custom-table m-b-0" id="tbl_noticaltion">
+                            <tbody>
+                                @*<tr>
+
+                                        <td>John Doe added new task Patient appointment booking</td>
+
+                                    </tr>
+                                    <tr>
+                                        <td>John Doe added new task Patient appointment booking</td>
+                                    </tr>
+                                    <tr>
+                                        <td>John Doe added new task Patient appointment booking</td>
+                                    </tr>*@
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <a href="javascript:;" class="text-primary">View all notifications</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div id="leavedetail_empbyes" class="modal  fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content" style="margin-top:6%">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Leave Details</h4>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive" style="height: 400px; overflow-y: scroll;">
+                    <table id="tbl_leavedetails" class="table table-striped custom-table m-b-0 tbl_leavedetails dataTable ">
+                        <thead>
+                            <tr>
+                                <th> Sr.No.</th>
+                                <th width="250px"> Employee </th>
+                                <th width="100px"> From Date </th>
+                                <th width="100px"> To Date </th>
+                                <th width="200px"> Number Of Days </th>
+                                <th width="100px"> Leave Type </th>
+                                <th> Status </th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div id="attendencedetail_mgrbyes" class="modal fade" role="dialog">
+    <div class="modal-dialog md">
+
+        <!-- Modal content-->
+        <div class="modal-content" style="margin-top:6%">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Attendence Details</h4>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table id="tbl_atten_details" class="table table-striped custom-table m-b-0 tbl_atten_details dataTable ">
+                        <thead>
+                            <tr>
+                                <th> Sr.No.</th>
+                                <th width="250px"> Employee </th>
+                                <th width="100px"> Date </th>
+                                <th> Status </th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div id="employee_detail_mgrbyes" class="modal  fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content" style="margin-top:6%">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Attendence Details</h4>
+            </div>
+            <div class="modalAdministrative Officer	Administration	P2.9-body ">
+                <div class="table-responsive" style="height: 400px; overflow-y: scroll;">
+                    <table id="tbl_emp_details" class="table table-striped custom-table m-b-0 tbl_emp_details dataTable ">
+                        <thead>
+                            <tr>
+                                <th> Sr.No.</th>
+                                <th width="250px"> Employee </th>
+                                <th width="100px"> Department </th>
+                                <th width="100px"> Designation </th>
+                                <th width="100px"> Section </th>
+                                <th width="100px"> Grade </th>
+                                <th width="100px"> Region </th>
+                                <th width="100px"> Employment Type </th>
+
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>

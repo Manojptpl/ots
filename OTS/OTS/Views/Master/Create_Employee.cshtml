@@ -1,0 +1,718 @@
+﻿@model IEnumerable<OTS.Models.MastersModel>
+@{
+    ViewBag.Title = "Create_Employee";
+}
+
+<html>
+<head>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/themes/base/jquery-ui.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.1.1.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.js"></script>
+    <link href="~/Content/material.min.css" rel="stylesheet" />
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/material.min.js"></script>
+    <link href="~/Content/alertifyjs/alertify.min.css" rel="stylesheet" />
+    <script src="~/Scripts/alertify.min.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <title></title>
+    <style type="text/css">
+        .required {
+            color: red;
+        }
+
+        .container {
+            width: 1300px;
+        }
+
+        .modal-content {
+            border-radius: 5px;
+            border: none;
+            width: 20%;
+            margin-top: 20%;
+            margin-left: 10%;
+        }
+
+            .modal-content .modal-header {
+                border-bottom: none;
+                padding-top: 2px;
+                padding-right: 4px;
+                padding-bottom: 10px;
+                padding-left: 309px;
+            }
+
+        .myclass {
+            text-transform: capitalize;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('ul.list-unstyled  li a[href$="' + "/Create_Employee" + '"]').addClass('active');
+                $('#divupdate').hide();
+                $('#divempty').hide();
+                $('#Last_WDay').prop('disabled', true).css('background-color', "lightgray");
+                var dateToday = new Date();
+                var yrRange = "1960:" + (dateToday.getFullYear() - 18);
+                var minDate = new Date(dateToday.getFullYear(), dateToday.getMonth() - 1);
+                $("#Dob").datepicker({ dateFormat: "yy-mm-dd", firstDay: 1, changeMonth: true, changeYear: true, yearRange: yrRange }).attr('readonly', true);
+                $("#Doj").datepicker({ dateFormat: "yy-mm-dd", maxDate: "+0m +0w", firstDay: 1, changeMonth: true, changeYear: true }).datepicker('setDate', 'today').attr('readonly', true);
+                $("#Last_WDay").datepicker({ dateFormat: "yy- mm - dd", minDate: minDate, maxDate: "+ 3m + 0w", firstDay: 1, changeMonth: true, changeYear: true, yearRange: "0:+2018" }).attr('readonly', false);
+                $("#Emp_Code").bind('keyup', function (e) {
+                    if (e.which >= 97 && e.which <= 122) {
+                        var newKey = e.which - 32;
+                        // I have tried setting those
+                        e.keyCode = newKey;
+                        e.charCode = newKey;
+                    }
+                    $("#Emp_Code").val(($("#Emp_Code").val()).toUpperCase());
+                });
+                // For Autocomplete
+                $('#First_Name').autocomplete({
+                    source: function (request, response) {
+                        $.ajax({
+                            url: '/Master/GetEmployees',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: { Prefix: request.term },
+                            success: function (data) {
+                                response($.map(data, function (item) {
+                                    return {
+                                        label: item.first_name, Value: item.emp_id, emp_code: item.emp_code, middle_name: item.middle_name, last_name: item.last_name, date_of_birth: item.date_of_birth, date_of_joining: item.date_of_joining,
+                                        designation: item.designation, password: item.password, emp_type: item.emp_type, Role: item.Role, department_id: item.department_id, manager_id: item.manager_id, last_working_day: item.last_working_day,
+                                        status: item.status, email: item.email, contact: item.contact
+                                     };
+                                }))
+                            }
+                        })
+                    },
+                    minLength: 3,
+                    autoFocus: true,
+                    delay: 500,
+                    select: function (event, ui) {
+                        $('#Emp_Id').val(ui.item.Value);
+                        var a = ui.item.emp_code;
+                        if (a != "") {
+                            $('#Emp_Code').val(ui.item.emp_code).attr('disabled', true).css("background-color", "lightgray");
+                        }
+                        else {
+                            $('#Emp_Code').val(ui.item.emp_code);
+                        }
+                        $('#Last_Name').val(ui.item.last_name);
+                        $('#Middle_Name').val(ui.item.middle_name);
+                        var MyDate_String_Value = ui.item.date_of_birth;
+                        if (MyDate_String_Value != null)
+                        {
+                            var value = new Date
+                                (
+                                parseInt(MyDate_String_Value.replace(/(^.*\()|([+-].*$)/g, ''))
+                                );
+                            var mnth = value.getMonth() + 1;
+                            var dat = value.getFullYear() + "-" + mnth + "-" + value.getDate();
+                            $('#Dob').val(dat);
+                        }
+                        else {
+                            $('#Dob').val(ui.item.date_of_birth);
+                        }
+                        var MyDate_String_Value1 = ui.item.date_of_joining;
+                        if (MyDate_String_Value1 != null)
+                        {
+                            var value = new Date
+                                (
+                                parseInt(MyDate_String_Value1.replace(/(^.*\()|([+-].*$)/g, ''))
+                                );
+                            var mnth = value.getMonth() + 1;
+                            var dat1 = value.getFullYear() + "-" + mnth + "-" + value.getDate();
+                            $('#Doj').val(dat1);
+                        }
+                        else {
+                            $('#Doj').val(ui.item.date_of_joining);
+                        }
+                        $('#Email').val(ui.item.email);
+                        $('#Designation').val(ui.item.designation);
+                        $('#Password').val(ui.item.password);
+                        $('#Confirm_Password').val(ui.item.password);
+                        $('#Emp_Type').val(ui.item.emp_type);
+                        $('#Role').val(ui.item.Role);
+                        $('#Department_Id').val(ui.item.department_id);
+                        $('#Manager_Id').val(ui.item.manager_id);
+                        $('#contact_num').val(ui.item.contact);
+                        if (ui.item.last_working_day == null)
+                        {
+                            $('#Last_WDay').val(ui.item.last_working_day);
+                        }
+                        else {
+                            var MyDate_String_Value2 = ui.item.last_working_day;
+                            var value = new Date
+                                (
+                                parseInt(MyDate_String_Value2.replace(/(^.*\()|([+-].*$)/g, ''))
+                                );
+                            var mnth = value.getMonth() + 1;
+                            var dat2 = value.getFullYear() + "-" + mnth + "-" + value.getDate();
+                            $('#Last_WDay').val(dat2);
+                        }
+                        $('#Status').val(ui.item.status);
+                        if (ui.item.status != 2 && ui.item.status != 0)
+                        {
+                            $('#Last_WDay').prop('disabled', true).css("background-color", "lightgray");
+                        }
+                        else {
+                            $('#Last_WDay').prop('disabled', false).css("background-color", "");
+                        }
+                        $('#divupdate').show();
+                        //$('#divedit').hide();
+                        $('#divsave').hide();
+                        $('#divempty').show();
+                    },
+                    messages: {
+                        noResults: "",
+                        results: function (count) {
+                            return count + (count > 1 ? 'results' : 'result') + 'found';
+                        }
+                    }
+                });
+            });
+            function ClearData()
+            {
+                $('#Emp_Code').val("").attr('disabled', false).css("background-color", "");
+                $('#Emp_Id').val("");
+                $('#First_Name').val("");
+                $('#Middle_Name').val("");
+                $('#Last_Name').val("");
+                $('#Email').val("");
+                $('#Dob').val("");
+                $('#Doj').val($.datepicker.formatDate("yy-mm-dd", new Date()));
+                $('#Designation').val("");
+                $('#Password').val("");
+                $('#Confirm_Password').val("");
+                $('#Emp_Type').val("");
+                $('#Role').val("");
+                $('#Department_Id').val("");
+                $('#Manager_Id').val("");
+                $('#Last_WDay').val("");
+                $('#Status').val("");
+                $('#contact_num').val("");
+                $('#divsave').show();
+                $('#divupdate').hide();
+                $('#divempty').hide();
+            }
+            function CancelOnClick()
+            {
+                window.location.href = "/Home/Dashboard";
+            }
+            function SubmitRecord()
+            {
+               
+                var validator = $('#employee_form').validate({
+                    rules: {
+                        Password: "required",
+                        Confirm_Password: {
+                            equalTo: "#Password"
+                        }
+                    },
+                    messages: {
+                        Password: " Enter Password",
+                        Confirm_Password: " Enter Confirm Password Same as Password"
+                    }
+                });
+                if (validator.form()) {
+                    var emp_code = $('#Emp_Code').val();
+                    var str = $('#First_Name').val();
+                    str = str.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                        return letter.toUpperCase();
+                     });
+                    var first_Name = str;
+                    var str1 = $('#Last_Name').val();
+                    str1 = str1.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                        return letter.toUpperCase();
+                    });
+                    var last_Name = str1;
+                    var str2 = $('#Middle_Name').val();
+                    var middle_name = "";
+                    if (str2 != "")
+                    {
+                        str2 = str2.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                            return letter.toUpperCase();
+                        });
+                       middle_name = str2;
+                    }
+                    else
+                    {
+                        middle_name = $('#Middle_Name').val();
+                    }
+                    var dob = $('#Dob').val();
+                    var a = new Date(dob);
+                    var doj = $('#Doj').val();
+                    var b = new Date(doj);
+                    var email = $('#Email').val();
+                    var desig = $('#Designation').val();
+                    var pass = $('#Password').val();
+                    var confirm_pass = $('#Confirm_Password').val();
+                    var emp_type = $('#Emp_Type').val();
+                    var emp_role = $('#Role').val();
+                    var dept_id = $('#Department_Id').val();
+                    var mng_id = $('#Manager_Id').val();
+                    var last_wday = $('#Last_WDay').val();
+                    var status = $('#Status').val();
+                    var contact = $('#contact_num').val();
+                    var len = pass.length;
+                    if (a.getTime() === b.getTime())
+                    {
+                        alert("Date of Birth & Date Of Joining are same.");
+                    }
+                    else {
+                        if (emp_code != "" && first_Name != "" && last_Name != "" && email !="" && dob != "" && doj != "" && emp_type != "" && emp_role != "" && status != "" && len >= 8) {
+                        $.ajax({
+                            type: "POST",
+                            url: '/Master/CreateEmployee',
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify(
+                                {
+                                    "Emp_Code": emp_code, 'First_Name': first_Name, 'Middle_Name': middle_name, 'Last_Name': last_Name, 'Email': email, 'Dob': dob, 'Doj': doj, 'Designation': desig,
+                                    'Password': pass, 'Emp_Type': emp_type, 'Role': emp_role, 'Department_Id': dept_id, 'Manager_Id': mng_id, 'Last_WDay': last_wday, 'Status': status, 'contact': contact
+                                }
+                            ),
+                            datatype: "json",
+                            success: function (data) {
+                                var succ = data.SuccessMsg;
+                                var err = data.ErrorMsg;
+                                if (succ != null) {
+                                    alert(succ);                                    
+                                    ClearData();
+                                }
+                                else {
+                                    alert(err);
+                                }
+                            },
+                            error: function () {
+                                alert("Employee Creation failed.");
+                            }
+                        });
+                    }
+                        else if (first_Name == "") {
+                            alert("First Name Can't be blank.");
+                            setTimeout(function () { $('#First_Name').focus(); });
+                        }
+                        else if (last_Name == "") {
+                            alert("Last Name Can't be blank.");
+                            setTimeout(function () { $('#Last_Name').focus(); });
+                        }
+                        else if (emp_code == "") {
+                        alert("Employee Code Can't be blank.");
+                        setTimeout(function () { $('#Emp_Code').focus(); });
+                        }
+                        else if (email == "") {
+                            alert("Email Can't be blank.");
+                            setTimeout(function () { $('#Email').focus(); });
+                        }
+                        else if (dob == "") {
+                            alert("Date Of Birth Can't be blank....!");
+                            setTimeout(function () { $('#Dob').focus(); });
+                        }
+                        else if (doj == "") {
+                            alert("Date Of Joining Can't be blank....!");
+                            setTimeout(function () { $('#Doj').focus(); });
+                        }
+                        else if (emp_type == "") {
+                            alert("Employee Type Can't be blank....!");
+                            setTimeout(function () { $('#Emp_Type').focus(); });
+                        }
+                        else if (emp_role == "") {
+                            alert("Employee Role Can't be blank....!");
+                            setTimeout(function () { $('#Role').focus(); });
+                        }
+                        else if (status == "") {
+                            alert("Status Can't be blank....!");
+                            setTimeout(function () { $('#Status').focus(); });
+                        }
+                        else {
+                            alert("Password length less then 8 character.");
+                            setTimeout(function () { $('#Password').focus(); });
+                        }
+                    }
+                }
+            }
+            function UpdateEmployee()
+            {
+                var validator = $('#employee_form').validate({
+                    rules: {
+                        Password: "required",
+                        Confirm_Password: {
+                            equalTo: "#Password"
+                        }
+                    },
+                    messages: {
+                        Password: " Enter Password",
+                        Confirm_Password: " Enter Confirm Password Same as Password"
+                    }
+                });
+                if (validator.form()) {
+                    var emp_id = $('#Emp_Id').val();
+                    var emp_code = $('#Emp_Code').val();
+                    var str = $('#First_Name').val();
+                    str = str.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                        return letter.toUpperCase();
+                    });
+                    var first_Name = str;
+                    var str1 = $('#Last_Name').val();
+                    str1 = str1.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                        return letter.toUpperCase();
+                    });
+                    var last_Name = str1;
+                    var str2 = $('#Middle_Name').val();
+                    var middle_name = "";
+                    if (str2 != "") {
+                        str2 = str2.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+                            return letter.toUpperCase();
+                        });
+                        middle_name = str2;
+                    }
+                    else {
+                        middle_name = $('#Middle_Name').val();
+                    }
+                    var dob = $('#Dob').val();
+                    var a = new Date(dob);
+                    var doj = $('#Doj').val();
+                    var b = new Date(doj);
+                    var email = $('#Email').val();
+                    var desig = $('#Designation').val();
+                    var pass = $('#Password').val();
+                    var confirm_pass = $('#Confirm_Password').val();
+                    var emp_type = $('#Emp_Type').val();
+                    var emp_role = $('#Role').val();
+                    var dept_id = $('#Department_Id').val();
+                    var mng_id = $('#Manager_Id').val();
+                    var last_wday = $('#Last_WDay').val();
+                    var status = $('#Status').val();
+                    var contact = $('#contact_num').val();
+                    var len = pass.length;
+                    if (a.getTime() === b.getTime()) {
+                        alert("Date of Birth & Date Of Joining are same.");
+                    }
+                    else
+                    {
+                        if (emp_id != "" && emp_code != "" && first_Name != "" && last_Name != "" && email !="" && dob != "" && doj != "" && emp_type != "" && emp_role != "" && status != "" && len >= 8)
+                        {
+                            if (status != 2 && status != 0)
+                            {
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/Master/UpdateEmployee',
+                                    contentType: "application/json; charset=utf-8",
+                                    data: JSON.stringify(
+                                        {
+                                            "Emp_Id": emp_id, "Emp_Code": emp_code, 'First_Name': first_Name, 'Middle_Name': middle_name, 'Last_Name': last_Name, 'Email': email, 'Dob': dob, 'Doj': doj, 'Designation': desig,
+                                            'Emp_Type': emp_type, 'Role': emp_role, 'Department_Id': dept_id, 'Manager_Id': mng_id, 'Last_WDay': last_wday, 'Status': status, 'contact': contact
+                                        }
+                                    ),
+                                    datatype: "json",
+                                    success: function (data) {
+                                        var succ = data.SuccessMsg;
+                                        var err = data.ErrorMsg;
+                                        if (succ != null) {
+                                            alert(succ);
+                                            ClearData();
+                                        }
+                                        else {
+                                            alert(err);
+                                        }
+                                    },
+                                    error: function () {
+                                        alert("Employee Updation failed.");
+                                    }
+                                });
+                            }
+                            else
+                            {
+                                if (last_wday != "")
+                                {
+                                    $.ajax({
+                                        type: "POST",
+                                        url: '/Master/UpdateEmployee',
+                                        contentType: "application/json; charset=utf-8",
+                                        data: JSON.stringify(
+                                            {
+                                                "Emp_Id": emp_id, "Emp_Code": emp_code, 'First_Name': first_Name, 'Middle_Name': middle_name, 'Last_Name': last_Name, 'Email': email, 'Dob': dob, 'Doj': doj, 'Designation': desig,
+                                                'Emp_Type': emp_type, 'Role': emp_role, 'Department_Id': dept_id, 'Manager_Id': mng_id, 'Last_WDay': last_wday, 'Status': status, 'contact': contact
+                                            }
+                                        ),
+                                        datatype: "json",
+                                        success: function (data) {
+                                            var succ = data.SuccessMsg;
+                                            var err = data.ErrorMsg;
+                                            if (succ != null) {
+                                                alert(succ);
+                                                ClearData();
+                                            }
+                                            else {
+                                                alert(err);
+                                            }
+                                        },
+                                        error: function () {
+                                            alert("Employee Creation failed.");
+                                        }
+                                    });
+                                }
+                                else
+                                {
+                                    alert("Please Select Last Working Day.");
+                                    setTimeout(function () { $('#Last_WDay').focus(); });
+                                }
+                            }
+                        }
+                        else if (first_Name == "") {
+                            alert("First Name Can't be blank.");
+                            setTimeout(function () { $('#First_Name').focus(); });
+                        }
+                        else if (last_Name == "") {
+                            alert("Last Name Can't be blank.");
+                            setTimeout(function () { $('#Last_Name').focus(); });
+                        }
+                        else if (email == "") {
+                            alert("Email Can't be blank.");
+                            setTimeout(function () { $('#Email').focus(); });
+                        }
+                        else if (emp_code == "") {
+                            alert("Employee Code Can't be blank.");
+                            setTimeout(function () { $('#Emp_Code').focus(); });
+                        }
+                        else if (dob == "") {
+                            alert("Date Of Birth Can't be blank....!");
+                            setTimeout(function () { $('#Dob').focus(); });
+                        }
+                        else if (doj == "") {
+                            alert("Date Of Joining Can't be blank....!");
+                            setTimeout(function () { $('#Doj').focus(); });
+                        }
+                        else if (emp_type == "") {
+                            alert("Employee Type Can't be blank....!");
+                            setTimeout(function () { $('#Emp_Type').focus(); });
+                        }
+                        else if (emp_role == "") {
+                            alert("Employee Role Can't be blank....!");
+                            setTimeout(function () { $('#Role').focus(); });
+                        }
+                        else if (status == "") {
+                            alert("Status Can't be blank....!");
+                            setTimeout(function () { $('#Status').focus(); });
+                        }
+                        else {
+                            alert("Password length less then 8 character.");
+                            setTimeout(function () { $('#Password').focus(); });
+                        }
+                    }
+                }
+            }
+            function CheckDob()
+            {
+                var dob = new Date($('#Dob').val());
+                var doj = new Date($('#Doj').val());
+                if (dob.getTime() === doj.getTime())
+                {
+                    alert("Date Of Birth can't be same as date of joining.");
+                    $('#Dob').val("");
+                    setTimeout(function () { $('#Dob').focus(); });
+                }
+                else
+                {
+                    var joining_dt = new Date($('#Doj').val());
+                    var birth_dt = new Date($('#Dob').val());
+                    var BirthYear = birth_dt.getFullYear();
+                    alert(BirthYear);
+                    var JoiningYear = joining_dt.getFullYear();
+                    alert(JoiningYear);
+                    var age = JoiningYear - BirthYear;
+                    if (age < 18)
+                    {
+                        alert('Date Of Birth Should be greater 18 years.');
+                        $('#Dob').val("");
+                        setTimeout(function () { $('#Dob').focus(); });
+                    }
+                }
+            }
+            function StatusOnChange()
+            {
+                var status = $('#Status option:selected').val();
+                if (status == 2 || status == 0)
+                {
+                    alert("Please Last Working Date first.");
+                    //$('#Status').val("");
+                    $('#Last_WDay').prop('disabled', false).css('background-color', "");
+                    setTimeout(function () { $('#Last_WDay').focus(); });
+                }
+                else {
+                    $('#Last_WDay').prop('disabled', true).css('background-color', "lightgray");
+                    $('#Last_WDay').val("");
+                }
+            }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div id="wait" style="display:none;width:109px;height:100px;position:absolute;top:50%;left:50%;padding:2px;">
+            <img src="~/Content/themes/base/images/Ellipsis.gif" width="104" height="104" /><br>Loading..
+        </div>
+        <br />
+        <br />
+        <div class="panel panel-default" style="width: 75%;">
+            <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"><b>Create Employee</b></h4></div>
+            <div class="panel-body">
+                <form class="m-b-30" id="employee_form" name="employee_form" method="post">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="First_Name">First Name: <span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="First_Name" maxlength="15" tabindex="1" autocomplete="off" />
+                                </div>                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Middle_Name">Middle Name:</label>
+                                    <input type="text" class="form-control" id="Middle_Name" maxlength="15" tabindex="2" autocomplete="off" />
+                                </div>                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Last_Name">Last Name:<span class="required">*</span></label>                                    
+                                    <input type="text" class="form-control" id="Last_Name" maxlength="15" tabindex="3" autocomplete="off" />
+                                </div>                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Emp_Code">Employee Code:<span class="required">*</span></label>                                    
+                                    <input type="text" class="form-control" id="Emp_Code" maxlength="5" tabindex="4" autocomplete="off"/>                                                                        
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Email">Email:<span class="required">*</span></label>                                    
+                                    <input type="text" class="form-control" id="Email" maxlength="35" tabindex="5" autocomplete="off"/>                                                                        
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="contact_num">Contact Number:</label>                                    
+                                    <input type="text" class="form-control" id="contact_num" maxlength="10" tabindex="6" autocomplete="off">
+                                </div>                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Dob">Date Of Birth:<span class="required">*</span></label>
+                                    <div class="cal-icon">
+                                        <input type="text" class="form-control mycal" id="Dob" maxlength="10" tabindex="7" style="background-color: #ffffff" placeholder="dd-M-yy" />
+                                    </div> 
+                                </div>                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Doj">Date Of Joining:<span class="required">*</span></label>
+                                    <div class="cal-icon">
+                                        <input type="text" class="form-control mycal" id="Doj" maxlength="10" tabindex="8" style="background-color: #ffffff" placeholder="dd-M-yy" />
+                                    </div> 
+                                </div>                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Designation">Designation:</label>
+                                    <input type="text" class="form-control" id="Designation" maxlength="30" tabindex="9" autocomplete="off" />                                                                       
+                                </div>                                
+                            </div>
+                        </div>                        
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Password">Password:<span class="required">*</span></label>
+                                    <input type="password" class="form-control" name="Password" id="Password" maxlength="18" tabindex="10" autocomplete="off" />                                                                      
+                                </div>                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Confirm_Password">Confirm Password:<span class="required">*</span></label>
+                                    <input type="password" class="form-control" name="Confirm_Password" id="Confirm_Password" maxlength="18" tabindex="11" autocomplete="off" />
+                                </div>                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Emp_Code">Employee Type:<span class="required">*</span></label>
+                                    @Html.DropDownList("Emp_Type", (IEnumerable<SelectListItem>)ViewBag.emptype, "Select", new { @class = "form-control", @tabindex = "12" })
+                                </div>                                
+                            </div>                            
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">                            
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Emp_Code">Employee Role:<span class="required">*</span></label>
+                                    @Html.DropDownList("Role", (IEnumerable<SelectListItem>)ViewBag.role, "Select", new { @class = "form-control", @tabindex = "13" })
+                                </div>                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Department_Id">Department:</label>
+                                    @Html.DropDownList("Department_Id", (IEnumerable<SelectListItem>)ViewBag.dept, "Select", new { @class = "form-control", @tabindex = "14" })
+                                </div>                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Manager_Id">Manager:</label>
+                                    @Html.DropDownList("Manager_Id", (IEnumerable<SelectListItem>)ViewBag.emp, "Select", new { @class = "form-control", @tabindex = "15" })
+                                </div>                               
+                            </div>                            
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">                            
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Status">Status:<span class="required">*</span></label>                                    
+                                    @Html.DropDownList("Status", (IEnumerable<SelectListItem>)ViewBag.Status, "Select", new { @class = "form-control", onchange = "StatusOnChange();", @tabindex = "16" })                                                                        
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="control-label" for="Last_WDay">Last Working Day:</label>
+                                    <input type="text" class="form-control" id="Last_WDay" maxlength="10" tabindex="17" autocomplete="off">
+                                </div>                               
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <center>
+                            <div class="col-lg-3">
+                                <button type="button" class="btn btn-primary" id="btnsubmit" style="width:130px; margin-left: 120px;" onclick="SubmitRecord()">Submit</button>
+                                <input type="hidden" id="Project_Id" />
+                            </div>
+                            <div class="col-lg-3">
+                                <button type="button" id="btnUpdate" class="btn btn-primary" style="width:130px;" onclick="UpdateProject()">Update</button>
+                            </div>
+                            <div class="col-lg-3">
+                                <button type="button" id="btnReset" class="btn btn-primary" style="width: 130px; margin-right: 70px; margin-left: -109px;" onclick="ClearData()">Reset</button>
+                            </div>
+                            <div class="col-lg-3">
+                                <button type="button" class="btn btn-primary" style="width: 130px; margin-right: 75px; margin-left: -281px;" onclick="CancelOnClick()">Cancel</button>
+                            </div>
+                        </center>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>    
+</body>
+</html>
+
+
+

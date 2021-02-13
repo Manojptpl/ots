@@ -1,0 +1,383 @@
+﻿<style type="text/css">
+    .container {
+        width: 1077px !important;
+    }
+
+    table.myclass {
+        border-radius: 3px;
+    }
+
+    .required {
+        color: red;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2
+    }
+
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+</style>
+<html>
+<head>
+    <script type="text/javascript">
+       
+        function BindProjectList() {
+            var Dept_id = $('#Departments').val();
+            $.ajax({
+                type: "POST",
+                url: '/Report/GetProjectList',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    'Dept_Id': Dept_id
+                }),
+                dataType: 'Json',
+                success: function (data) {
+                    var b = data.ErrorMsg;
+                    if (data != null) {
+                        var len = Object.keys(data).length;
+                        $("#Project_Name").html("");
+                        $("#Project_Name").append($('<option></option>').html("Select"))
+                        //Append each row to dropdown
+                        for (var i = 0; i < len; i++) {
+
+                            $("#Project_Name").append($('<option></option>').val(data[i].Project_id).html(data[i].Project_Name))
+                        }
+
+                    }
+                    else {
+                        alertify.alert(b);
+                    }
+                },
+                error: function () {
+
+                }
+            });
+
+        } 
+        function CalculateTotalCost() {
+           
+            var project_id = $('#Project_Name option:selected').val();
+            var total_hours = $('#tab1 tbody tr').find("td").eq(1).find('.tbl1').html().split(":");;
+            var final_hours = total_hours[0] + '.' + total_hours[1];
+            $.ajax({
+                url: '/Report/ProjectWiseTotalCost',
+                type: 'GET',
+                contenttype: "application/json; charset=utf-8",
+                data:
+                {
+                    'Project_id': project_id
+                },
+                datatype: 'Json',
+                success: function (data) {
+                    var len = Object.keys(data).length;
+                    $('#tab4 tbody').empty();
+                    //Append each row to html table
+                    for (var i = 0; i < len; i++) {
+                        $('#tab4 tbody').append("<tr id='info2'><td>" + data[i].Employees + "</td><td>" + data[i].No_of_hours + "</td ><td id='hour_cost' style='text-align:right'>" + data[i].Employee_Cost + "</td></tr > ");
+                    }
+                    $('#EmpRpt3').show();
+                    var temp_amt = 0;
+                    $('#tab4').each(function () {
+                        var emp_amt = 0;
+                        $(this).find('tr#info2 td#hour_cost').each(function () {
+
+                            var combat = $(this).text();
+
+
+                            if (!isNaN(combat) && combat.length !== 0) {
+                                emp_amt = parseFloat(emp_amt) + parseFloat(combat);
+                            }
+
+                        });
+                        temp_amt = emp_amt.toFixed(2);
+                        $('.empgrdtotalcost').text(emp_amt.toFixed(2)).digits();
+                    });
+                   
+                    $('#common_costvalue').text(parseFloat(parseFloat(data[0].Common_Cost) * parseFloat(final_hours)).toFixed(2));
+                    var final = parseFloat(temp_amt) + parseFloat(parseFloat(data[0].Common_Cost) * parseFloat(final_hours));
+                    $('#final_Totalcost').text(parseFloat(final).toFixed(2)).digits();
+                },
+                error: function (data) {
+                    alert(data.responseText);
+                }
+            });
+        }
+        $(document).ready(function () {
+            $('ul.list-unstyled  li a[href$="' + "/ProjectTimesheet_Report" + '"]').addClass('active');
+            $("#btn_edit_close").click(function () {
+                $('#employee_report').modal('hide');
+            });
+            $('#EmpRptt').hide();
+            $(document).on('click', '#btnsearch', function (e) {
+
+                $('#tab1 tbody').empty();
+                $('#EmpRpt').hide();
+                $('#tab2 tbody').empty();
+                $('#EmpRptt').hide();
+                $('#tab3 tbody').empty();
+                $('#EmpRpt2').hide();
+                var project_id = $('#Project_Name').val();
+                $.ajax({
+                    type: "POST",
+                    url: '/Report/ProjectWiseTotalHours',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        'Project_id': project_id
+                    }),
+                    dataType: 'Json',
+                    success: function (data) {
+                        var len = Object.keys(data).length;
+                        if (len > 0) {
+                            $('#tab1 tbody').empty();
+                            $('#tab1 tbody').append("<tr id='info'><td>" + data[0].Project_Name + "</td><td style='text-align:right'><a href='#' class='tbl1'>" + data[0].No_of_hours + "</a></td></tr>");
+                            $('#EmpRpt').show();
+                        }
+                        else {
+                            $('#tab1 tbody').empty();
+                            $('#EmpRpt').hide();
+                            alert("No Data Found.");
+                        }
+                    },
+                    error: function () {
+
+                    }
+                });
+            })
+            $(document).on('click', ".tbl1", function (e) {
+                var project_id = $('#Project_Name option:selected').val();
+                $.ajax({
+                    url: '/Report/ProjectTotalHoursBreakup',
+                    type: 'GET',
+                    contenttype: "application/json; charset=utf-8",
+                    data:
+                    {
+                        'Project_id': project_id
+                    },
+                    datatype: 'Json',
+                    success: function (data) {
+                        var len = Object.keys(data).length;
+                        $('#tab2 tbody').empty();
+                        //Append each row to html table
+                        for (var i = 0; i < len; i++) {
+                            $('#tab2 tbody').append("<tr id='info'><td is='dt'>" + data[i].ShowDate + "</td><td style='text-align:right'><a href='#' class='tbl2'>" + data[i].No_of_hours + "</a></td></tr>");
+                        }
+                        $('#EmpRptt').show();
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                    }
+                });
+
+            });
+            $(document).on('click', ".tbl2", function (e) {
+               
+                var hours = ($(this).html()).split(":");
+                var final_hours = hours[0] + '.' + hours[1];
+                var project_id = $('#Project_Name option:selected').val();
+                var dt = ($(this).closest('tr td').prev().html()).split("-");
+                var months = {
+                    'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+                    'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                };
+                var selectedMonth = months[dt[0]];
+                var selectedYear = '20' + dt[1];
+                $.ajax({
+                    url: '/Report/ProjectWiseMTSBreakUp',
+                    type: 'GET',
+                    contenttype: "application/json; charset=utf-8",
+                    data:
+                    {
+                        'Project_id': project_id, 'Month': selectedMonth, 'Year': selectedYear
+                    },
+                    datatype: 'Json',
+                    success: function (data) {
+                       
+                        var len = Object.keys(data).length;
+                        $('#tab3 tbody').empty();
+                        //Append each row to html table
+                        for (var i = 0; i < len; i++) {
+                            $('#tab3 tbody').append("<tr id='info2'><td>" + data[i].Employees + "</td><td>" + data[i].No_of_hours + "</td ><td id='hour_cost' style='text-align:right'>" + data[i].Employee_Cost + "</td></tr > ");
+                        }
+                        $('#EmpRpt2').show();
+                        $('#employee_report').modal('show');
+                        var temp_amt = 0;
+                        $('#tab3').each(function () {
+                            var emp_amt = 0;
+                            $(this).find('tr#info2 td#hour_cost').each(function () {
+
+                                var combat = $(this).text();
+
+
+                                if (!isNaN(combat) && combat.length !== 0) {
+                                    emp_amt = parseFloat(emp_amt) + parseFloat(combat);
+                                }
+
+                            });
+                            temp_amt = emp_amt.toFixed(2);
+                            $('.empgrdtotal').text(emp_amt.toFixed(2)).digits();
+                        });
+                        $('#common_cost').text(parseFloat(parseFloat(data[0].Common_Cost) * parseFloat(final_hours)).toFixed(2));
+                        var final = parseFloat(temp_amt) + parseFloat(parseFloat(data[0].Common_Cost) * parseFloat(final_hours));
+                        $('#final_cost').text(parseFloat(final).toFixed(2)).digits();
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                    }
+                });
+
+            });
+            $.fn.digits = function () {
+                return this.each(function () {
+                    $(this).text($(this).text().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,"));
+                })
+            }
+        })
+    </script>
+</head>
+<body>
+    <div class="container" style="height:100%;">
+        <div id="wait" style="display:none;width:109px;height:100px;position:absolute;top:50%;left:50%;padding:2px;">
+            <img src="~/assets/img/giphy_new.gif" width="104" height="104" /><br>Loading..
+        </div>
+        <br />
+        <br />
+        <div class="panel panel-default">
+            <div class="panel-body" style="height:100%;">
+                <div class="row">
+                    <div class="col-md-12">
+
+                        <div class="col-sm-2">
+                            <div class="form-group form-focus ">
+                                <label style="font-size: 12px;" class="control-label">Department Name:</label>
+                                @Html.DropDownList("Departments", (IEnumerable<SelectListItem>)ViewBag.Deptlist, "Select", new { @class = "form-control floating myclass", @style = "height: 39px;padding: 16px 11px 4px !important; width:150px;",  onchange = "BindProjectList();" })
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2">
+                            <div class="form-group form-focus ">
+                                <label style="font-size: 12px;" class="control-label">Project Name:</label>
+                                @Html.DropDownList("Project_Name", (IEnumerable<SelectListItem>)ViewBag.Projectlist, "Select", new { @class = "form-control floating myclass", @style = "height: 39px;padding: 16px 11px 4px !important; width:150px;" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-2">
+                                <button type='button' id='btnsearch' class="btn btn-primary" style="border-radius: 43px;padding: 8px 14px; margin-top: 11px;">Search</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" id="EmpRpt" style="margin-top: 40px;">
+                        <h5>Project Timesheet</h5>
+                        <table id="tab1">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Project Name
+                                    </th>
+                                    <th style="text-align:right">
+                                        Total Hours
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" id="EmpRptt" style="margin-top:40px;" >
+                        <div class="form-group">
+                            <div class="col-sm-4"><h5>Month Wise Report</h5></div>
+                            <div class="col-sm-2"><button type="button" class="btn btn-primary" tabindex="18" onclick="CalculateTotalCost();">Consolidate Report</button></div>
+                        </div>
+                        <table id="tab2">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Date
+                                    </th>
+                                    <th style="text-align:right">
+                                        Total Hours
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div><hr />
+                <div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+<div id="employee_report" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" id="btn_edit_close" class="close">&times;</button>
+        <div class="modal-content modal-lg">
+
+            <div class="panel" id="pnl_header">
+                <div class="panel-body">
+                    <div class="modal-header"><h4 class="modal-title">Employee Report </h4></div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12" id="EmpRpt2" style="overflow:scroll;height:300px;">
+                                 <table id="tab3" style="width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Employees
+                                            </th>
+                                            <th>
+                                                No of Hours
+                                            </th>
+                                            <th style="text-align:right">
+                                                Cost
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td><b>Total</b></td>
+                                            <td><label class="empgrdtot" value="" name="" /></td>
+                                            <td style="text-align:right"><label class="empgrdtotal" value="" name="" /></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Per Head Cost</th>
+                                            <th style="text-align:right">Total Cost</th>
+                                        </tr>
+                                        <tr>
+                                            <td><b>+Per Head Per Hour Cost</b></td>
+                                            <td><label name="" id="common_cost"></label></td>
+                                            <td style="text-align:right"><label name="" id="final_cost"></label></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

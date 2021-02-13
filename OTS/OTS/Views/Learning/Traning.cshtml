@@ -1,0 +1,62 @@
+﻿<script type="text/javascript">
+    $(document).ready(function () {
+        $('ul.list-unstyled  li a[href$="' + "/Traning" + '"]').addClass('active');
+    });
+</script>
+<div class="panel">
+    <div class="panel-heading">Training And Learning Session </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group form-focus">
+                    <label style="font-size: 12px;" class="control-label">Topic:</label>
+                    <select class="form-control pt8" style="border-radius:34px;">
+                        <option>Select</option>
+                        <option>MVC</option>
+                        <option>JavaScript</option>
+                        <option>Jquery</option>
+                        <option>AJAX</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-focus">
+                    <label style="font-size: 12px;" class="control-label">Attendee</label>
+                    <select class="form-control pt8" style="border-radius:34px">
+                        <option>Select</option>
+                        <option>Aditya Jain</option>
+                        <option>Ankit Rajput</option>
+                        <option>Manoj Kumar</option>
+                        <option>Hare Krishna</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-focus">
+                    <label style="font-size: 12px;" class="control-label">Training Date</label>
+                    <div class="cal-icon"><input class="form-control floating mycal" type="text" id="txtDateFrom" style="border-radius: 43px"></div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group form-focus">
+                    <label style="font-size: 12px;" class="control-label">Objective</label>
+                    <textarea rows="4" cols="94" style="border-radius: 43px"></textarea>
+                </div>
+            </div>
+            
+        </div> 
+        <div class="row">
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-2" id="divsave">
+                    <button type="button" class="btn btn-primary" id="btnsubmit">Submit</button>
+                </div>
+                <div class="col-sm-2">
+                    <button type="button" class="btn btn-primary">Reset</button>
+                </div>
+                <div class="col-sm-2">
+                    <button type="button" class="btn btn-primary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

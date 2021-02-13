@@ -1,0 +1,504 @@
+﻿@model IEnumerable<OTS.Models.HomeModel>
+<script src="~/Scripts/FileSaver.min.js"></script>
+<link rel="stylesheet" href="~/Content/tableexport.min.css" />
+<script type="text/javascript" src="~/Scripts/tableexport.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+      $('ul.list-unstyled  li a[href$="' + "/Status_Report" + '"]').addClass('active');
+        var status = $('#hdnDocStatus').val();
+        if (status != 'Approved') {
+            $('#btnApprove').prop('disabled', true);
+            $('#btnReject').prop('disabled', true);
+        }
+        var minOffset = -2, maxOffset = 0;
+        var thisYear = new Date().getFullYear();
+        var select = $('#ddl_year');
+        for (var i = minOffset; i <= maxOffset; i++) {
+            var year = thisYear + i;
+            $('<option>', { value: year, text: year }).appendTo(select);
+        }
+        $('#tab1').hide();
+        $('.newTable').hide();
+        $('#btnExportSt').prop('disabled', true);
+        $("label[for = Lblmsg]").text("Select Month & Year.");
+        $(document).on('click', '#btnsearch', function (e) {
+            var Month = $("#ddl_month").val();
+            var Year = $("#ddl_year").val();
+            $.ajax({
+                url: '/Report/MonthlyStatus',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(
+                    {
+                        'month': Month, 'year': Year
+                    }),
+                dataType: 'json',
+                success: function (data) {
+                    var table = $("#datatableList").DataTable();
+
+                    var len = Object.keys(data).length;
+                    if (len > 0) {
+                        $('#tab1 tbody').empty();
+                        var html = '';
+                        //Append each row to html table
+                        for (var i = 0; i < len; i++) {
+
+                            //$('#tab1 tbody').append("<tr><td id='e_code'>" + data[i].Emp_code + "</td><td id='e_name'>" + data[i].Employees + "</td><td><a class='timesheet' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].Status + "'>" + data[i].Status + "</a ></td><td><a class='expense' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].ExpenseStatus +"'>" + data[i].ExpenseStatus + "</a></td></tr > ");
+                            html += "<tr>";
+                            html += "<td id='e_code'>" + data[i].Emp_code + "</td><td id='e_name'>" + data[i].Employees + "</td>";
+                            if (data[i].Status == 'Open' || data[i].Status == 'Rejected' || data[i].Status == 'Rejected Hr') {
+                                html += "<td style='background-color:red;'><a class='timesheet' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].Status + "'>" + data[i].Status + "</a ></td>";
+                            }
+                            else if (data[i].Status == 'No Entry') {
+                                html += "<td style='background-color:#ca49ea;'><a class='timesheet' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].Status + "'>" + data[i].Status + "</a ></td>";
+                            }
+                            else if (data[i].Status == 'Final') {
+                                html += "<td style='background-color:#ff5722;'><a class='timesheet' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].Status + "'>" + data[i].Status + "</a ></td>";
+                            }
+                            else if (data[i].Status == 'Submitted') {
+                                html += "<td style='background-color:yellow;'><a class='timesheet' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].Status + "'>" + data[i].Status + "</a ></td>";
+                            }
+                            else {
+                                html += "<td style='background-color:#5fdc5f;'><a class='timesheet' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].Status + "'>" + data[i].Status + "</a ></td>";
+                            }
+                            if (data[i].ExpenseStatus == 'Open' || data[i].ExpenseStatus == 'Rejected' || data[i].ExpenseStatus == 'Rejected Hr') {
+                                html += "<td style='background-color:red;'><a class='expense' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].ExpenseStatus + "'>" + data[i].ExpenseStatus + "</a></td>";
+                            }
+                            else if (data[i].ExpenseStatus == 'No Expense') {
+                                html += "<td style='background-color:#ca49ea;'><a class='expense' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].ExpenseStatus + "'>" + data[i].ExpenseStatus + "</a></td>";
+                            }
+                            else if (data[i].ExpenseStatus == 'Final') {
+                                html += "<td style='background-color:#ff5722;'><a class='expense' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].ExpenseStatus + "'>" + data[i].ExpenseStatus + "</a></td>";
+                            }
+                            else if (data[i].ExpenseStatus == 'Submitted') {
+                                html += "<td style='background-color:yellow;'><a class='expense' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].ExpenseStatus + "'>" + data[i].ExpenseStatus + "</a></td>";
+                            }
+                            else {
+                                html += "<td style='background-color:#5fdc5f;'><a class='expense' style='color:black;' href='javascript:void(0);' data_id='" + data[i].Emp_id + "' data_value='" + data[i].ExpenseStatus + "'>" + data[i].ExpenseStatus + "</a></td>";
+                            }
+                            html += "</tr>";
+                            table.row.add($(html)).draw();
+                        }
+                        $('#tab1 tbody').append(html);
+                        $('#tab1').show();
+                        $('.newTable').show();
+                        $('#btnExportSt').prop('disabled', false);
+                        $('label[for=Lblmsg]').hide();
+                    }
+                    else {
+                        $('#btnExportSt').prop('disabled', true);
+                        $('#tab1').hide();
+                        $('.newTable').hide();
+                        alert("No Data Found.");
+                    }
+
+                },
+                error: function (data) {
+                    alert(data.responseText);
+                }
+            })
+        });
+        $(document).on('click', ".timesheet", function (e) {
+            var dt = $('#txtDate').val().split("/");
+            var $buttonClicked = $(this);
+            var emp_code = $buttonClicked.closest('tr').find('td#e_code').html();
+            var emp_name = $buttonClicked.closest('tr').find('td#e_name').html();
+            var emp_id = $buttonClicked.attr("data_id");
+            var status = $buttonClicked.attr("data_value");
+            var options = { "backdrop": "static", keyboard: true };
+            if (status == "Submitted" || status == "Approved" || status == "Final") {
+                $.ajax({
+                    url: '/Report/EmployeeTimeSheet',
+                    type: 'GET',
+                    contenttype: "application/json; charset=utf-8",
+                    data:
+                    {
+                        'Month': dt[0], 'Year': dt[1], 'Emp_id': emp_id, 'Emp_Code': emp_code, 'Emp_Name': emp_name
+                    },
+                    datatype: 'Json',
+                    success: function (response) {
+                        $('#myModalContent').html(response);
+                        $('#myModal').modal(options);
+                        $('#myModal').modal('show');
+                    },
+                    error: function (response) {
+                        alert(response.responseText);
+                    }
+                });
+            }
+            else {
+                alertify.alert("Can't Open This.").setHeader('<em> Message </em> ');
+            }
+        });
+        $(document).on('click', ".expense ", function () {
+           
+            var $buttonClicked = $(this);
+            var month = $('#ddl_month').val();
+            var year = $('#ddl_year').val();
+            var emp_code = $buttonClicked.closest('tr').find('td#e_code').html();
+            var emp_id = $buttonClicked.attr("data_id");
+            var status = $buttonClicked.attr("data_value");
+            var emp_name = $buttonClicked.closest('tr').find('td#e_name').html();
+            if (status == "Submitted" || status == "Approved" || status == "Final") {
+               
+                $.ajax({
+
+                    url: '/Report/Expensedatatable',
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({
+                        'Month': month, 'Year': year, 'Emp_id': emp_id, 'Emp_Code': emp_code, 'Emp_Name': emp_name
+                    }),
+                    datatype: JSON,
+                    success: function (data) {
+                        var result = JSON.parse(data);
+                        if (result.length > 0) {
+                            var html = "";
+                            $('#tblHistoryBody').empty();
+                            $.each(result, function (txt, val) {
+                                html += "<tr>";
+                                html += "<td >" + val.Emp_Name + "</td><td>" + val.EXPENSE_DATE + "</td><td>" + val.PROJECT_NAME + "</td>"
+                                html += "<td>" + val.EXPENSE_TYPE_NAME + "</td><td>" + val.EXPENSE_AMOUNT + "</td><td>"
+                                html += "<td>" + val.DESCRIPTION + "</td><td>" + val.FILE_NAMES + "</td><td>" + val.SUBMIT_DATE + "</td>"
+                                html += "<td>" + val.APPROVED_DATE + "</td><td>" + val.HR_DATE + "</td>"
+
+                                html += "</tr>"
+                            });
+                            $('#tblHistoryBody').append(html);
+                            $('#expense_view').modal('show');
+                        }
+                    }
+                })
+            }
+        })
+        $("#btn_edit_close").click(function () {
+            $('#expense_view').modal('hide');
+        });
+        var XLSbutton = document.getElementById('btnExportSt');
+        var XLSbutton = document.getElementById('btnExpExcel');
+        XLSbutton.addEventListener('click', function (e) {
+            var ExportButtons = document.getElementById('datatableList');
+            var month = $('#ddl_month').val();
+            var year = $('#ddl_year').val(); 
+            
+            var instance = new TableExport(ExportButtons, {
+                headers: true,                              // (Boolean), display table headers (th or td elements) in the <thead>, (default: true)
+                footers: true,                              // (Boolean), display table footers (th or td elements) in the <tfoot>, (default: false)
+                formats: ['csv'],                           // (String[]), filetype(s) for the export, (default: ['xls', 'csv', 'txt'])
+                filename: 'OTS-Status-' + month + '' + year,                             // (id, String), filename for the downloaded file, (default: 'id')
+                bootstrap: false,                           // (Boolean), style buttons using bootstrap, (default: true)
+                exportButtons: false,                        // (Boolean), automatically generate the built-in export buttons for each of the specified formats (default: true)
+                position: 'bottom',                         // (top, bottom), position of the caption element relative to table, (default: 'bottom')
+                ignoreRows: null,                           // (Number, Number[]), row indices to exclude from the exported file(s) (default: null)
+                ignoreCols: null,                           // (Number, Number[]), column indices to exclude from the exported file(s) (default: null)
+                trimWhitespace: true
+            });
+
+            //                                        // "id" of selector    // format
+            var exportData = instance.getExportData()['datatableList']['csv'];
+
+
+            instance.export2file(exportData.data, exportData.mimeType, exportData.filename, exportData.fileExtension);
+        });
+    });
+    function ForApproval() {
+        var month = $('#ddl_month').val();
+        var year = $('#ddl_year').val();
+        var exp_empId = $('#e_code').val();
+        var remark = $('#txt_remark').val();
+        var c = confirm("Are you sure to approve expense?\nDo you want to continue?");
+        if (c == true && remark != "") {
+            $.ajax({
+                type: 'POST',
+                url: '/Report/ExpenseAppByHr',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(
+                    {
+                        'Month': month, 'Year': year, 'Emp_Id': exp_empId, 'Approval_Remark': remark
+                    }),
+                dataType: 'json',
+                success: function (data) {
+                   
+                    var succ = data.SuccessMsg;
+                    var err = data.ErrorMsg;
+                    if (succ != null && err == null) {
+                        alert(succ);
+                        $('#btnApprove').prop('disabled', true);
+                        $('#btnReject').prop('disabled', true);
+                        $('#txt_remark').val("");
+                    }
+                    else {
+                        alert(err);
+                    }
+                },
+                error: function (data) {
+                    alert(data.responseText);
+                }
+            });
+        }
+        else if (remark == "") {
+            alert("Please give your remark before appoved the Expense.");
+            setTimeout(function () { $('#txt_remark').focus(); });
+        }
+        else {
+            alert("Transaction Canceled.");
+        }
+    }
+    function ForReject() {
+        var month = $('#ddl_month').val();
+        var year = $('#ddl_year').val();
+        var tm_empId = $('#e_code').val();
+        var remark = $('#txt_remark').val();
+        var c = confirm("Are you sure to reject time sheet?\nDo you want to continue?");
+        if (c == true && remark != "") {
+            $.ajax({
+                type: 'POST',
+                url: '/Report/RejectExpenseByHr',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(
+                    {
+                        'Month': month, 'Year': year, 'Emp_Id': tm_empId, 'Reject_Remark': remark
+                    }),
+                dataType: 'json',
+                success: function (data) {
+                    var succ = data.SuccessMsg;
+                    var err = data.ErrorMsg;
+                    if (succ != null && err == null) {
+                        alert(succ);
+                        $('#btnApprove').prop('disabled', true);
+                        $('#btnReject').prop('disabled', true);
+                        $('#txt_remark').val("");
+                    }
+                    else {
+                        alert(err);
+                    }
+                },
+                error: function (data) {
+                    alert(data.responseText);
+                }
+            });
+        }
+        else if (remark == "") {
+            alert("Please give your remark before rejecting the Expense.");
+            setTimeout(function () { $('#txt_remark').focus(); });
+        }
+        else {
+            alert("Transaction Canceled.");
+        }
+    }
+</script>
+<style type="text/css">
+
+    .ui-datepicker-calendar {
+        display: none;
+    }
+
+    .container {
+        width: 1053px;
+    }
+
+    table.newTable {
+        width: 100%;
+        margin-left: 50px;
+    }
+
+        table.newTable tr td.color-swatch div {
+            cursor: pointer;
+            width: 50px;
+            height: 27px;
+            border-radius: 3px;
+        }
+
+    table.myclass {
+        border-radius: 3px;
+    }
+
+    table.newTable tr td.color-name {
+        width: 240px;
+        padding-left: 1.5em;
+    }
+
+    table.newTable tr td {
+        font-family: "proxima-nova-soft", "Proxima Nova Soft", Helvetica, Arial, sans-serif;
+        line-height: 1.618;
+        font-style: normal;
+        font-weight: 700;
+        color: #3f3844;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 14px;
+        font-size: 0.875rem;
+    }
+
+    #datatableList_filter input {
+        width: 235px !important;
+    }
+</style>
+<div class="container">
+    <br />
+    <div class="panel panel-default">
+        <div class="panel-heading">Summary Details</div>
+        <br />
+        <div class="row ">
+            <div class="col-sm-12" style="left: 30px;">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <div class="col-sm-2">
+                            <div class="form-group form-focus">
+                                <label style="font-size: 12px;" class="control-label">Select Month</label>
+                                <select style="height: 39px;padding: 16px 11px 4px !important; width:115px;" class="form-control floating myclass" id="ddl_month">
+                                    <option value="0">Select </option>
+                                    <option value="1">Jan</option>
+                                    <option value="2">Feb</option>
+                                    <option value="3">Mar</option>
+                                    <option value="4">Apr</option>
+                                    <option value="5">May</option>
+                                    <option value="6">Jun</option>
+                                    <option value="7">Jul</option>
+                                    <option value="8">Aug</option>
+                                    <option value="9">Sep</option>
+                                    <option value="10">Oct</option>
+                                    <option value="11">Nov</option>
+                                    <option value="12">Dec</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group form-focus ">
+                                <label style="font-size: 12px;" class="control-label">Select Year</label>
+                                <select style="height: 39px;padding: 16px 11px 4px !important; width:115px;" class="form-control floating myclass" id="ddl_year">
+                                    <option value="0">Select</option>
+                                </select>
+                                
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <button type='button' id='btnsearch' class="btn btn-primary" style="margin-top: 12px; border-radius:50px;">Search</button>
+                        </div>
+                        <div class="col-sm-2">
+                            <button type='button' id='btnExportSt' class="btn btn-primary" style="margin-top: 12px; margin-left: -100px; border-radius:50px;">Export To Excel</button>
+                        </div>
+                    </div>
+                    <table class="newTable">
+                        <tr>
+                            <td class="color-swatch"><div style="background-color:#ca49ea;"></div></td>
+                            <td class="color-name">No Entry/No Expense</td>
+                            <td class="color-swatch"><div style="background-color:red;"></div></td>
+                            <td class="color-name">Open/Rejected/Rejected Hr</td>
+                            <td class="color-swatch"><div style="background-color:yellow;"></div></td>
+                            <td class="color-name">Submitted</td>
+                            <td class="color-swatch"><div style="background-color:#5fdc5f;"></div></td>
+                            <td class="color-name">Approved</td>
+                            <td class="color-swatch"><div style="background-color:#ff5722;"></div></td>
+                            <td class="color-name">Final</td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <br />
+        <div class="panel-body" id="tab1">
+            <table class="table table-striped table-bordered table-hover table-condensed myclass" id="datatableList">
+                <thead>
+                    <tr style="background-color:white;">
+                        <th>Employee Code</th>
+                        <th>Employee Name</th>
+                        <th>Time Sheet Status</th>
+                        <th>Expense Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id='myModal' class='modal'>
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div id='myModalContent'></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="expense_view" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <button type="button" id="btn_edit_close" class="close">&times;</button>
+        <div class="modal-content modal-lg">
+
+            <div class="panel" id="pnl_header">
+                <div class="panel-body">
+                   <div class="modal-header"><h4 class="modal-title">Expense</h4></div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="form-group">
+                                @*<label class="control-label col-sm-1"></label>*@
+                                <div class="col-sm-2">
+                                    <button type='button' id='btnExpExcel' class="btn btn-primary" style="border-radius: 18px;padding: 8px 14px;">Export To Excel</button>
+                                    <input type="hidden" id="month" value="@ViewBag.Month" />
+                                    <input type="hidden" id="year" value="@ViewBag.Year" />
+                                </div>
+                                @*<label class="control-label col-sm-1"></label>*@
+                                <div class="col-sm-2">
+                                    <button type='button' id='btnExpFiles' class="btn btn-primary" onclick="RedirectToDownload();" style="border-radius: 18px;padding: 8px 14px;">Export Files</button>
+                                    <input type="hidden" id="month" value="@ViewBag.Month" />
+                                    <input type="hidden" id="year" value="@ViewBag.Year" />
+                                    <input type="hidden" id="ExpEmp_id" value="@ViewBag.Emp_id" />
+                                </div>
+                                @*<label class="control-label col-sm-1"></label>*@
+                                <div class="col-sm-2">
+                                    <button type='button' id='btnApprove' class="btn btn-primary" onclick="ForApproval();" style="border-radius: 18px;padding: 8px 14px;">Approve</button>
+                                </div>
+                                @*<label class="control-label col-sm-1"></label>*@
+                                <div class="col-sm-2">
+                                    <button type='button' id='btnReject' class="btn btn-danger" onclick="ForReject();" style="border-radius: 18px;padding: 8px 14px;">Reject</button>
+                                </div>
+                                <div class="col-sm-2">
+                                    <label class="control-label col-sm-1">Remark:<span class="required">*</span></label><textarea type="text" placeholder="Give Remark About Appoval/Rejection." class="form-controll" id="txt_remark" rows="4" maxlength="200" autocomplete="off" style="border-radius:18px;width: 281px;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="table-responsive">
+                                    <table class="table table-striped custom-table text-left" style="font-size:11px;" id="tblExpenseReport">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee Name</th>
+                                                <th>Expense Date</th>
+                                                <th>Project Name</th>
+                                                <th>Expense Type</th>
+                                                <th>Expense Amount</th>
+                                                <th>Description</th>
+                                                <th>Attachment</th>
+                                                <th>Submit Date</th>
+                                                <th>Approve Date</th>
+                                                <th>HR Approve Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tblHistoryBody"></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><b>Total</b></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td style="text-align:right"><label class="grdtotal" value="" name="" /></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                @Html.Hidden("hdnDocStatus", (string)ViewBag.EXPENSE_STATUS)
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>             
+            </div>
+         </div>
+     </div>
+</div>

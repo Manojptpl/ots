@@ -1,0 +1,618 @@
+﻿
+@model IEnumerable<OTS.Models.AnnualAppraisalModel>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<style type="text/css">
+    .required {
+        color: red;
+    }
+
+    .myclass {
+        text-transform: capitalize;
+    }
+
+    #content {
+        height: 900px;
+    }
+
+    .btn-default {
+        color: #333;
+        background-color: #fff;
+        border: none;
+    } 
+    
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('input[type="text"]').each(function(){
+            $(this).on('keypress',function(event){
+                var letters = /^[1-5]+$/;
+                var key = String.fromCharCode(!event.fromCharCode ? event.which : event.charCode);
+                if (!letters.test(key)) {
+                    event.preventDefault();
+                    return false;
+                }
+            });
+        });
+        $("#btnReset").on('click',function(){
+            $(':input').each(function(){
+                $(this).val("");
+            });
+            
+        });
+        var $tblChkBox = $("#checkBoxes input:checkbox");
+        $("#ckbCheckAll").on("click", function () {
+            $($tblChkBox).prop('checked', $(this).prop('checked'));
+        });
+        $("#checkBoxes").on("change", function () {
+            if (!$(this).prop("checked")) {
+                $("#ckbCheckAll").prop("checked", false);
+            }
+        });
+       
+    });
+    function ClearText() {
+        $(':input').each(function(){
+            $(this).val("");
+        });
+    }
+    function CancelOnClick() {
+        window.location.href = "/Home/Dashboard";
+    }
+    function isNumberKey(evt)
+    {
+        var charCode = (evt.which) ? evt.which : event.keyCode
+        if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+        {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    function AvgCalculate()
+    {
+        var total =0;
+        var subtotal =0;
+        var overallRating =0;
+        var Avg =0;
+        var FINAL_RATING=parseFloat($("#txt_FinalRating").val());
+        var CURRENTROLL_MGRRATING =parseInt($("#txt_CURRENTROLL_MGRRATING").val());
+        var QUALITYWORK_MGRRATING =parseInt($("#txt_QUALITYWORK_MGRRATING").val());
+        var ORGWORK_MGRRATING =parseInt($("#txt_ORGWORK_MGRRATING").val());
+        var INITIATE_MGRRATING =parseInt($("#txt_INITIATE_MGRRATING").val());
+        var PERSONAL_MGRRATING =parseInt($("#txt_PERSONAL_MGRRATING").val());
+        var VSKILL_MGRRATING =parseInt($("#txt_VSKILL_MGRRATING").val());
+        var WSKILL_MGRRATING =parseInt($("#txt_WSKILL_MGRRATING").val());
+        var TEAM_MGRRATING =parseInt($("#txt_TEAM_MGRRATING").val());
+        var CONFIDENTIALITY_MGRRATING =parseInt($("#txt_CONFIDENTIALITY_MGRRATING").val());
+        var ATTENDANCE_MGRRATING =parseInt($("#txt_ATTENDANCE_MGRRATING").val());
+        total =CURRENTROLL_MGRRATING + QUALITYWORK_MGRRATING + ORGWORK_MGRRATING + INITIATE_MGRRATING + PERSONAL_MGRRATING + VSKILL_MGRRATING + WSKILL_MGRRATING + TEAM_MGRRATING + CONFIDENTIALITY_MGRRATING + ATTENDANCE_MGRRATING;
+        if ($.isNumeric(total)) {
+            Avg =parseFloat(total/10);
+        }
+        subtotal =parseFloat((FINAL_RATING + Avg));
+        overallRating =parseFloat(subtotal/2);
+        $("#txt_SECTION_SECOND_TOTALRATING").val(Avg);
+        $("#txt_SECTION_ONE_OVERALL_TOTALRATING").val(FINAL_RATING);
+        $("#txt_SECTION_2_OVERALL_TOTALRATING").val(Avg);
+        $("#txt_SUBTOTAL").val(subtotal);
+        $("#txt_OVERALL_RATING").val(overallRating);
+    }
+</script>
+
+<div class="row">
+    <div class="panel panel-table">
+        <div class="row" style="margin-top:20px;">
+            <div class="col-sm-3">
+                <div class="form-group" style="margin-left:10px;">
+                    <label>Field Description:<span class="required">*</span></label>
+                    <select class="form-control" id="temp">
+                        <option value="0">Select Fields</option>
+                        <option value="1">Project Code</option>
+                        <option value="2">Job Category</option>
+                        <option value="3">Job Item</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <label for="seqno">Text for add fields<span class="required">*</span></label>
+                    <input type="text" id="addItem" class="form-control" />
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <span class="button-checkbox">
+                        <button type="button" class="btn btn-default" data-color="primary" style="margin-top:22px; width:241.75px; height:40px; text-align:left">Mandatory</button>
+                        <input type="checkbox" class="hidden" />
+                    </span>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group" style="margin-right:10px;">
+                    <label for="seqno">Sequence No.<span class="required">*</span></label>
+                    <input type="text" id="seqno" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom:20px;">
+            <div class="col-sm-5">
+                <div class="form-group">
+
+                </div>
+            </div>
+            <div class="col-sm-7">
+                <div class="form-group form-group-toggle" data-toggle="buttons">
+                    @*onclick="ClearText()"*@
+                    <button type="button" class="btn btn-primary" id="btn_Add">Update</button>
+                    <button type="button" class="btn btn-primary" id="btn_Delete">Delete</button>
+                    <button type="button" class="btn btn-primary" id="btnReset" onclick="ClearText()">Reset</button>
+                    <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+                    <input type="hidden" id="hdn_Appraisal_id" value="@ViewBag.Exit_idType" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;">CREATE MASTER</h4></div>
+        <div class="panel-body">
+            @*@foreach (var item in Model)
+                {
+
+                }*@
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label for="createMaster">Create Master:<span class="required">*</span></label>
+                        <input type="text"  id="createMaster" class="form-control"/>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">                        
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary" style="margin-top:22px; width:241.75px; height:40px; text-align:left">Default Map with All Items</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-table"><br />
+                <div class="row">
+                    <div class="col-sm-3" style="margin-top:25px;">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Select All(Select Parent Fields)</button>
+                            <input type="checkbox" class="hidden" id="chkCheckAll" />
+                        </span>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label>Work Category:<span class="required">*</span></label>
+                            <select class="form-control" id="temp">
+                                <option value="0">Select Template ID</option>
+                                <option value="1">Template 1</option>
+                                <option value="2">Template 2</option>
+                                <option value="3">Template 3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label>Project Family:<span class="required">*</span></label>
+                            <select class="form-control" id="temp">
+                                <option value="0">Select Template ID</option>
+                                <option value="1">Template 1</option>
+                                <option value="2">Template 2</option>
+                                <option value="3">Template 3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-3" style="margin-top:25px;">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Active</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+
+                </div><br />
+            </div>            
+            <div class="panel panel-table" id="checkboxes"><br />                
+                <div class="row">
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>                   
+                </div><br />
+                <div class="row">
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                </div><br />
+                <div class="row">
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                </div><br />   
+                <div class="row">
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-default" data-color="primary">Final Approval</button>
+                            <input type="checkbox" class="hidden" />
+                        </span>
+                    </div>
+                </div><br />             
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Work Category:<span class="required">*</span></label>
+                        <select class="form-control" id="temp">
+                            <option value="0">Select Template ID</option>
+                            <option value="1">Template 1</option>
+                            <option value="2">Template 2</option>
+                            <option value="3">Template 3</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label>Project Family:<span class="required">*</span></label>
+                        <select class="form-control" id="temp">
+                            <option value="0">Select Template ID</option>
+                            <option value="1">Template 1</option>
+                            <option value="2">Template 2</option>
+                            <option value="3">Template 3</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-4" style="margin-top:25px;">
+                    <span class="button-checkbox">
+                        <button type="button" class="btn btn-default" data-color="primary">Active</button>
+                        <input type="checkbox" class="hidden" />
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom:20px;">
+            <div class="col-sm-5">
+                <div class="form-group">
+
+                </div>
+            </div>
+            <div class="col-sm-7">
+                <div class="form-group form-group-toggle" data-toggle="buttons">
+                    @*onclick="ClearText()"*@
+                    <button type="button" class="btn btn-primary" id="btn_Submit">Submit</button>
+                    <button type="button" class="btn btn-primary" id="btnReset" onclick="ClearText()">Reset</button>
+                    <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+                    <input type="hidden" id="hdn_Appraisal_id" value="@ViewBag.Exit_idType" />
+                </div>
+            </div>
+        </div>
+    </div>        
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="tab" role="tabpanel">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#Section1" aria-controls="home" role="tab" data-toggle="tab">Section 1</a></li>
+                    <li role="presentation"><a href="#Section2" aria-controls="profile" role="tab" data-toggle="tab">Section 2</a></li>
+                    <li role="presentation"><a href="#Section3" aria-controls="messages" role="tab" data-toggle="tab">Section 3</a></li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="Section1">
+                        <p>
+                            1 - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam dictum ex placerat tellus blandit euismod. Nulla pulvinar, neque pellentesque dictum fringilla, ante nibh egestas lacus, eget aliquet urna velit quis lacus. Nam tincidunt risus ac turpis elementum tincidunt. Cras convallis eget erat eget pulvinar. Vivamus augue orci, consequat id ante.
+                        </p>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="Section2">
+                        <p>
+                            2 - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam dictum ex placerat tellus blandit euismod. Nulla pulvinar, neque pellentesque dictum fringilla, ante nibh egestas lacus, eget aliquet urna velit quis lacus. Nam tincidunt risus ac turpis elementum tincidunt. Cras convallis eget erat eget pulvinar. Vivamus augue orci, consequat id ante.
+                        </p>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="Section3">
+                        <p>
+                            3 - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam dictum ex placerat tellus blandit euismod. Nulla pulvinar, neque pellentesque dictum fringilla, ante nibh egestas lacus, eget aliquet urna velit quis lacus. Nam tincidunt risus ac turpis elementum tincidunt. Cras convallis eget erat eget pulvinar. Vivamus augue orci, consequat id ante.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>        
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('.button-checkbox').each(function () {
+
+            // Settings
+            var $widget = $(this),
+                $button = $widget.find('button'),
+                $checkbox = $widget.find('input:checkbox'),
+                color = $button.data('color'),
+                settings = {
+                    on: {
+                        icon: 'glyphicon glyphicon-check'
+                    },
+                    off: {
+                        icon: 'glyphicon glyphicon-unchecked'
+                    }
+                };
+
+            // Event Handlers
+            $button.on('click', function () {
+                $checkbox.prop('checked', !$checkbox.is(':checked'));
+                $checkbox.triggerHandler('change');
+                updateDisplay();
+            });
+            $checkbox.on('change', function () {
+                updateDisplay();
+            });
+
+            // Actions
+            function updateDisplay() {
+                var isChecked = $checkbox.is(':checked');
+
+                // Set the button's state
+                $button.data('state', (isChecked) ? "on" : "off");
+
+                // Set the button's icon
+                $button.find('.state-icon')
+                    .removeClass()
+                    .addClass('state-icon ' + settings[$button.data('state')].icon);
+
+                // Update the button's color
+                if (isChecked) {
+                    $button
+                        .removeClass('btn-default')
+                        .addClass('btn-' + color + ' active');
+                }
+                else {
+                    $button
+                        .removeClass('btn-' + color + ' active')
+                        .addClass('btn-default');
+                }
+            }
+
+            // Initialization
+            function init() {
+
+                updateDisplay();
+
+                // Inject the icon if applicable
+                if ($button.find('.state-icon').length == 0) {
+                    $button.prepend('<i class="state-icon ' + settings[$button.data('state')].icon + '"></i> ');
+                }
+            }
+            init();
+        });
+    });
+</script>
+<style type="text/css">     
+.tab .nav-tabs{
+    border-bottom:0px;
+}
+.tab .nav-tabs li{
+    border-right:1px solid #ddd;
+}
+.tab .nav-tabs li:last-child{
+    border-right:0px solid #ddd;
+}
+.tab .nav-tabs li:first-child a{
+    border-left:1px solid #ddd;
+}
+.tab .nav-tabs li a {
+    color: #868686;
+    background:#fff;
+    border-radius:0;
+    font-size:16px;
+    margin-right:-1px;
+    padding: 5.5px 30px;
+    border-top:1px solid #d3d3d3;
+    border-bottom: 1px solid #d3d3d3;
+}
+.nav-tabs li:first-child a{
+    border-radius: 5px 0 0 5px;
+}
+.nav-tabs li:last-child a{
+    border-radius: 0 5px 5px 0;
+    border-right:1px solid #d3d3d3;
+}
+.tab .nav-tabs li a:hover{
+    background:#eee;
+}
+.tab .nav-tabs li a:hover:before{
+    border-left: 15px solid #eee;
+}
+.tab .nav-tabs li.active a:after,
+.tab .nav-tabs li a:after{
+    content:"";
+    border-left: 17px solid #ff007a;
+    border-top: 17px solid transparent;
+    border-bottom: 17px solid transparent;
+    position: absolute;
+    top: 0px;
+    right: -17px;
+    z-index:1;
+}
+.tab .nav-tabs li a:after{
+    border-left: 17px solid #d3d3d3;
+}
+.tab .nav-tabs li.active a:before{
+    border-left: 17px solid #ff007a;
+}
+.tab .nav-tabs li a:before{
+    border-bottom: 15px solid rgba(0, 0, 0, 0);
+    border-left: 15px solid #fff;
+    border-top: 15px solid rgba(0, 0, 0, 0);
+    content: "";
+    position: absolute;
+    right: -15px;
+    top: 2px;
+    z-index: 2;
+}
+.tab .nav-tabs li.active > a,
+.tab .nav-tabs > li.active > a:focus,
+.tab .nav-tabs > li.active > a:hover {
+    border: none;
+    color:#fff;
+    background:#FF007A;
+    border-top:1px solid #d3d3d3;
+    border-bottom: 1px solid #d3d3d3;
+}
+.tab .nav-tabs li:last-child.active a:after,
+.tab .nav-tabs li:last-child a:after{
+    border: none;
+}
+.tab .nav-tabs li:last-child a:after,
+.tab .nav-tabs li:last-child a:hover:before,
+.tab .nav-tabs li:last-child.active a:before,
+.tab .nav-tabs li:last-child a:before{
+    border-left: none;
+}
+.tab .tab-content{
+    padding:12px;
+    color:#5a5c5d;
+    margin-top:2%;
+    font-size: 14px;
+    border: 1px solid #fff;
+}
+</style>
+
+
+

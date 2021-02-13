@@ -1,0 +1,180 @@
+﻿
+<div class="row">
+    <div class="tab" role="tabpanel">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#Section1" aria-controls="home" role="tab" data-toggle="tab">Skill Programme</a></li>
+            <li role="presentation"><a href="#Section2" aria-controls="profile" role="tab" data-toggle="tab">Learner</a></li>
+            <li role="presentation"><a href="#Section3" aria-controls="messages" role="tab" data-toggle="tab">Unit Standard</a></li>
+            <li role="presentation"><a href="#Section4" aria-controls="messages" role="tab" data-toggle="tab">Registration</a></li>
+        </ul>
+        <!-- Tab panes -->
+        <div class="tab-content tabs">
+            <div role="tabpanel" class="tab-pane fade in active" id="Section1">
+                <div class="panel">
+                    <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input type="text" class="form-control" value="" placeholder="Sill Programme" id="txtname" />
+                            </div>
+                        </div>                                                
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="Section2">
+                <div class="panel">
+                    <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input type="text" class="form-control" value="" placeholder="Learner" id="txtname" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="Section3">
+                <div class="panel">
+                    <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input type="text" class="form-control" value="" placeholder="Unit Standard" id="txtname" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="Section4">
+                <div class="panel">
+                    <div class="panel-heading" style="background-color:#00bff9;"><h4 align="left" style="font-size:15px;"></h4></div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input type="text" class="form-control" value="" placeholder="Registration" id="txtname" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="form-group">
+
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group form-group-toggle" data-toggle="buttons">
+                        <button type="button" class="btn btn-primary" id="btn_Submit">Submit</button>
+                        <button type="button" class="btn btn-primary" id="btnReset" onclick="ClearText()">Reset</button>
+                        <button type="button" class="btn btn-primary" onclick="CancelOnClick()">Cancel</button>
+                    </div>
+                </div>
+            </div>            
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+    $("#content").find("[id^='tab']").hide(); // Hide all content
+    $("#tabs li:first").attr("id","current"); // Activate the first tab
+    $("#content #tab1").fadeIn(); // Show first tab's content
+
+    $('#tabs a').click(function(e) {
+        e.preventDefault();
+        if ($(this).closest("li").attr("id") == "current"){ //detection for current tab
+         return;
+        }
+        else{
+          $("#content").find("[id^='tab']").hide(); // Hide all content
+          $("#tabs li").attr("id",""); //Reset id's
+          $(this).parent().attr("id","current"); // Activate this
+          $('#' + $(this).attr('name')).fadeIn(); // Show content for the current tab
+        }
+    });
+});
+</script>
+<style type="text/css">
+    a:hover, a:focus {
+        outline: none;
+        text-decoration: none;
+    }
+
+    .tab .nav-tabs {
+        border: none;
+    }
+
+        .tab .nav-tabs li a {
+            padding: 12px 15px;
+            margin-right: 10px;
+            font-size: 17px;
+            font-weight: 800;
+            color: #9b9b9c;
+            text-transform: uppercase;
+            border: 2px solid #e5e7e9;
+            border-radius: 0;
+            overflow: hidden;
+            z-index: 1;
+            position: relative;
+        }
+
+            .tab .nav-tabs li a:hover,
+            .tab .nav-tabs li a:focus,
+            .tab .nav-tabs li.active a {
+                background: transparent;
+                border: 2px solid #3a506b;
+                color: #fff;
+            }
+
+            .tab .nav-tabs li a:before {
+                content: "";
+                width: 500%;
+                height: 0;
+                background: #ff9f1c;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                opacity: 0;
+                z-index: -1;
+                transform: translateX(-50%) translateY(-50%) rotate(45deg);
+                transition: all 0.3s ease-in-out 0s;
+            }
+
+            .tab .nav-tabs li a:hover:before,
+            .tab .nav-tabs li.active a:before {
+                height: 170%;
+                opacity: 1;
+            }
+
+    .tab .tab-content {
+        padding: 20px 30px;
+        margin-top: 10px;
+        font-size: 15px;
+        color: #fff;
+        line-height: 27px;
+        letter-spacing: 1px;
+        background: #3a506b;
+        position: relative;
+    }
+
+        .tab .tab-content:before {
+            content: "";
+            border-top: 30px solid #fff;
+            border-bottom: 30px solid transparent;
+            border-right: 30px solid transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .tab .tab-content:after {
+            content: "";
+            border-bottom: 30px solid #fff;
+            border-top: 30px solid transparent;
+            border-left: 30px solid transparent;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+</style>
